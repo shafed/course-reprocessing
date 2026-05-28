@@ -1,0 +1,539 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% Фирменные цвета РТУ МИРЭА (из шаблона Практика 5)
+\definecolor{mireaMain}{RGB}{53,92,168}
+\definecolor{mireaAcc1}{RGB}{95,193,207}
+\definecolor{mireaAcc2}{RGB}{167,217,22}
+\definecolor{mireaAcc3}{RGB}{230,230,230}
+
+% Настройка полей и колонтитулов
+\geometry{headheight=85pt, top=3.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1.3cm]{logo.jpg}}
+\fancyhead[R]{\parbox[t]{10cm}{\raggedleft\small\color{mireaMain}\textbf{РТУ МИРЭА, Кафедра ВМ-3}\\Линейная алгебра и аналитическая геометрия}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{mireaMain}\leaders\hrule height \headrulewidth\hfill}}
+
+% Стилизация гиперссылок
+\hypersetup{colorlinks=true, linkcolor=mireaMain, citecolor=mireaMain, urlcolor=mireaMain}
+
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.25cm}
+
+% Теоремы и определения
+\theoremstyle{plain}
+\newtheorem{definition}{Определение}[section]
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{remark}{Замечание}[section]
+
+% Настройка цветных блоков (копируем из Практика 5)
+\newtcolorbox{theorybox}{
+    enhanced, breakable,
+    colback=mireaMain!8, colframe=mireaMain,
+    title={\textbf{�� ТЕОРЕТИЧЕСКИЙ БЛОК}}, fonttitle=\bfseries\color{white},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{itbox}{
+    enhanced, breakable,
+    colback=mireaAcc2!10, colframe=mireaAcc2,
+    title={\textbf{�� ПРИКЛАДНОЙ КОНТЕКСТ (IT/ENGINEERING)}}, fonttitle=\bfseries\color{mireaAcc2!80!black},
+    boxrule=0.6pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaAcc2, colframe=mireaAcc2, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{taskbox}[1]{
+    enhanced, breakable,
+    colback=mireaAcc3!30, colframe=mireaMain,
+    title={\textbf{�� ЗАДАЧА №#1}}, fonttitle=\bfseries\large\color{white},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{solbox}{
+    enhanced, breakable,
+    colback=white, colframe=mireaAcc1,
+    title={\textbf{✅ ПОДРОБНОЕ РЕШЕНИЕ}}, fonttitle=\bfseries\color{mireaMain},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaAcc1, colframe=mireaAcc1, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{cheatbox}{
+    enhanced, breakable,
+    colback=mireaMain!6, colframe=mireaMain,
+    title={\textbf{�� КРАТКАЯ ШПАРГАЛКА}}, fonttitle=\bfseries\large\color{white},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace{-0.5cm}
+    {\Large\color{mireaMain}\textbf{Практическое занятие №6}} \\[0.3cm]
+    {\Huge\color{mireaMain}\textbf{ОБРАТИМОСТЬ ЛИНЕЙНОГО ОПЕРАТОРА. ЯДРО И ОБРАЗ}} \\[0.3cm]
+    \rule{0.4\textwidth}{1pt} \\[0.2cm]
+    {\small Кафедра высшей математики №3 (ВМ-3)}
+\end{center}
+
+\vspace{0.2cm}
+
+\section*{Необходимый теоретический материал}
+
+\begin{theorybox}
+    \subsection*{1. Понятие обратного оператора}
+    Пусть $L$ -- конечномерное линейное пространство. Линейный оператор $\hat{A}: L \to L$ называется \textit{обратимым}, если существует такой линейный оператор $\hat{A}^{-1}: L \to L$, что:
+    \[
+    \hat{A}\hat{A}^{-1} = \hat{A}^{-1}\hat{A} = \hat{E},
+    \]
+    где $\hat{E}$ -- тождественный оператор ($\hat{E}\vec{x} = \vec{x}$ для любого $\vec{x} \in L$).
+
+    \begin{remark}
+        Если матрица оператора $\hat{A}$ в некотором базисе равна $A$, то матрица обратного оператора $\hat{A}^{-1}$ в том же базисе равна обратной матрице $A^{-1}$. Следовательно, оператор обратим тогда и только тогда, когда $\det A \neq 0$.
+    \end{remark}
+
+    \subsection*{2. Ядро и Образ оператора}
+    Для анализа структуры оператора вводятся два фундаментальных подпространства:
+
+    \begin{definition}[Образ оператора]
+        \textit{Образом} $\text{Im } \hat{A}$ линейного оператора $\hat{A}$ называется множество всех векторов $\vec{y} \in L$, которые являются образами каких-либо векторов $\vec{x} \in L$:
+        \[
+        \text{Im } \hat{A} = \{ \vec{y} \in L \mid \exists \vec{x} \in L : \hat{A}\vec{x} = \vec{y} \}.
+        \]
+        Геометрически образ -- это множество всех возможных результатов действия оператора.
+    \end{definition}
+
+    \begin{definition}[Ядро оператора]
+        \textit{Ядром} $\text{Ker } \hat{A}$ линейного оператора $\hat{A}$ называется множество всех векторов $\vec{x} \in L$, которые отображаются в нулевой вектор:
+        \[
+        \text{Ker } \hat{A} = \{ \vec{x} \in L \mid \hat{A}\vec{x} = \vec{0} \}.
+        \]
+        Ядро показывает, какие векторы ``теряются'' (схлопываются в ноль) при действии оператора.
+    \end{definition}
+
+    \begin{remark}
+        Если оператор задан матрицей $A$ в базисе, то нахождение ядра сводится к решению однородной системы линейных уравнений $A\vec{x} = \vec{0}$. Образ оператора порождается столбцами матрицы $A$ (линейной оболочкой столбцов).
+    \end{remark}
+
+    \subsection*{3. Ранг и Дефект оператора}
+    \begin{definition}
+        \textit{Рангом} оператора $\hat{A}$ называется размерность его образа:
+        \[
+        \text{rang } \hat{A} = \dim(\text{Im } \hat{A}).
+        \]
+        \textit{Дефектом} оператора $\hat{A}$ называется размерность его ядра:
+        \[
+        \text{def } \hat{A} = \dim(\text{Ker } \hat{A}).
+        \]
+    \end{definition}
+
+    \begin{theorem}[О ранге матрицы и оператора]
+        Ранг линейного оператора равен рангу его матрицы в любом базисе:
+        \[
+        \text{rang } \hat{A} = \text{rang } A.
+        \]
+    \end{theorem}
+
+    \subsection*{4. Теорема о размерностях (Rank-Nullity Theorem)}
+    Это одна из ключевых теорем линейной алгебры, связывающая размерности пространства, образа и ядра.
+
+    \begin{theorem}
+        Для любого линейного оператора $\hat{A}: L \to L$, где $\dim L = n$, справедливо равенство:
+        \[
+        \text{rang } \hat{A} + \text{def } \hat{A} = n.
+        \]
+        Или в терминах размерностей:
+        \[
+        \dim(\text{Im } \hat{A}) + \dim(\text{Ker } \hat{A}) = \dim L.
+        \]
+    \end{theorem}
+
+    \subsection*{5. Критерии обратимости оператора}
+    Оператор $\hat{A}$ в конечномерном пространстве $L$ ($\dim L = n$) обратим тогда и только тогда, когда выполнено любое из следующих эквивалентных условий:
+    \begin{enumerate}
+        \item $\det A \neq 0$ (матрица оператора невырожденна).
+        \item $\text{Ker } \hat{A} = \{ \vec{0} \}$ (ядро тривиально, дефект равен 0).
+        \item $\text{Im } \hat{A} = L$ (образ совпадает со всем пространством, ранг равен $n$).
+        \item $\text{rang } A = n$ (столбцы матрицы линейно независимы).
+    \end{enumerate}
+
+    \begin{itbox}
+        \textbf{Интерпретация в IT:}
+        \begin{itemize}
+            \item \textbf{Обратимость:} Возможность однозначно восстановить входные данные по выходным. Например, в криптографии шифрование должно быть обратимым (чтобы можно было расшифровать сообщение). В компьютерной графике преобразования координат (поворот, масштабирование) обычно обратимы, чтобы можно было вернуться из экранных координат в мировые.
+            \item \textbf{Ядро:} В машинном обучении, если мы решаем систему $A\vec{x}=\vec{b}$ (например, метод наименьших квадратов), наличие нетривиального ядра означает, что решение неединственно. Все векторы из ядра можно добавить к частному решению, и оно останется решением. Это связано с проблемой мультиколлинеарности признаков.
+            \item \textbf{Ранг:} Определяет количество независимой информации, сохраняемой оператором. Проекция на плоскость имеет ранг 2 в $\mathbb{R}^3$, так как одна степень свободы (высота) теряется.
+        \end{itemize}
+    \end{itbox}
+\end{theorybox}
+
+\vspace{0.2cm}
+
+\begin{cheatbox}
+    \begin{enumerate}[leftmargin=*, label=\arabic*.]
+        \item \textbf{Проверка обратимости:} Вычислить $\det A$. Если $\det A \neq 0$, оператор обратим. Если $\det A = 0$, оператор вырожден (необратим).
+        \item \textbf{Поиск ядра ($\text{Ker } \hat{A}$):} Решить однородную СЛАУ $A\vec{x} = \vec{0}$. Найти фундаментальную систему решений (ФСР). Ядро -- это линейная оболочка векторов ФСР. $\text{def } \hat{A} = \text{количество векторов в ФСР}$.
+        \item \textbf{Поиск образа ($\text{Im } \hat{A}$):} Образ натянут на столбцы матрицы $A$. Чтобы найти базис образа, нужно выбрать линейно независимые столбцы матрицы $A$ (или привести $A$ к ступенчатому виду и выбрать столбцы, соответствующие ведущим элементам). $\text{rang } \hat{A} = \text{ранг матрицы } A$.
+        \item \textbf{Теорема о размерностях:} Всегда проверяйте: $\text{rang } \hat{A} + \text{def } \hat{A} = \dim L$.
+        \item \textbf{Обратный оператор:} Если $\det A \neq 0$, то $A^{-1} = \frac{1}{\det A} C^T$, где $C$ -- матрица алгебраических дополнений.
+    \end{enumerate}
+\end{cheatbox}
+
+\vspace{0.3cm}
+
+\section*{Разбор типовых задач}
+
+\begin{taskbox}{1}
+    Операторы действуют в пространстве $\mathbb{R}^3$, $\vec{x}=(x_1; x_2; x_3)$.
+    \begin{enumerate}[label=\alph*)]
+        \item $\hat{A}\vec{x} = (2x_1 - x_2 + 4x_3; \; x_1 + 3x_2 - x_3; \; 3x_1 + 2x_2 + 3x_3)$;
+        \item $\hat{B}\vec{x} = (x_1^2 + x_2; \; x_2 - x_3; \; x_1 + x_3)$;
+        \item $\hat{C}\vec{x} = (x_1 - x_2; \; x_2 + x_3; \; x_1 + x_3 + 1)$.
+    \end{enumerate}
+    Для каждого оператора:
+    \begin{enumerate}
+        \item Проверить линейность.
+        \item Если оператор линеен, найти его матрицу в каноническом базисе.
+        \item Найти ядро $\text{Ker } \hat{A}$ и образ $\text{Im } \hat{A}$.
+        \item Определить, является ли оператор обратимым. Если да, найти матрицу обратного оператора.
+    \end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+    В задачах компьютерного зрения часто требуется проверить, является ли преобразование координат линейным. Нелинейные искажения (например, радиальные дисторсии объектива) не описываются матрицами $3\times3$ в однородных координатах без дополнительных ухищрений. Оператор $\hat{C}$ содержит смещение (трансляцию), что в чистом виде делает его аффинным, но не линейным в векторном пространстве $\mathbb{R}^3$ (так как $\hat{C}(\vec{0}) \neq \vec{0}$).
+\end{itbox}
+
+\begin{solbox}
+    \textbf{Решение пункта a):}
+    
+    1) \textit{Проверка линейности.}
+    Оператор задан линейными комбинациями координат. Проверим формально:
+    \[
+    \hat{A}(\vec{x}+\vec{y}) = \begin{pmatrix} 2(x_1+y_1) - (x_2+y_2) + 4(x_3+y_3) \\ (x_1+y_1) + 3(x_2+y_2) - (x_3+y_3) \\ 3(x_1+y_1) + 2(x_2+y_2) + 3(x_3+y_3) \end{pmatrix} = \hat{A}\vec{x} + \hat{A}\vec{y}.
+    \]
+    \[
+    \hat{A}(\alpha\vec{x}) = \begin{pmatrix} 2\alpha x_1 - \alpha x_2 + 4\alpha x_3 \\ \alpha x_1 + 3\alpha x_2 - \alpha x_3 \\ 3\alpha x_1 + 2\alpha x_2 + 3\alpha x_3 \end{pmatrix} = \alpha \hat{A}\vec{x}.
+    \]
+    Условия выполняются $\Rightarrow$ $\hat{A}$ -- линейный оператор.
+
+    2) \textit{Матрица оператора.}
+    Действуем на векторы канонического базиса $\vec{e}_1=(1;0;0)$, $\vec{e}_2=(0;1;0)$, $\vec{e}_3=(0;0;1)$:
+    \[
+    \hat{A}\vec{e}_1 = (2; 1; 3), \quad \hat{A}\vec{e}_2 = (-1; 3; 2), \quad \hat{A}\vec{e}_3 = (4; -1; 3).
+    \]
+    Записываем координаты образов по столбцам:
+    \[
+    A = \begin{pmatrix} 2 & -1 & 4 \\ 1 & 3 & -1 \\ 3 & 2 & 3 \end{pmatrix}.
+    \]
+
+    3) \textit{Ядро и Образ.}
+    Найдем определитель матрицы $A$:
+    \[
+    \det A = 2(9 - (-2)) - (-1)(3 - (-3)) + 4(2 - 9) = 2(11) + 1(6) + 4(-7) = 22 + 6 - 28 = 0.
+    \]
+    Так как $\det A = 0$, оператор \textbf{необратим}.
+    
+    Найдем ядро, решая $A\vec{x}=\vec{0}$:
+    \[
+    \begin{pmatrix} 2 & -1 & 4 \\ 1 & 3 & -1 \\ 3 & 2 & 3 \end{pmatrix} \sim \begin{pmatrix} 1 & 3 & -1 \\ 2 & -1 & 4 \\ 3 & 2 & 3 \end{pmatrix} \xrightarrow{R_2-2R_1, R_3-3R_1} \begin{pmatrix} 1 & 3 & -1 \\ 0 & -7 & 6 \\ 0 & -7 & 6 \end{pmatrix} \sim \begin{pmatrix} 1 & 3 & -1 \\ 0 & -7 & 6 \\ 0 & 0 & 0 \end{pmatrix}.
+    \]
+    Ранг матрицы $\text{rang } A = 2$.
+    Система эквивалентна:
+    \[
+    \begin{cases} x_1 + 3x_2 - x_3 = 0 \\ -7x_2 + 6x_3 = 0 \end{cases} \Rightarrow \begin{cases} x_2 = \frac{6}{7}x_3 \\ x_1 = x_3 - 3(\frac{6}{7}x_3) = -\frac{11}{7}x_3 \end{cases}.
+    \]
+    Пусть $x_3 = 7c$. Тогда $x_2 = 6c$, $x_1 = -11c$.
+    \[
+    \text{Ker } \hat{A} = \{ c(-11; 6; 7) \mid c \in \mathbb{R} \}.
+    \]
+    Базис ядра: $\vec{v}_1 = (-11; 6; 7)$.
+    $\text{def } \hat{A} = \dim(\text{Ker } \hat{A}) = 1$.
+
+    Образ оператора натянут на линейно независимые столбцы матрицы $A$. Так как ранг равен 2, любые два линейно независимых столбца образуют базис образа. Возьмем первые два столбца (они не коллинеарны):
+    \[
+    \text{Im } \hat{A} = \mathcal{L} \left( \begin{pmatrix} 2 \\ 1 \\ 3 \end{pmatrix}, \begin{pmatrix} -1 \\ 3 \\ 2 \end{pmatrix} \right).
+    \]
+    $\text{rang } \hat{A} = 2$.
+    Проверка теоремы о размерностях: $2 + 1 = 3 = \dim \mathbb{R}^3$. Верно.
+
+    \vspace{0.2cm}
+    \textbf{Решение пункта b):}
+    Оператор $\hat{B}\vec{x} = (x_1^2 + x_2; \; x_2 - x_3; \; x_1 + x_3)$.
+    Проверим условие $\hat{B}(\vec{0}) = \vec{0}$:
+    \[
+    \hat{B}(0;0;0) = (0^2+0; 0-0; 0+0) = (0;0;0).
+    \]
+    Однако проверим аддитивность для $\vec{x}=(1;0;0)$ и $\vec{y}=(1;0;0)$:
+    \[
+    \hat{B}(\vec{x}+\vec{y}) = \hat{B}(2;0;0) = (4; 0; 2).
+    \]
+    \[
+    \hat{B}\vec{x} + \hat{B}\vec{y} = (1;0;1) + (1;0;1) = (2;0;2).
+    \]
+    $(4;0;2) \neq (2;0;2) \Rightarrow$ оператор нелинеен (из-за $x_1^2$). Матрицы не существует.
+
+    \vspace{0.2cm}
+    \textbf{Решение пункта c):}
+    Оператор $\hat{C}\vec{x} = (x_1 - x_2; \; x_2 + x_3; \; x_1 + x_3 + 1)$.
+    Проверим $\hat{C}(\vec{0})$:
+    \[
+    \hat{C}(0;0;0) = (0; 0; 1) \neq \vec{0}.
+    \]
+    Необходимое условие линейности нарушено. Оператор нелинеен (это аффинное преобразование, сдвиг).
+\end{solbox}
+
+\begin{taskbox}{2}
+    Линейный оператор $\hat{A}$ в пространстве $\mathbb{R}^3$ задан матрицей в каноническом базисе:
+    \[
+    A = \begin{pmatrix} 1 & 2 & -1 \\ 2 & 5 & 1 \\ 3 & 7 & 2 \end{pmatrix}.
+    \]
+    \begin{enumerate}
+        \item Найти ранг и дефект оператора.
+        \item Найти базис ядра $\text{Ker } \hat{A}$ и базис образа $\text{Im } \hat{A}$.
+        \item Разложить вектор $\vec{b} = (4; 10; 13)$ по базису образа (если возможно) или доказать, что он не принадлежит образу.
+        \item Является ли оператор обратимым?
+    \end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+    Анализ принадлежности вектора образу оператора важен в задачах регрессии. Если вектор целевых значений $\vec{b}$ не лежит в образе матрицы признаков $A$, то система $A\vec{x}=\vec{b}$ не имеет точного решения, и мы ищем приближенное решение (метод наименьших квадратов).
+\end{itbox}
+
+\begin{solbox}
+    1) \textit{Ранг и дефект.}
+    Приведем матрицу $A$ к ступенчатому виду методом Гаусса:
+    \[
+    A = \begin{pmatrix} 1 & 2 & -1 \\ 2 & 5 & 1 \\ 3 & 7 & 2 \end{pmatrix} \xrightarrow{R_2-2R_1, R_3-3R_1} \begin{pmatrix} 1 & 2 & -1 \\ 0 & 1 & 3 \\ 0 & 1 & 5 \end{pmatrix} \xrightarrow{R_3-R_2} \begin{pmatrix} 1 & 2 & -1 \\ 0 & 1 & 3 \\ 0 & 0 & 2 \end{pmatrix}.
+    \]
+    В ступенчатом виде все три строки ненулевые. Следовательно, $\text{rang } A = 3$.
+    Так как $\dim \mathbb{R}^3 = 3$, то по теореме о размерностях:
+    \[
+    \text{def } \hat{A} = 3 - \text{rang } \hat{A} = 3 - 3 = 0.
+    \]
+
+    2) \textit{Базисы ядра и образа.}
+    Так как $\text{def } \hat{A} = 0$, ядро тривиально:
+    \[
+    \text{Ker } \hat{A} = \{ \vec{0} \}. \quad \text{Базис ядра отсутствует (пустое множество)}.
+    \]
+    Так как $\text{rang } \hat{A} = 3$, образ совпадает со всем пространством $\mathbb{R}^3$.
+    \[
+    \text{Im } \hat{A} = \mathbb{R}^3.
+    \]
+    Базисом образа может служить любой базис $\mathbb{R}^3$, например, канонический $\{\vec{e}_1, \vec{e}_2, \vec{e}_3\}$ или столбцы исходной матрицы $A$ (так как они линейно независимы).
+
+    3) \textit{Принадлежность вектора $\vec{b}$ образу.}
+    Так как $\text{Im } \hat{A} = \mathbb{R}^3$, любой вектор пространства принадлежит образу. Найдем прообраз $\vec{x}$ такой, что $A\vec{x} = \vec{b}$.
+    Решим систему:
+    \[
+    \left(\begin{array}{ccc|c} 1 & 2 & -1 & 4 \\ 2 & 5 & 1 & 10 \\ 3 & 7 & 2 & 13 \end{array}\right) \sim \left(\begin{array}{ccc|c} 1 & 2 & -1 & 4 \\ 0 & 1 & 3 & 2 \\ 0 & 1 & 5 & 1 \end{array}\right) \sim \left(\begin{array}{ccc|c} 1 & 2 & -1 & 4 \\ 0 & 1 & 3 & 2 \\ 0 & 0 & 2 & -1 \end{array}\right).
+    \]
+    Обратный ход:
+    $2x_3 = -1 \Rightarrow x_3 = -0.5$.
+    $x_2 + 3(-0.5) = 2 \Rightarrow x_2 = 2 + 1.5 = 3.5$.
+    $x_1 + 2(3.5) - (-0.5) = 4 \Rightarrow x_1 + 7 + 0.5 = 4 \Rightarrow x_1 = 4 - 7.5 = -3.5$.
+    Вектор $\vec{x} = (-3.5; 3.5; -0.5)$ является прообразом.
+
+    4) \textit{Обратимость.}
+    Так как $\det A \neq 0$ (ранг полный), оператор \textbf{обратим}.
+\end{solbox}
+
+\begin{taskbox}{3}
+    В пространстве многочленов $P_2$ (степень $\le 2$) задан оператор дифференцирования с умножением:
+    \[
+    \hat{A}(p(t)) = t \cdot p'(t) - p(t).
+    \]
+    \begin{enumerate}
+        \item Доказать линейность оператора.
+        \item Найти матрицу оператора в каноническом базисе $\mathcal{E} = \{1, t, t^2\}$.
+        \item Найти ядро и образ оператора.
+        \item Существует ли обратный оператор?
+    \end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+    Дифференциальные операторы широко используются в обработке сигналов и решении дифференциальных уравнений. Понимание их ядра (решений однородного уравнения) и образа критично для нахождения общих решений.
+\end{itbox}
+
+\begin{solbox}
+    1) \textit{Линейность.}
+    Пусть $p, q \in P_2$, $\alpha \in \mathbb{R}$.
+    \[
+    \hat{A}(p+q) = t(p+q)' - (p+q) = t(p'+q') - p - q = (tp' - p) + (tq' - q) = \hat{A}p + \hat{A}q.
+    \]
+    \[
+    \hat{A}(\alpha p) = t(\alpha p)' - \alpha p = \alpha(tp' - p) = \alpha \hat{A}p.
+    \]
+    Оператор линеен.
+
+    2) \textit{Матрица оператора.}
+    Базис: $e_1 = 1, e_2 = t, e_3 = t^2$.
+    Найдем образы базисных векторов:
+    \begin{itemize}
+        \item $p(t) = 1 \Rightarrow p'(t)=0$. $\hat{A}(1) = t(0) - 1 = -1 = -1\cdot 1 + 0\cdot t + 0\cdot t^2$. Координаты: $(-1; 0; 0)^T$.
+        \item $p(t) = t \Rightarrow p'(t)=1$. $\hat{A}(t) = t(1) - t = 0 = 0\cdot 1 + 0\cdot t + 0\cdot t^2$. Координаты: $(0; 0; 0)^T$.
+        \item $p(t) = t^2 \Rightarrow p'(t)=2t$. $\hat{A}(t^2) = t(2t) - t^2 = 2t^2 - t^2 = t^2 = 0\cdot 1 + 0\cdot t + 1\cdot t^2$. Координаты: $(0; 0; 1)^T$.
+    \end{itemize}
+    Матрица $A$ в базисе $\mathcal{E}$:
+    \[
+    A = \begin{pmatrix} -1 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+    \]
+
+    3) \textit{Ядро и Образ.}
+    \textit{Ядро:} Решаем $A\vec{x}=\vec{0}$ для координатного столбца $\vec{x}=(c_1, c_2, c_3)^T$.
+    \[
+    \begin{pmatrix} -1 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} c_1 \\ c_2 \\ c_3 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix} \Rightarrow \begin{cases} -c_1 = 0 \\ c_3 = 0 \end{cases}.
+    \]
+    $c_1=0, c_3=0$, $c_2$ -- свободно.
+    Векторы ядра имеют вид $\vec{x} = (0; c_2; 0)^T$. В терминах многочленов: $p(t) = c_2 t$.
+    \[
+    \text{Ker } \hat{A} = \{ c \cdot t \mid c \in \mathbb{R} \}. \quad \text{Базис ядра: } \{t\}. \quad \text{def } \hat{A} = 1.
+    \]
+    
+    \textit{Образ:} Столбцы матрицы $A$: $\vec{c}_1=(-1;0;0)^T$, $\vec{c}_2=(0;0;0)^T$, $\vec{c}_3=(0;0;1)^T$.
+    Линейно независимые столбцы: $\vec{c}_1$ и $\vec{c}_3$.
+    Базис образа в координатах: $\{(-1;0;0)^T, (0;0;1)^T\}$.
+    В терминах многочленов: $\{-1, t^2\}$ или эквивалентно $\{1, t^2\}$.
+    \[
+    \text{Im } \hat{A} = \mathcal{L}(1, t^2). \quad \text{rang } \hat{A} = 2.
+    \]
+    Проверка: $2 + 1 = 3 = \dim P_2$.
+
+    4) \textit{Обратимость.}
+    Так как $\text{Ker } \hat{A} \neq \{\vec{0}\}$ (дефект не равен 0), оператор \textbf{необратим}.
+\end{solbox}
+
+\begin{taskbox}{4}
+    Линейный оператор $\hat{A}$ в $\mathbb{R}^3$ задан матрицей:
+    \[
+    A = \begin{pmatrix} 2 & -1 & 1 \\ 1 & 0 & 1 \\ 3 & -1 & 2 \end{pmatrix}.
+    \]
+    \begin{enumerate}
+        \item Найти базис ядра и базис образа.
+        \item Найти матрицу обратного оператора, если он существует. Если не существует, объяснить почему.
+        \item Найти общее решение уравнения $\hat{A}\vec{x} = \vec{b}$, где $\vec{b} = (1; 2; 3)$.
+    \end{enumerate}
+\end{taskbox}
+
+\begin{solbox}
+    1) \textit{Анализ матрицы.}
+    Заметим, что третий столбец равен сумме первого и второго? Проверим:
+    $\vec{c}_1 + \vec{c}_2 = (2-1; 1+0; 3-1) = (1; 1; 2) \neq \vec{c}_3(1; 1; 2)$. Совпадает.
+    То есть $\vec{c}_3 = \vec{c}_1 + \vec{c}_2$? Нет, $\vec{c}_3=(1;1;2)$. Да, верно.
+    Следовательно, столбцы линейно зависимы. $\det A = 0$.
+    
+    Приведем к ступенчатому виду для точности:
+    \[
+    \begin{pmatrix} 2 & -1 & 1 \\ 1 & 0 & 1 \\ 3 & -1 & 2 \end{pmatrix} \xrightarrow{R_1 \leftrightarrow R_2} \begin{pmatrix} 1 & 0 & 1 \\ 2 & -1 & 1 \\ 3 & -1 & 2 \end{pmatrix} \xrightarrow{R_2-2R_1, R_3-3R_1} \begin{pmatrix} 1 & 0 & 1 \\ 0 & -1 & -1 \\ 0 & -1 & -1 \end{pmatrix} \sim \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 0 & 0 & 0 \end{pmatrix}.
+    \]
+    Ранг $A = 2$. Дефект $= 3 - 2 = 1$.
+
+    \textit{Ядро:} Система эквивалентна $\begin{cases} x_1 + x_3 = 0 \\ x_2 + x_3 = 0 \end{cases} \Rightarrow \begin{cases} x_1 = -x_3 \\ x_2 = -x_3 \end{cases}$.
+    Пусть $x_3 = 1$. Тогда $\vec{v} = (-1; -1; 1)$.
+    \[
+    \text{Ker } \hat{A} = \mathcal{L}((-1; -1; 1)).
+    \]
+
+    \textit{Образ:} Базисные столбцы (соответствующие ведущим элементам в ступенчатой матрице -- 1-й и 2-й столбцы исходной матрицы):
+    \[
+    \text{Im } \hat{A} = \mathcal{L} \left( \begin{pmatrix} 2 \\ 1 \\ 3 \end{pmatrix}, \begin{pmatrix} -1 \\ 0 \\ -1 \end{pmatrix} \right).
+    \]
+
+    2) \textit{Обратимость.}
+    Так как $\det A = 0$, обратный оператор \textbf{не существует}.
+
+    3) \textit{Решение $A\vec{x}=\vec{b}$.}
+    Расширенная матрица:
+    \[
+    \left(\begin{array}{ccc|c} 2 & -1 & 1 & 1 \\ 1 & 0 & 1 & 2 \\ 3 & -1 & 2 & 3 \end{array}\right) \xrightarrow{R_1 \leftrightarrow R_2} \left(\begin{array}{ccc|c} 1 & 0 & 1 & 2 \\ 2 & -1 & 1 & 1 \\ 3 & -1 & 2 & 3 \end{array}\right) \xrightarrow{R_2-2R_1, R_3-3R_1} \left(\begin{array}{ccc|c} 1 & 0 & 1 & 2 \\ 0 & -1 & -1 & -3 \\ 0 & -1 & -1 & -3 \end{array}\right).
+    \]
+    Последняя строка нулевая, система совместна.
+    $\begin{cases} x_1 + x_3 = 2 \\ -x_2 - x_3 = -3 \Rightarrow x_2 = 3 - x_3 \end{cases}$.
+    Пусть $x_3 = c$.
+    $x_1 = 2 - c$.
+    $x_2 = 3 - c$.
+    Общее решение:
+    \[
+    \vec{x} = \begin{pmatrix} 2 - c \\ 3 - c \\ c \end{pmatrix} = \begin{pmatrix} 2 \\ 3 \\ 0 \end{pmatrix} + c \begin{pmatrix} -1 \\ -1 \\ 1 \end{pmatrix}.
+    \]
+    Здесь $\vec{x}_{частное} = (2; 3; 0)$, а вектор при $c$ -- это базисный вектор ядра, что подтверждает общую теорию решений СЛАУ.
+\end{solbox}
+
+\vspace{0.3cm}
+
+\section*{Задачи для самостоятельного решения}
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+    \item Оператор $\hat{A}$ в $\mathbb{R}^3$ задан формулой $\hat{A}\vec{x} = (x_1 + 2x_2 - x_3; \; 2x_1 - x_2 + 3x_3; \; 3x_1 + x_2 + 2x_3)$.
+    \begin{enumerate}
+        \item Найти матрицу оператора.
+        \item Вычислить $\det A$. Обратим ли оператор?
+        \item Если обратим, найти $A^{-1}$.
+        \item Найти $\text{Ker } \hat{A}$ и $\text{Im } \hat{A}$.
+    \end{enumerate}
+
+    \item В пространстве $P_2$ оператор задан как $\hat{A}(p(t)) = p(t+1) - p(t)$.
+    \begin{enumerate}
+        \item Показать линейность.
+        \item Найти матрицу в базисе $\{1, t, t^2\}$.
+        \item Найти ядро и образ.
+        \item Является ли оператор обратимым?
+    \end{enumerate}
+
+    \item Дана матрица оператора $\hat{A}$ в $\mathbb{R}^4$:
+    \[
+    A = \begin{pmatrix} 1 & 2 & 0 & 1 \\ 2 & 4 & 1 & 3 \\ 1 & 2 & 1 & 2 \\ 0 & 0 & 1 & 1 \end{pmatrix}.
+    \]
+    Найти ранг, дефект, базис ядра и базис образа.
+
+    \item Оператор $\hat{A}$ -- проекция на плоскость $x + y + z = 0$ в $\mathbb{R}^3$.
+    \begin{enumerate}
+        \item Не находя матрицы явно, определите $\text{rang } \hat{A}$ и $\text{def } \hat{A}$, используя геометрические соображения.
+        \item Найдите базис ядра (подсказка: ядро проекции -- это векторы, перпендикулярные плоскости проекции, если проекция ортогональная? Нет, в ядро переходят векторы, которые проецируются в 0. Для ортогональной проекции на плоскость, в 0 переходят только векторы нормали? Нет, проекция вектора нормали равна 0. Да.).
+    \end{enumerate}
+
+    \item[*] В пространстве матриц $M_{2\times2}$ оператор $\hat{A}(X) = X - X^T$.
+    \begin{enumerate}
+        \item Найти ядро оператора (какие матрицы переходят в 0?).
+        \item Найти образ оператора (какие матрицы получаются?).
+        \item Найти размерности ядра и образа.
+    \end{enumerate}
+
+    \item[*] Оператор $\hat{A}$ в $\mathbb{R}^3$ задан матрицей $A = \begin{pmatrix} 1 & 1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix}$.
+    \begin{enumerate}
+        \item Найти собственные значения и собственные векторы (опережающая тема, но полезно для понимания структуры).
+        \item Найти $\text{Im } \hat{A}$ и $\text{Ker } \hat{A}$.
+        \item Показать, что $\mathbb{R}^3$ распадается в прямую сумму ядра и образа (для данного оператора это не так, образ и ядро пересекаются? Проверьте).
+    \end{enumerate}
+\end{enumerate}
+
+\vspace{0.5cm}
+\begin{center}
+    \textcolor{mireaMain}{\rule{0.6\textwidth}{1pt}} \\
+    \small \textbf{РТУ МИРЭА, Кафедра ВМ-3} \\
+    \small Практическое занятие №6. Обратимость, ядро и образ.
+\end{center}
+
+\end{document}

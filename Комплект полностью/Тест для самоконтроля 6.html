@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Обратимость, Ядро и Образ | РТУ МИРЭА ВМ-3</title>
+    
+    <!-- Подключение KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --mirea-main: rgb(53, 92, 168);
+            --mirea-acc1: rgb(95, 193, 207);
+            --mirea-acc2: rgb(167, 217, 22);
+            --mirea-acc3: rgb(230, 230, 230);
+            --text-color: #333;
+            --bg-color: #ffffff;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            border-bottom: 3px solid var(--mirea-main);
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-img {
+            height: 55px;
+            width: 70px;
+            object-fit: contain;
+        }
+
+        .dept-info {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--mirea-main);
+        }
+
+        .test-title {
+            font-size: 1.2em;
+            color: #555;
+            text-align: right;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: var(--mirea-acc3);
+            border-radius: 10px;
+            height: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: var(--mirea-acc1);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: white;
+            border: 1px solid var(--mirea-acc3);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-header {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: var(--mirea-main);
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 2px solid var(--mirea-acc3);
+            padding: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1em;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--mirea-acc1);
+            background-color: #f9fcfd;
+        }
+
+        .option-btn.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f5f5f5;
+            border-left: 4px solid var(--mirea-main);
+            display: none;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .next-btn {
+            background-color: var(--mirea-main);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background-color: #3a6bc5;
+        }
+
+        .next-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Results Screen */
+        .results-screen {
+            text-align: center;
+            display: none;
+            padding: 40px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--mirea-main) 0%, var(--mirea-acc3) 0%);
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--mirea-main);
+            position: relative;
+        }
+        
+        .score-circle::before {
+            content: "";
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .score-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #777;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .test-title {
+                text-align: left;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <!-- Placeholder for logo.jpg -->
+        <img src="logo.jpg" alt="РТУ МИРЭА" class="logo-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MCA1NSI+PHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjU1IiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJhcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxPR088L3RleHQ+PC9zdmc+'">
+        <div class="dept-info">РТУ МИРЭА<br>Кафедра ВМ-3</div>
+    </div>
+    <div class="test-title">
+        Тема: Обратимость, Ядро и Образ<br>
+        <small>Лекция 6 + Практика 6</small>
+    </div>
+</header>
+
+<main>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="quizContainer">
+        <!-- Questions will be injected here by JS -->
+    </div>
+
+    <div class="results-screen" id="resultsScreen">
+        <h2>Тест завершен!</h2>
+        <div class="score-circle" id="scoreCircle">
+            <span class="score-text" id="finalScore">0/10</span>
+        </div>
+        <p id="resultMessage"></p>
+        <button class="next-btn" onclick="location.reload()">Пройти заново</button>
+    </div>
+</main>
+
+<footer>
+    &copy; 2026 РТУ МИРЭА, Кафедра Высшей математики №3. Материалы лекции 6.
+</footer>
+
+<script>
+    // Data for the quiz
+    const questions = [
+        {
+            id: 1,
+            difficulty: "Уровень 1: Базовые определения",
+            text: "Что называется <b>ядром</b> ($\\text{Ker } \\hat{A}$) линейного оператора $\\hat{A}: L \\to L$?",
+            options: [
+                "Множество всех векторов $\\vec{y}$, которые являются образами каких-либо векторов из $L$.",
+                "Множество всех векторов $\\vec{x} \\in L$, которые отображаются в нулевой вектор ($\\hat{A}\\vec{x} = \\vec{0}$).",
+                "Множество всех собственных векторов оператора.",
+                "Размерность пространства $L$."
+            ],
+            correct: 1,
+            explanation: "Согласно определению из лекции, ядро — это множество векторов, которые оператор переводит в ноль: $\\text{Ker } \\hat{A} = \\{ \\vec{x} \\in L \\mid \\hat{A}\\vec{x} = \\vec{0} \\}$."
+        },
+        {
+            id: 2,
+            difficulty: "Уровень 1: Свойства обратимости",
+            text: "Какое условие является необходимым и достаточным для существования обратного оператора $\\hat{A}^{-1}$ в конечномерном пространстве?",
+            options: [
+                "$\\det A = 0$",
+                "$\\text{Ker } \\hat{A} \\neq \\{\\vec{0}\\}$",
+                "$\\det A \\neq 0$",
+                "$\\text{rank } \\hat{A} < \\dim L$"
+            ],
+            correct: 2,
+            explanation: "Оператор обратим тогда и только тогда, когда его матрица невырожденна, то есть $\\det A \\neq 0$. Это эквивалентно тому, что ядро тривиально ($\\text{Ker } \\hat{A} = \\{\\vec{0}\\}$)."
+        },
+        {
+            id: 3,
+            difficulty: "Уровень 2: Теорема о размерностях",
+            text: "Пусть $\\dim L = 5$, а размерность ядра оператора $\\dim(\\text{Ker } \\hat{A}) = 2$. Чему равен ранг оператора ($\\text{rank } \\hat{A}$)?",
+            options: [
+                "2",
+                "3",
+                "5",
+                "7"
+            ],
+            correct: 1,
+            explanation: "По теореме о ранге и дефекте: $\\text{rank } \\hat{A} + \\text{def } \\hat{A} = \\dim L$. Следовательно, $\\text{rank } \\hat{A} + 2 = 5 \\Rightarrow \\text{rank } \\hat{A} = 3$."
+        },
+        {
+            id: 4,
+            difficulty: "Уровень 2: Геометрический смысл",
+            text: "Рассмотрим оператор ортогональной проекции $\\hat{P}$ в $\\mathbb{R}^3$ на плоскость $Oxy$. Каков базис его ядра?",
+            options: [
+                "$\\{ (1, 0, 0)^T, (0, 1, 0)^T \\}$",
+                "$\\{ (0, 0, 1)^T \\}$",
+                "$\\{ (1, 1, 1)^T \\}$",
+                "Ядро состоит только из нулевого вектора."
+            ],
+            correct: 1,
+            explanation: "При проекции на $Oxy$ координаты $x$ и $y$ сохраняются, а $z$ обнуляется. В ноль переходят только векторы вида $(0, 0, z)^T$. Базис этого подпространства — вектор $\\vec{k}=(0,0,1)^T$."
+        },
+        {
+            id: 5,
+            difficulty: "Уровень 3: Анализ матрицы",
+            text: "Дана матрица оператора в базисе $A = \\begin{pmatrix} 1 & 2 \\\\ 2 & 4 \\end{pmatrix}$. Выберите верное утверждение:",
+            options: [
+                "Оператор обратим, так как столбцы пропорциональны.",
+                "Оператор необратим, $\\text{rank } A = 1$, $\\text{def } A = 1$.",
+                "Оператор необратим, $\\text{rank } A = 0$, $\\text{def } A = 2$.",
+                "Оператор обратим, $\\det A = 4$."
+            ],
+            correct: 1,
+            explanation: "Второй столбец равен удвоенному первому, строки пропорциональны. $\\det A = 1\\cdot4 - 2\\cdot2 = 0$. Ранг равен 1 (один независимый столбец). Дефект $= 2 - 1 = 1$."
+        },
+        {
+            id: 6,
+            difficulty: "Уровень 4: Операторы в функциональных пространствах",
+            text: "В пространстве многочленов $P_2$ (степени не выше 2) задан оператор дифференцирования $\\hat{D}(p) = p'$. Найдите его ядро.",
+            options: [
+                "Множество всех многочленов $P_2$.",
+                "Множество всех многочленов вида $ax$.",
+                "Множество всех констант (многочлены степени 0).",
+                "Пустое множество."
+            ],
+            correct: 2,
+            explanation: "Производная равна нулю только у констант. $\\hat{D}(C) = 0$. Следовательно, $\\text{Ker } \\hat{D} = \\text{span}(1)$."
+        },
+        {
+            id: 7,
+            difficulty: "Уровень 5: Связь с системами уравнений (IT контекст)",
+            text: "Вы решаете систему линейных уравнений $A\\vec{x} = \\vec{b}$ в задаче машинного обучения (метод наименьших квадратов). Если $\\text{Ker } A \\neq \\{\\vec{0}\\}$, что это означает для решения?",
+            options: [
+                "Решение единственно и устойчиво.",
+                "Система не имеет решений.",
+                "Если решение существует, то оно неединственно (можно добавить любой вектор из ядра).",
+                "Матрица $A$ обязательно квадратная и невырожденная."
+            ],
+            correct: 2,
+            explanation: "Наличие нетривиального ядра означает линейную зависимость признаков (мультиколлинеарность). Если $\\vec{x}_0$ — частное решение, то $\\vec{x}_0 + \\vec{v}$ (где $\\vec{v} \\in \\text{Ker } A$) тоже будет решением."
+        },
+        {
+            id: 8,
+            difficulty: "Уровень 6: Векторное произведение",
+            text: "Рассмотрим оператор $\\hat{A}\\vec{x} = \\vec{x} \\times \\vec{a}$ в $\\mathbb{R}^3$, где $\\vec{a} \\neq \\vec{0}$. Чему равны ранг и дефект этого оператора?",
+            options: [
+                "$\\text{rank}=3, \\text{def}=0$",
+                "$\\text{rank}=1, \\text{def}=2$",
+                "$\\text{rank}=2, \\text{def}=1$",
+                "$\\text{rank}=0, \\text{def}=3$"
+            ],
+            correct: 2,
+            explanation: "Ядро: векторы, коллинеарные $\\vec{a}$ (размерность 1). Образ: векторы, перпендикулярные $\\vec{a}$ (плоскость, размерность 2). Проверка: $2+1=3$."
+        },
+        {
+            id: 9,
+            difficulty: "Уровень 7: Композиция операторов",
+            text: "Пусть $\\hat{A}$ и $\\hat{B}$ — обратимые операторы. Что можно сказать об операторе $\\hat{C} = \\hat{A} \\circ \\hat{B}$?",
+            options: [
+                "Он всегда необратим.",
+                "Он обратим, и $\\hat{C}^{-1} = \\hat{A}^{-1} \\circ \\hat{B}^{-1}$.",
+                "Он обратим, и $\\hat{C}^{-1} = \\hat{B}^{-1} \\circ \\hat{A}^{-1}$.",
+                "Он обратим только если $\\hat{A} = \\hat{B}$."
+            ],
+            correct: 2,
+            explanation: "Произведение обратимых операторов обратимо. Порядок обращения меняется на противоположный (как при снятии одежды: сначала ботинки, потом носки; обратно — наоборот): $(\\hat{A}\\hat{B})^{-1} = \\hat{B}^{-1}\\hat{A}^{-1}$."
+        },
+        {
+            id: 10,
+            difficulty: "Уровень 8: Комплексный анализ (Задача из Практики)",
+            text: "Оператор в $\\mathbb{R}^3$ задан матрицей $A = \\begin{pmatrix} 1 & 2 & -1 \\\\ 2 & 5 & 1 \\\\ 3 & 7 & 2 \\end{pmatrix}$. При решении задачи вы привели её к ступенчатому виду и получили 3 ненулевые строки. Какой вывод верен?",
+            options: [
+                "$\\text{rank } A = 2$, оператор необратим.",
+                "$\\text{rank } A = 3$, $\\text{Ker } A = \\{\\vec{0}\\}$, оператор обратим.",
+                "$\\text{rank } A = 3$, но оператор необратим, так как матрица не диагональная.",
+                "$\\text{def } A = 1$, образ — плоскость."
+            ],
+            correct: 1,
+            explanation: "Если в ступенчатом виде 3 ненулевые строки для матрицы $3 \\times 3$, то ранг максимален (3). Это означает, что определитель не равен нулю, ядро тривиально, а оператор обратим."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+
+    const quizContainer = document.getElementById('quizContainer');
+    const progressBar = document.getElementById('progressBar');
+    const resultsScreen = document.getElementById('resultsScreen');
+
+    function initQuiz() {
+        renderQuestion(currentQuestionIndex);
+        updateProgress();
+    }
+
+    function renderQuestion(index) {
+        const q = questions[index];
+        
+        // Clear container
+        quizContainer.innerHTML = '';
+
+        // Create Card
+        const card = document.createElement('div');
+        card.className = 'question-card active';
+
+        const header = document.createElement('div');
+        header.className = 'question-header';
+        header.innerHTML = `Задание ${index + 1} из ${questions.length} <br> <small style="color:#777">${q.difficulty}</small>`;
+        card.appendChild(header);
+
+        const text = document.createElement('div');
+        text.innerHTML = q.text;
+        text.style.marginBottom = '20px';
+        card.appendChild(text);
+
+        const optionsGrid = document.createElement('div');
+        optionsGrid.className = 'options-grid';
+
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(i, btn, card);
+            
+            // If already answered (for review mode logic if needed later, currently simple linear flow)
+            if (userAnswers[index] !== null) {
+                btn.disabled = true;
+                if (i === q.correct) btn.classList.add('correct');
+                else if (i === userAnswers[index]) btn.classList.add('wrong');
+            }
+            
+            optionsGrid.appendChild(btn);
+        });
+        card.appendChild(optionsGrid);
+
+        // Feedback Area
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback-area';
+        feedback.id = 'feedbackArea';
+        card.appendChild(feedback);
+
+        // Controls
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'next-btn';
+        nextBtn.innerText = index === questions.length - 1 ? 'Завершить тест' : 'Следующий вопрос';
+        nextBtn.disabled = true; // Disabled until answer selected
+        nextBtn.onclick = nextQuestion;
+        nextBtn.id = 'nextBtn';
+        
+        controls.appendChild(nextBtn);
+        card.appendChild(controls);
+
+        quizContainer.appendChild(card);
+
+        // Render Math in the newly created card
+        renderMathInElement(card, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ]
+        });
+    }
+
+    function checkAnswer(selectedIndex, btnElement, cardElement) {
+        const q = questions[currentQuestionIndex];
+        const buttons = cardElement.querySelectorAll('.option-btn');
+        const feedback = document.getElementById('feedbackArea');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Disable all buttons
+        buttons.forEach(b => b.disabled = true);
+
+        userAnswers[currentQuestionIndex] = selectedIndex;
+
+        if (selectedIndex === q.correct) {
+            btnElement.classList.add('correct');
+            score++;
+            feedback.innerHTML = `<strong style="color:var(--success-color)">Верно!</strong><br>${q.explanation}`;
+        } else {
+            btnElement.classList.add('wrong');
+            buttons[q.correct].classList.add('correct'); // Show correct one
+            feedback.innerHTML = `<strong style="color:var(--error-color)">Ошибка.</strong><br>${q.explanation}`;
+        }
+
+        feedback.style.display = 'block';
+        
+        // IMPORTANT: Re-render math in the feedback area which was just populated
+        renderMathInElement(feedback, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ]
+        });
+
+        nextBtn.disabled = false;
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion(currentQuestionIndex);
+            updateProgress();
+        } else {
+            showResults();
+        }
+    }
+
+    function updateProgress() {
+        const percent = ((currentQuestionIndex) / questions.length) * 100;
+        progressBar.style.width = `${percent}%`;
+    }
+
+    function showResults() {
+        quizContainer.style.display = 'none';
+        progressBar.parentElement.style.display = 'none';
+        resultsScreen.style.display = 'block';
+        
+        const finalScoreEl = document.getElementById('finalScore');
+        const resultMessage = document.getElementById('resultMessage');
+        const scoreCircle = document.getElementById('scoreCircle');
+
+        finalScoreEl.innerText = `${score}/${questions.length}`;
+        
+        // Update gradient based on score
+        const percentage = (score / questions.length) * 100;
+        scoreCircle.style.background = `conic-gradient(var(--mirea-main) ${percentage}%, var(--mirea-acc3) ${percentage}%)`;
+
+        if (score === 10) {
+            resultMessage.innerHTML = "Отличный результат! Вы полностью освоили тему.<br>Рекомендуется перейти к следующей лекции.";
+        } else if (score >= 7) {
+            resultMessage.innerHTML = "Хороший результат! Есть небольшие пробелы.<br>Повторите вопросы, в которых ошиблись.";
+        } else {
+            resultMessage.innerHTML = "Стоит повторить материал Лекции 6 и Практики 6.<br>Обратите внимание на определения Ядра и Образа.";
+        }
+    }
+
+    // Initialize
+    window.onload = initQuiz;
+
+</script>
+
+</body>
+</html>

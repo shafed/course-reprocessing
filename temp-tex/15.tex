@@ -1,0 +1,347 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{float}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{caption}
+\usetikzlibrary{arrows.meta, calc, decorations.pathmorphing}
+\geometry{margin=2cm}
+
+\newcommand{\vu}{\bar u}
+\newcommand{\vv}{\bar v}
+\newcommand{\vy}{\bar y}
+\newcommand{\va}{\bar a}
+\newcommand{\vb}{\bar b}
+\newcommand{\vc}{\bar c}
+\newcommand{\vd}{\bar d}
+\newcommand{\ve}{\bar e}
+\newcommand{\vo}{\bar o}
+
+\begin{document}
+
+\setcounter{page}{107}
+
+\begin{center}
+  \textbf{ЛЕКЦИЯ 15. ЛИНЕЙНАЯ ЗАВИСИМОСТЬ И ЛИНЕЙНАЯ НЕЗАВИСИМОСТЬ ВЕКТОРОВ}
+\end{center}
+
+\subsection*{\textbf{15.1. Понятие линейной зависимости и линейной
+независимости}}
+
+Пусть дано линейное пространство $V$ и в нем система векторов
+$\{\vu_1, \ldots, \vu_m\}$.
+
+\textbf{Определение.} Линейной комбинацией векторов $\vu_1, \vu_2,
+\ldots, \vu_m \in V$ называется вектор вида
+\begin{equation}
+  \vy = \lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m, \tag{15.1}
+\end{equation}
+где $\lambda_1, \lambda_2, \ldots, \lambda_m$ --- произвольные числа.
+
+\textbf{Определение.} Линейная комбинация (15.1) называется
+тривиальной, если $\lambda_1 = \lambda_2 = \ldots = \lambda_m = 0$. В
+противном случае линейная комбинация называется нетривиальной (т.е.
+если хотя бы одно $\lambda_i \ne 0$).
+
+\textbf{Определение.} Система векторов $\Sigma = \{\vu_1, \vu_2,
+\ldots, \vu_m\}$ называется линейно зависимой, если существует
+нетривиальная линейная комбинация этих векторов, равная нулевому
+вектору, т.е. если существуют числа $\lambda_1, \lambda_2, \ldots,
+\lambda_m$, одновременно не равные нулю, такие что:
+$$
+\lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m = \vo.
+$$
+
+\textbf{Определение.} Система векторов называется линейно
+независимой, если нулевому вектору равна только тривиальная линейная
+комбинация этих векторов.
+
+Замечание. Краткое определение:
+
+Векторы $\vu_1, \vu_2, \ldots, \vu_m$ --- линейно независимы, если
+$$
+\lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m = \vo
+\Leftrightarrow \lambda_1 = \lambda_2 = \ldots = \lambda_m = 0.
+$$
+В противном случае векторы линейно зависимы.
+
+\subsection*{\textbf{15.2. Свойства линейно зависимых и линейно
+независимых систем векторов}}
+
+\textbf{1.} Система из одного вектора линейно зависима тогда и только
+тогда, когда этот вектор нулевой.
+
+\textbf{Доказательство.} Линейная зависимость системы из одного
+вектора равносильна тому, что $\lambda \vu = \vo$, а условие $\lambda
+\vu = \vo \Leftrightarrow \vu = \vo$ ($\lambda \ne 0$) --- следствие
+простейших свойств линейных пространств.
+
+\textbf{ч.т.д.}
+
+\textbf{2.} Критерий линейной зависимости системы векторов.
+
+Система векторов $\Sigma = \{\vu_1, \vu_2, \ldots, \vu_m\}$, где $m >
+1$, линейно зависима тогда и только тогда, когда хотя бы один из
+векторов этой системы линейно выражается через другие.
+
+\textbf{Доказательство}
+
+1) Необходимость
+
+Если $\Sigma = \{\vu_1, \vu_2, \ldots, \vu_m\}$ линейно зависима $\Rightarrow$
+
+$\exists$ числа $\lambda_1, \lambda_2, \ldots, \lambda_m$,
+одновременно не равные нулю и такие, что
+\begin{equation}
+\lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m = \vo \tag{15.2}
+\end{equation}
+
+Пусть $\lambda_i \ne 0$. Тогда в силу (15.2)
+$$
+\vu_i = -\frac{\lambda_1}{\lambda_i} \vu_1 -
+\frac{\lambda_2}{\lambda_i} \vu_2 - \cdots -
+\frac{\lambda_{i-1}}{\lambda_i} \vu_{i-1} -
+\frac{\lambda_{i+1}}{\lambda_i} \vu_{i+1} - \cdots -
+\frac{\lambda_m}{\lambda_i} \vu_m
+$$
+
+2) Достаточность
+
+Пусть, например, $\vu_1 = \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m$. Тогда
+$$
+\vo = -\vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m
+$$
+--- это нетривиальная линейная комбинация $\Rightarrow \Sigma =
+\{\vu_1, \vu_2, \ldots, \vu_m\}$ линейно зависима.
+
+\textbf{ч.т.д.}
+
+\textbf{3.} Если подсистема системы векторов линейно зависима, то и
+вся система линейно зависима.
+
+\textbf{4.} Любая подсистема линейно независимой системы векторов
+линейно независима.
+
+\textbf{5.} Критерий линейной независимости системы векторов. Система
+векторов $\Sigma = \{\vu_1, \vu_2, \ldots, \vu_m\}$ линейно
+независима тогда и только тогда, когда любой вектор, являющийся
+линейной комбинацией этих векторов, имеет единственное разложение по
+этим векторам.
+
+Доказательство элементарное. Доказывается методом от противного.
+
+\textbf{6.} Если система векторов $\Sigma = \{\vu_1, \vu_2, \ldots,
+\vu_m\}$ --- линейно независима, а система векторов $\Sigma' =
+\{\vu_1, \vu_2, \ldots, \vu_m, \vv\}$ линейно зависима, то вектор
+$\vv$ линейно выражается через векторы $\vu_1, \vu_2, \ldots, \vu_m$.
+
+\textbf{Доказательство}
+
+$\Sigma'$ --- линейно зависима $\Rightarrow$
+\begin{equation}
+\lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m +
+\lambda_0 \vv = \vo, \tag{15.3}
+\end{equation}
+где хотя бы одно из чисел $\lambda_1, \lambda_2, \ldots, \lambda_m,
+\lambda_0$ не равно нулю.
+
+Если $\lambda_0 = 0$, то ненулевой коэффициент $\lambda_k$ находится
+среди чисел $\lambda_1, \lambda_2, \ldots, \lambda_m$.
+
+При этом равенство (15.3) переходит в равенство
+\begin{equation}
+\lambda_1 \vu_1 + \lambda_2 \vu_2 + \ldots + \lambda_m \vu_m = \vo, \tag{15.4}
+\end{equation}
+
+где (15.4) --- нетривиальная линейная комбинация, равная нулевому
+вектору $\Rightarrow$ противоречие линейной независимости системы
+$\Sigma = \{\vu_1, \vu_2, \ldots, \vu_m\}$ $\Rightarrow \lambda_0 \ne
+0 \Rightarrow$ вектор $\vv$ линейно выражается из равенства (15.3)
+через векторы $\vu_1, \vu_2, \ldots, \vu_m$.
+
+\textbf{ч.т.д.}
+
+\textbf{Пример}
+
+Рассмотрим в $\mathbb{R}^n$ ---мерном пространстве арифметических
+векторов векторы:
+\begin{align*}
+\ve_1 &= (1, 0, \ldots, 0);\\
+\ve_2 &= (0, 1, \ldots, 0);\\
+&\ldots\\
+\ve_n &= (0, 0, \ldots, 1).
+\end{align*}
+
+$\Sigma = \{\ve_1, \ve_2, \ldots, \ve_n\}$ --- линейно независима,
+т.к. линейная комбинация этих векторов с коэффициентами $\lambda_1,
+\lambda_2, \ldots, \lambda_n$ представляет собой арифметический
+вектор $(\lambda_1, \lambda_2, \ldots, \lambda_n)$, который равен
+$\vo = (0, \ldots, 0) \Leftrightarrow \lambda_i = 0$, $i = 1, 2, \ldots, n$.
+
+\textbf{Пример}
+
+Пространство многочленов
+
+Многочлены $1, t, t^2, \ldots, t^n$ линейно независимы, т.к. их
+линейная комбинация с коэффициентами $\lambda_0, \lambda_1,
+\lambda_2, \ldots, \lambda_n$ представляет собой многочлен, который
+равен нулю тогда и только тогда, когда все $\lambda_i = 0$, $i = 0,
+1, \ldots, n$.
+
+\subsection*{\textbf{15.3. Геометрический смысл линейной зависимости
+и линейной независимости для системы геометрических векторов}}
+
+\textbf{Теорема.} Два вектора линейно зависимы тогда и только тогда,
+когда они коллинеарны.
+
+\textbf{Доказательство}
+
+1) необходимость;
+
+Если векторы $\va$ и $\vb$ линейно зависимы $\Rightarrow$ согласно
+критерию линейной зависимости
+$$
+\va = \lambda \vb \Rightarrow \va \parallel \vb.
+$$
+
+2) достаточность.
+
+Пусть $\va \parallel \vb$ и $\va \ne \vo$ (если $\va = \vo$, то
+согласно свойствам \textbf{1)} и \textbf{3)} $\va$ и $\vb$ линейно зависимы)
+$\Rightarrow \vb = \lambda \va \Rightarrow$ согласно свойству
+\textbf{2)} $\va$ и $\vb$ линейно зависимы.
+
+\textbf{ч.т.д.}
+
+\textbf{Теорема.} Три вектора линейно зависимы тогда и только тогда,
+когда они компланарны.
+
+\textbf{Доказательство}
+
+1) необходимость;
+
+Пусть векторы $\va, \vb, \vc$ линейно зависимы $\Rightarrow$ один из
+них линейно выражается через другие. Пусть $\vc = \alpha \va + \beta \vb$.
+
+Если $\va \parallel \vb \Rightarrow$ векторы $\va, \vb, \vc$
+коллинеарны и тем более компланарны.
+
+Если $\va \nparallel \vb$. Тогда приведем векторы $\va$ и $\vb$ к
+одному началу. Вектор $\vc$ является диагональю параллелограмма,
+построенного на векторах $\alpha \va$ и $\beta \vb$ $\Rightarrow \vc$
+лежит в той же плоскости, что и векторы $\va$ и $\vb$ $\Rightarrow$
+векторы $\va, \vb, \vc$ --- компланарны
+
+2) достаточность.
+
+Пусть $\va, \vb, \vc$ --- компланарны и $\va \nparallel \vb$ (если
+$\va \parallel \vb \Rightarrow \va$ и $\vb$ --- линейно зависимы
+$\Rightarrow$ $\va, \vb, \vc$ --- линейно зависимы согласно свойству \textbf{3}.
+
+Приведем векторы $\va, \vb, \vc$ к одному началу
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.5]
+\coordinate (O) at (0,0);
+\coordinate (A) at (1.5,1);
+\coordinate (B) at (2.5,0);
+\coordinate (C) at (4,1);
+
+\draw[->,thick] (O) -- (A) node[midway,left] {$\va$};
+\draw[->,thick] (O) -- (B) node[midway,below] {$\vb$};
+\draw[->,thick] (O) -- (C) node[midway,above left] {$\vc$};
+\draw[dashed] (A) -- (C);
+\draw[dashed] (B) -- (C);
+
+\node[below left] at (O) {$O$};
+\node[above] at (A) {$A$};
+\node[below] at (B) {$B$};
+\node[above right] at (C) {$C$};
+\end{tikzpicture}
+\caption*{Рисунок 15.1}
+\end{figure}
+
+$\vc = \overline{OA} + \overline{OB} = \alpha \va + \beta \vb
+\Rightarrow \vc$ линейно выражается через $\va$ и $\vb$ $\Rightarrow
+\va, \vb, \vc$ линейно зависимы.
+
+\textbf{ч.т.д.}
+
+\textbf{Теорема.} Любые четыре вектора линейно зависимы.
+
+\textbf{Доказательство}
+
+$\Sigma = \{\va, \vb, \vc, \vd\}$ --- линейно зависима.
+
+Рассмотрим $\Sigma' = \{\va, \vb, \vc\}$
+
+1) Если $\Sigma' = \{\va, \vb, \vc\}$ линейно зависима $\Rightarrow
+\Sigma = \{\va, \vb, \vc, \vd\}$ линейно зависима.
+
+2) Если $\Sigma' = \{\va, \vb, \vc\}$ линейно независима $\Rightarrow
+\va, \vb, \vc$ --- некомпланарны.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.5]
+\coordinate (O) at (0,0);
+\coordinate (A) at (2,0);
+\coordinate (B) at (0.5,1.5);
+\coordinate (C) at (1,2.5);
+\coordinate (D) at (3,2.5);
+
+\draw[->,thick] (O) -- (A) node[midway,below] {$\va$};
+\draw[->,thick] (O) -- (B) node[midway,left] {$\vb$};
+\draw[->,thick] (O) -- (C) node[midway,left] {$\vc$};
+\draw[->,thick] (O) -- (D) node[midway,above left] {$\vd$};
+
+\draw[dashed] (A) -- (D);
+\draw[dashed] (B) -- (D);
+\draw[dashed] (C) -- (D);
+\draw[dashed] (A) -- (2.5,1.5) -- (B);
+
+\node[below left] at (O) {$O$};
+\node[below] at (A) {$A$};
+\node[left] at (B) {$B$};
+\node[left] at (C) {$C$};
+\node[above right] at (D) {$D$};
+\end{tikzpicture}
+\caption*{Рисунок 15.2}
+\end{figure}
+
+\begin{minipage}{0.5\textwidth}
+$\vd = \overline{OA} + \overline{OB} + \overline{OC} =$
+
+$= \alpha \va + \beta \vb + \gamma \vc$
+
+$\Rightarrow \vd$ --- линейно выражается через $\va, \vb, \vc \Rightarrow$
+
+$\Rightarrow \Sigma = \{\va, \vb, \vc, \vd\}$ линейно зависима.
+\end{minipage}
+
+\textbf{Пример}
+
+Исследовать на линейную зависимость систему векторов $\Sigma = \{\va,
+\vb, \vc\} \subset V_3$, если $\va(2; -1; 3)$; $\vb(3; 2; 1)$; $\vc(1; 0; 4)$.
+
+\textbf{Решение}
+
+$\Sigma = \{\va, \vb, \vc\}$ --- линейно зависима $\Leftrightarrow
+\va, \vb, \vc$ --- компланарны $\Leftrightarrow (\va, \vb, \vc) = 0$
+$$
+(\va, \vb, \vc) =
+\begin{vmatrix} 2 & -1 & 3 \\ 3 & 2 & 1 \\ 1 & 0 & 4
+\end{vmatrix} =
+\begin{vmatrix} 2 & -1 & -5 \\ 3 & 2 & -11 \\ 1 & 0 & 0
+\end{vmatrix} =
+\begin{vmatrix} -1 & -5 \\ 2 & -11
+\end{vmatrix} = 21 \ne 0
+$$
+$\Longrightarrow$ векторы $\va, \vb, \vc$ линейно независимы.
+
+\end{document}

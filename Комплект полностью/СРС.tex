@@ -1,0 +1,405 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% Фирменные цвета РТУ МИРЭА (из шаблона Практика 5/6)
+\definecolor{mireaMain}{RGB}{53,92,168}
+\definecolor{mireaAcc1}{RGB}{95,193,207}
+\definecolor{mireaAcc2}{RGB}{167,217,22}
+\definecolor{mireaAcc3}{RGB}{230,230,230}
+
+% Настройка полей и колонтитулов
+\geometry{headheight=85pt, top=3.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1.3cm]{logo.jpg}}
+\fancyhead[R]{\parbox[t]{10cm}{\raggedleft\small\color{mireaMain}\textbf{РТУ МИРЭА, Кафедра ВМ-3}\\Линейная алгебра и аналитическая геометрия}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{mireaMain}\leaders\hrule height \headrulewidth\hfill}}
+
+% Стилизация гиперссылок
+\hypersetup{colorlinks=true, linkcolor=mireaMain, citecolor=mireaMain, urlcolor=mireaMain}
+
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.25cm}
+
+% Теоремы и определения
+\theoremstyle{plain}
+\newtheorem{definition}{Определение}[section]
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{remark}{Замечание}[section]
+
+% Настройка цветных блоков
+\newtcolorbox{theorybox}{
+    enhanced, breakable,
+    colback=mireaMain!8, colframe=mireaMain,
+    title={\textbf{�� ТЕОРЕТИЧЕСКИЙ БЛОК}}, fonttitle=\bfseries\color{white},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{itbox}{
+    enhanced, breakable,
+    colback=mireaAcc2!10, colframe=mireaAcc2,
+    title={\textbf{�� ПРИКЛАДНОЙ КОНТЕКСТ (IT/ENGINEERING)}}, fonttitle=\bfseries\color{mireaAcc2!80!black},
+    boxrule=0.6pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaAcc2, colframe=mireaAcc2, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{taskbox}[1]{
+    enhanced, breakable,
+    colback=mireaAcc3!30, colframe=mireaMain,
+    title={\textbf{�� ВАРИАНТ №#1}}, fonttitle=\bfseries\large\color{white},
+    boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+    attach boxed title to top left={yshift=-4pt, xshift=8pt},
+    boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace{-0.5cm}
+    {\Large\color{mireaMain}\textbf{Самостоятельная работа}} \\[0.3cm]
+    {\Huge\color{mireaMain}\textbf{ОБРАТИМОСТЬ, ЯДРО И ОБРАЗ}} \\[0.3cm]
+    \rule{0.4\textwidth}{1pt} \\[0.2cm]
+    {\small Кафедра высшей математики №3 (ВМ-3)}
+\end{center}
+
+\vspace{0.2cm}
+
+\begin{theorybox}
+    \subsection*{Инструкция}
+    Для каждого варианта выполните следующие действия:
+    \begin{enumerate}
+        \item \textbf{Задача 1:} Проверьте линейность оператора. Если он линеен, найдите его матрицу в каноническом базисе $\mathcal{E} = \{\vec{e}_1, \vec{e}_2, \vec{e}_3\}$. Найдите базис ядра ($\text{Ker } \hat{A}$) и базис образа ($\text{Im } \hat{A}$). Определите, является ли оператор обратимым.
+        \item \textbf{Задача 2:} Для заданной матрицы $A$ найдите ранг и дефект оператора. Найдите базис ядра и базис образа. Решите систему $A\vec{x} = \vec{b}$ (найдите общее решение, если оно существует).
+        \item \textbf{Задача 3:} В пространстве многочленов $P_2$ (базис $\{1, t, t^2\}$) задан оператор $\hat{D}$. Найдите его матрицу, ядро и образ. Обратим ли он?
+        \item \textbf{Задача 4:} Геометрическая задача или анализ специальной матрицы. Найдите ранг, ядро и образ, используя геометрические соображения или прямые вычисления.
+    \end{enumerate}
+\end{theorybox}
+
+% --- ГЕНЕРАЦИЯ ВАРИАНТОВ ---
+
+% Вариант 1
+\begin{taskbox}{1}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2 - x_3; \; 2x_1 - x_2 + 3x_3; \; 3x_1 + x_2 + 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & -1 \\ 2 & 4 & 1 \\ 1 & 2 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 3 \\ 4 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(t) + p(0)$.
+        \item Оператор $\hat{P}$ -- проекция на ось $Ox$ в $\mathbb{R}^3$. Найдите $\text{rank } \hat{P}$ и $\text{def } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 2
+\begin{taskbox}{2}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - x_2 + x_3; \; 2x_1 + x_2 - x_3; \; x_1 + 2x_2 - 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 2 \\ 2 & 2 & 4 \\ 1 & 1 & 3 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 4 \\ 5 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t \cdot p'(t)$.
+        \item Оператор $\hat{A}\vec{x} = \vec{x} \times \vec{k}$, где $\vec{k}=(0,0,1)$. Найдите базис $\text{Ker } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 3
+\begin{taskbox}{3}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (2x_1 + x_2; \; x_1 - x_2 + x_3; \; 3x_1 + 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 1 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t+1) - p(t)$.
+        \item Матрица $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \\ 3 & 6 & 9 \end{pmatrix}$. Найдите $\dim(\text{Im } A)$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 4
+\begin{taskbox}{4}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2 + x_3; \; x_1 - x_2; \; 2x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 0 \\ 2 & 4 & 1 \\ 3 & 6 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p''(t)$.
+        \item Оператор отражения относительно плоскости $Oxy$. Является ли он обратимым?
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 5
+\begin{taskbox}{5}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - 2x_2 + 3x_3; \; 2x_1 + x_2 - x_3; \; 3x_1 - x_2 + 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 1 \\ 1 & 2 & 3 \\ 1 & 3 & 5 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(1) \cdot 1$ (оператор значения в точке 1, результат -- константа).
+        \item Проекция на плоскость $x+y+z=0$. Чему равен $\text{def } \hat{P}$?
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 6
+\begin{taskbox}{6}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_3; \; x_2 - x_3; \; x_1 + x_2)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \\ 1 & 2 & 4 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 3 \\ 6 \\ 5 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t^2 p''(t)$.
+        \item Оператор $\hat{A}\vec{x} = (\vec{x} \cdot \vec{n})\vec{n}$, где $\vec{n}=(1,0,0)$. Найдите $\text{Im } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 7
+\begin{taskbox}{7}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (2x_1 - x_2; \; x_1 + x_2 - x_3; \; 3x_1 - 2x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 2 \\ 0 & 1 & 3 \\ 1 & 1 & 5 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 3 \\ 5 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(0) \cdot t$.
+        \item Матрица $A = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 1 \end{pmatrix}$. Обратима ли она?
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 8
+\begin{taskbox}{8}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2; \; 2x_1 + 4x_2 + x_3; \; x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 1 \\ 2 & 4 & 2 \\ 1 & 2 & 3 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 4 \\ 6 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t) - p(-t)$ (выделение нечетной части).
+        \item Оператор поворота вокруг оси $Oz$ на $90^\circ$. Найдите его матрицу и определитель.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 9
+\begin{taskbox}{9}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - x_2 + x_3; \; 2x_1 - 2x_2 + 2x_3; \; x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 0 \\ 1 & 2 & 1 \\ 0 & 1 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = \int_0^1 p(t) dt$ (результат -- число, интерпретировать как константу в $P_2$? Нет, оператор в $P_2 \to \mathbb{R}$? Считаем образом подпространство констант в $P_2$).
+        \item Проекция на прямую $x=y=z$. Найдите $\text{rank } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 10
+\begin{taskbox}{10}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2; \; x_2 + x_3; \; x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 0 \\ 2 & 4 & 1 \\ 1 & 2 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(t) + p''(t)$.
+        \item Оператор $\hat{A}\vec{x} = \vec{x} \times (1,1,1)$. Найдите $\text{Ker } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 11
+\begin{taskbox}{11}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (2x_1 + x_2 - x_3; \; x_1 - x_2 + 2x_3; \; 3x_1 + 3x_3)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 0 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 0 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t p'(t) - 2p(t)$.
+        \item Матрица $A = \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{pmatrix}$. Найдите $\text{rank } A$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 12
+\begin{taskbox}{12}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2 + 3x_3; \; 2x_1 + 4x_2 + 6x_3; \; x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 2 \\ 0 & 1 & 1 \\ 1 & 0 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 3 \\ 1 \\ 2 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(0) + p'(0)t$.
+        \item Оператор проекции на плоскость $Oxz$. Найдите базис $\text{Ker } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 13
+\begin{taskbox}{13}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - x_2; \; x_2 - x_3; \; x_3 - x_1)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 1 \\ 2 & 4 & 2 \\ 1 & 2 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 4 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(1)$.
+        \item Оператор $\hat{A}\vec{x} = (\vec{x} \cdot \vec{i})\vec{j}$. Найдите матрицу оператора.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 14
+\begin{taskbox}{14}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2 + x_3; \; 2x_1 + 2x_2 + 2x_3; \; 3x_1 + 3x_2 + 3x_3)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 0 \\ 1 & 1 & 0 \\ 1 & 1 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t+1)$.
+        \item Является ли оператор гомотетии $\hat{H}\vec{x} = 0\vec{x}$ обратимым?
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 15
+\begin{taskbox}{15}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2; \; x_2 + 2x_3; \; 2x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 1 \\ 2 & 3 & 4 \\ 3 & 4 & 5 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p''(t) + p(0)$.
+        \item Оператор $\hat{A}\vec{x} = \vec{x} \times \vec{i}$. Найдите $\text{Im } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 16
+\begin{taskbox}{16}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - 2x_2; \; 2x_1 - 4x_2 + x_3; \; x_1 - 2x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 0 \\ 0 & 1 & 2 \\ 1 & 3 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t^2 p'(t)$.
+        \item Проекция на плоскость $x=y$. Найдите $\text{def } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 17
+\begin{taskbox}{17}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2; \; x_1 - x_2; \; 2x_1)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t) - t p'(t)$.
+        \item Матрица $A = \begin{pmatrix} 1 & 2 & 3 \\ 0 & 1 & 2 \\ 0 & 0 & 0 \end{pmatrix}$. Найдите базис $\text{Im } A$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 18
+\begin{taskbox}{18}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_3; \; x_1 + x_2; \; x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 1 \\ 2 & 4 & 2 \\ 1 & 2 & 3 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 4 \\ 6 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(t) - p(t)$.
+        \item Оператор $\hat{A}\vec{x} = (\vec{x} \cdot \vec{j})\vec{i}$. Найдите $\text{Ker } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 19
+\begin{taskbox}{19}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (2x_1 + x_2; \; x_1 + 2x_2; \; 3x_1 + 3x_2)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 2 \\ 4 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(1) - p(0)$.
+        \item Оператор поворота на $180^\circ$ вокруг оси $Oz$. Обратим ли он?
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 20
+\begin{taskbox}{20}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - x_2 + x_3; \; x_1 + x_2 - x_3; \; 2x_1 + 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 1 \\ 1 & 2 & 3 \\ 1 & 3 & 6 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t p''(t)$.
+        \item Проекция на ось $Oy$. Найдите матрицу оператора.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 21
+\begin{taskbox}{21}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2 + x_3; \; 2x_1 + 4x_2 + 2x_3; \; x_1 + 2x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 0 \\ 2 & 4 & 1 \\ 1 & 2 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(t) + t p(0)$.
+        \item Оператор $\hat{A}\vec{x} = \vec{x} \times (1,0,0)$. Найдите $\text{rank } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 22
+\begin{taskbox}{22}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2; \; x_2 + x_3; \; x_1 + x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 0 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 2 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t+1) - p(t-1)$.
+        \item Матрица $A = \begin{pmatrix} 1 & 1 & 1 \\ 2 & 2 & 2 \\ 3 & 3 & 3 \end{pmatrix}$. Найдите $\dim(\text{Ker } A)$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 23
+\begin{taskbox}{23}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - x_2; \; x_2 - x_3; \; x_1 - x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 1 \\ 0 & 1 & 1 \\ 1 & 3 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 1 \\ 3 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p''(0) \cdot t^2$.
+        \item Оператор отражения относительно начала координат ($\vec{x} \to -\vec{x}$). Найдите его определитель.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 24
+\begin{taskbox}{24}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2; \; 2x_1 + 4x_2; \; x_1 + 2x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 0 \\ 1 & 2 & 1 \\ 0 & 1 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(0) \cdot t$.
+        \item Проекция на плоскость $x+z=0$. Найдите $\text{rank } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 25
+\begin{taskbox}{25}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2 + x_3; \; 2x_1 + 2x_2 + 2x_3; \; x_1 + x_2)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 0 \\ 1 & 1 & 0 \\ 0 & 1 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t^2 p''(t) + t p'(t)$.
+        \item Оператор $\hat{A}\vec{x} = (\vec{x} \cdot \vec{k})\vec{k}$. Найдите базис $\text{Im } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 26
+\begin{taskbox}{26}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 - 2x_2 + x_3; \; 2x_1 - 4x_2 + 2x_3; \; x_1 - 2x_2 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 6 \\ 1 & 2 & 4 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 3 \\ 6 \\ 5 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(t) - 2p(0)$.
+        \item Оператор поворота на $90^\circ$ вокруг оси $Ox$. Найдите его матрицу.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 27
+\begin{taskbox}{27}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2; \; x_1 - x_2; \; x_2)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 1 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p(t) + p(-t)$.
+        \item Матрица $A = \begin{pmatrix} 1 & 2 & 0 \\ 2 & 4 & 0 \\ 0 & 0 & 1 \end{pmatrix}$. Найдите $\text{def } A$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 28
+\begin{taskbox}{28}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_3; \; x_2; \; x_1 + x_3)$.
+        \item $A = \begin{pmatrix} 1 & 2 & 1 \\ 2 & 4 & 2 \\ 1 & 2 & 3 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 2 \\ 4 \\ 6 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p'(1) \cdot t^2$.
+        \item Оператор $\hat{A}\vec{x} = \vec{x} \times (0,1,0)$. Найдите $\text{Ker } \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 29
+\begin{taskbox}{29}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + 2x_2 - x_3; \; 2x_1 + 4x_2 - 2x_3; \; x_1 + 2x_2)$.
+        \item $A = \begin{pmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 2 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 1 \\ 2 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = t p'(t) - p(t)$.
+        \item Проекция на прямую $x=y, z=0$. Найдите $\text{rank } \hat{P}$.
+    \end{enumerate}
+\end{taskbox}
+
+% Вариант 30
+\begin{taskbox}{30}
+    \begin{enumerate}
+        \item $\hat{A}\vec{x} = (x_1 + x_2 + x_3; \; x_1 - x_2 + x_3; \; 2x_1 + 2x_3)$.
+        \item $A = \begin{pmatrix} 1 & 1 & 0 \\ 1 & 2 & 1 \\ 0 & 1 & 1 \end{pmatrix}, \quad \vec{b} = \begin{pmatrix} 1 \\ 2 \\ 1 \end{pmatrix}$.
+        \item $\hat{D}(p(t)) = p''(t) + p'(0)$.
+        \item Оператор гомотетии с коэффициентом $k=5$. Обратим ли он? Найдите $\det \hat{A}$.
+    \end{enumerate}
+\end{taskbox}
+
+\vspace{0.5cm}
+\begin{center}
+    \textcolor{mireaMain}{\rule{0.6\textwidth}{1pt}} \\
+    \small \textbf{РТУ МИРЭА, Кафедра ВМ-3} \\
+    \small Самостоятельная работа. Обратимость, ядро и образ.
+\end{center}
+
+\end{document}

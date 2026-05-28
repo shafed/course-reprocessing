@@ -1,0 +1,189 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm, headheight=1.6cm}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\raisebox{-0.4\height}{\includegraphics[height=1.2cm]{logo.jpg}}}
+\fancyhead[R]{\small\textsf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Типографика и верстка
+\onehalfspacing
+\setlength{\parindent}{1.5em}
+\setlist[enumerate]{leftmargin=*, topsep=0.4em, itemsep=0.3em}
+\setlist[itemize]{leftmargin=*, topsep=0.4em, itemsep=0.2em}
+\titleformat{\section}{\large\bfseries\raggedright}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries\raggedright}{\thesubsection}{0.5em}{}
+
+% Стилизованный блок для пояснений
+\newtcolorbox{applink}{
+    colback=blue!4!white,
+    colframe=blue!60!black,
+    fonttitle=\bfseries,
+    title=\textbf{Пояснение},
+    boxrule=0.6pt,
+    arc=2mm,
+    left=8pt, right=8pt, top=4pt, bottom=4pt,
+    breakable,
+    before skip=0.5em, after skip=0.5em
+}
+
+\begin{document}
+
+\section*{Тест для самоконтроля: Интеграл и преобразование Фурье}
+
+\textbf{Инструкция.} Тест состоит из 15 вопросов, разделённых на три тематических блока. В блоках 1 и 3 выберите один верный вариант ответа. В блоке 2 запишите краткий результат или формулу. Время выполнения: 20--25 минут. В конце приведены ключи с развернутыми пояснениями.
+
+\subsection*{Блок 1. Теоретические основы}
+\begin{enumerate}[label=\textbf{1.\arabic*.}]
+    \item Какое условие является необходимым для существования интеграла Фурье функции $f(x)$ на всей числовой прямой?
+    \begin{enumerate}[label=\alph*)]
+        \item Периодичность функции.
+        \item Абсолютная интегрируемость: $\int_{-\infty}^{+\infty} |f(x)| \, dx < \infty$.
+        \item Чётность функции.
+        \item Существование производной во всех точках.
+    \end{enumerate}
+
+    \item Чему равен интеграл Фурье $\Phi(x_0)$ в точке разрыва первого рода $x_0$, если существуют односторонние производные?
+    \begin{enumerate}[label=\alph*)]
+        \item $f(x_0)$.
+        \item $0$.
+        \item $\dfrac{f(x_0-0) + f(x_0+0)}{2}$.
+        \item $\dfrac{|f(x_0-0) - f(x_0+0)|}{2}$.
+    \end{enumerate}
+
+    \item В каком смысле понимается интеграл в формуле обратного преобразования Фурье $f(x) = \int_{-\infty}^{+\infty} \hat{f}(\omega) e^{i\omega x} d\omega$?
+    \begin{enumerate}[label=\alph*)]
+        \item В смысле Лебега.
+        \item В смысле главного значения по Коши.
+        \item В смысле несобственного интеграла Римана.
+        \item В смысле распределений.
+    \end{enumerate}
+
+    \item Если $f(x)$ --- чётная функция, то какая часть её преобразования Фурье тождественно равна нулю?
+    \begin{enumerate}[label=\alph*)]
+        \item Действительная часть $\text{Re}\{F(\omega)\}$.
+        \item Мнимая часть $\text{Im}\{F(\omega)\}$ (или коэффициент $b(\omega)$).
+        \item Амплитудный спектр $|F(\omega)|$.
+        \item Фазовый спектр $\arg F(\omega)$.
+    \end{enumerate}
+
+    \item Как называется функция $A(\omega) = |\hat{f}(\omega)|$ для непериодического сигнала?
+    \begin{enumerate}[label=\alph*)]
+        \item Дискретный амплитудный спектр.
+        \item Спектральная плотность мощности.
+        \item Непрерывный амплитудный спектр.
+        \item Фазовая характеристика.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection*{Блок 2. Вычислительные навыки}
+\begin{enumerate}[label=\textbf{2.\arabic*.}]
+    \item Найдите косинус-преобразование Фурье для функции $f(x) = e^{-\alpha x}$, $x > 0$, $\alpha > 0$. Запишите результат.
+    
+    \item Каков вид спектральной функции $a(\omega)$ для прямоугольного импульса $f(x) = 1$ при $|x| < a$ и $0$ при $|x| > a$?
+    
+    \item При нечётном продолжении функции, заданной на полуоси $[0, +\infty)$, интеграл Фурье представляется только по \dots (выберите: косинусам / синусам).
+    
+    \item Если преобразование Фурье сигнала имеет вид $\hat{f}(\omega) = \dfrac{1}{\pi(1+\omega^2)}$, то чему равен фазовый спектр $\varphi(\omega) = \arg \hat{f}(\omega)$?
+    
+    \item Какое преобразование используется для представления каузального сигнала ($f(t)=0$ при $t<0$) без внесения фазовых искажений в спектральную плотность? (выберите: чётное продолжение / нечётное продолжение)
+\end{enumerate}
+
+\subsection*{Блок 3. Инженерная интерпретация}
+\begin{enumerate}[label=\textbf{3.\arabic*.}]
+    \item Что математически описывает эффект Гиббса при проектировании цифровых КИХ-фильтров?
+    \begin{enumerate}[label=\alph*)]
+        \item Полное подавление боковых лепестков спектра.
+        \item Осцилляции импульсной характеристики вблизи точек разрыва из-за truncation спектра.
+        \item Смещение центральной частоты фильтра.
+        \item Увеличение групповой задержки.
+    \end{enumerate}
+
+    \item Почему передача идеального прямоугольного импульса через канал с ограниченной полосой пропускания неизбежно приводит к межсимвольной интерференции (ISI)?
+    \begin{enumerate}[label=\alph*)]
+        \item Импульс имеет бесконечный спектр, а обрезание полосы вызывает ``звон'' (sinc-хвосты) во временной области.
+        \item Прямоугольный импульс не является абсолютно интегрируемым.
+        \item Ограничение полосы всегда вносит нелинейные искажения фазы.
+        \item АЦП не может оцифровать разрывы функции.
+    \end{enumerate}
+
+    \item Как нелинейность фазового спектра $\varphi(\omega)$ влияет на передачу широкополосных сигналов в цифровых каналах связи?
+    \begin{enumerate}[label=\alph*)]
+        \item Вызывает зависимость групповой задержки от частоты, разрушая форму огибающей.
+        \item Увеличивает амплитуду полезного сигнала.
+        \item Преобразует сигнал в периодический.
+        \item Компенсирует затухание в канале.
+    \end{enumerate}
+
+    \item В стандартах 4G/5G OFDM-модуляторы формируют временной сигнал из частотных поднесущих с помощью обратного БПФ. Какая формула лекции лежит в основе этого процесса?
+    \begin{enumerate}[label=\alph*)]
+        \item Прямое преобразование Фурье.
+        \item Обратное преобразование Фурье (синтез сигнала).
+        \item Косинус-преобразование Фурье.
+        \item Интеграл Фурье в смысле главного значения.
+    \end{enumerate}
+
+    \item Какое продолжение функции на всю ось соответствует квадратурной компоненте ($Q$-ветви) в I/Q-демодуляторе и обеспечивает фазовый сдвиг $\pm \pi/2$?
+    \begin{enumerate}[label=\alph*)]
+        \item Чётное продолжение (косинус-преобразование).
+        \item Нечётное продолжение (синус-преобразование).
+        \item Периодическое продолжение.
+        \item Нулевое продолжение.
+    \end{enumerate}
+\end{enumerate}
+
+\section*{Ключи и пояснения}
+
+\begin{enumerate}[label=\textbf{1.\arabic*.}]
+    \item \textbf{Ответ: б.} \begin{applink}Теорема Фурье требует абсолютной интегрируемости и конечного числа разрывов на любом конечном интервале. Без $\int |f| < \infty$ интеграл расходится.\end{applink}
+    \item \textbf{Ответ: в.} \begin{applink}Это прямое следствие равенства (6) лекции. В точках скачка спектр осциллирует, а интеграл сходится к середине скачка.\end{applink}
+    \item \textbf{Ответ: б.} \begin{applink}Спектральные плотности многих физических сигналов не абсолютно интегрируемы, но условно сходятся при симметричном расширении пределов: $\lim_{A\to\infty}\int_{-A}^{A}$.\end{applink}
+    \item \textbf{Ответ: б.} \begin{applink}Для чётной функции произведение $f(t)\sin(\omega t)$ нечётно, интеграл по $\mathbb{R}$ равен нулю. Спектр становится вещественным.\end{applink}
+    \item \textbf{Ответ: в.} \begin{applink}Для непериодических сигналов ряд Фурье заменяется интегралом, а зависимость амплитуды от частоты образует непрерывный спектр $A(\omega)=|F(\omega)|$.\end{applink}
+\end{enumerate}
+
+\begin{enumerate}[label=\textbf{2.\arabic*.}]
+    \item \textbf{Ответ:} $\hat{f}_c(\omega) = \dfrac{2\alpha}{\pi(\alpha^2+\omega^2)}$. \begin{applink}Стандартный табличный интеграл. Отражает лоренциановую форму спектра затухающего процесса (RC-цепь, волновод с потерями).\end{applink}
+    \item \textbf{Ответ:} $a(\omega) = \dfrac{2\sin(a\omega)}{\pi\omega}$. \begin{applink}Спектр имеет вид $\text{sinc}$-функции с бесконечными ``хвостами'', что диктует требования к полосе канала.\end{applink}
+    \item \textbf{Ответ:} синусам. \begin{applink}Нечётное продолжение обнуляет косинусную часть, оставляя только мнимую компоненту спектра.\end{applink}
+    \item \textbf{Ответ:} $\varphi(\omega) = 0$. \begin{applink}Спектр вещественный и положительный при всех $\omega$. Нулевая фаза гарантирует отсутствие фазовых искажений импульса.\end{applink}
+    \item \textbf{Ответ:} чётное продолжение. \begin{applink}Соответствует косинус-преобразованию, даёт нулевую фазовую задержку и используется в синтезе фильтров с линейной фазой.\end{applink}
+\end{enumerate}
+
+\begin{enumerate}[label=\textbf{3.\arabic*.}]
+    \item \textbf{Ответ: б.} \begin{applink}Отсечение высоких частот (идеальный ФНЧ) порождает разрывы в частотной области, что по теореме Фурье вызывает осцилляции Гиббса в импульсной характеристике.\end{applink}
+    \item \textbf{Ответ: а.} \begin{applink}Ограничение полосы эквивалентно свёртке спектра с прямоугольным окном, что во времени даёт sinc-функцию с медленно затухающими хвостами, ``затекающими'' на соседние символы.\end{applink}
+    \item \textbf{Ответ: а.} \begin{applink}Групповая задержка $\tau_g(\omega) = -d\varphi/d\omega$. При нелинейной фазе разные частотные компоненты приходят в разное время, вызывая расплывание импульса.\end{applink}
+    \item \textbf{Ответ: б.} \begin{applink}Формула обратного преобразования Фурье (9) является математической основой синтеза сигнала из частотных компонент, реализуемого алгоритмом IFFT.\end{applink}
+    \item \textbf{Ответ: б.} \begin{applink}Нечётное продолжение порождает чисто мнимый спектр, что соответствует сдвигу фазы на $\pm 90^\circ$. Это основа квадратурной модуляции и преобразования Гильберта.\end{applink}
+\end{enumerate}
+
+\begin{quote}
+    \textbf{Рекомендация по самооценке:} 
+    \begin{itemize}
+        \item \textit{13--15 верных:} Материал усвоен полностью. Можно переходить к задачам уровня 2--3.
+        \item \textit{9--12 верных:} Есть пробелы в теории или инженерной интерпретации. Повторите формулы (12)--(19) и блок ``Связь с прикладной задачей''.
+        \item \textit{Менее 9 верных:} Рекомендуется перечитать лекцию, выписать ключевые формулы на отдельный лист и решить задачи уровня 1 из практикума.
+    \end{itemize}
+\end{quote}
+
+\end{document}

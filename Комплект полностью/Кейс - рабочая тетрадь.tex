@@ -1,0 +1,170 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+% Настройка полей
+\geometry{top=2.5cm, bottom=2cm, left=2cm, right=2cm, headheight=1.5cm, headsep=0.5cm}
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\raisebox{-0.25\height}{\includegraphics[height=1.2cm]{logo.jpg}}\quad\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{Рабочая тетрадь: Линейные операторы}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Стили для полей ввода
+\newcommand{\blank}[1][5cm]{\underline{\hspace{#1}}}
+\newenvironment{solutionbox}{
+    \vspace{0.5em}
+    \noindent\begin{tcolorbox}[colback=white!95!gray, colframe=gray!50!white, title=\textbf{Место для решения}, sharp corners]
+}{
+    \end{tcolorbox}
+    \vspace{0.5em}
+}
+
+\title{\vspace{-2cm}\textbf{Рабочая тетрадь к кейсу}\\[0.5cm]
+\large Линейные операторы в Computer Vision\\[0.3cm]
+\textit{Фамилия И.О.: \blank[4cm]} \quad \textit{Группа: \blank[2cm]}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\section*{Инструкция}
+Заполните пропуски, выполните вычисления в отведенных местах и вставьте результаты из Python-скрипта там, где это указано. Эта тетрадь поможет вам структурировать решение кейса.
+
+\section{Задание 1. Геометрический анализ проекции $\hat{P}$}
+
+\subsection{Матрица оператора}
+Оператор ортогональной проекции на плоскость $Oxy$ действует по правилу $\hat{P}(x,y,z) = (x,y,0)$.
+Запишите матрицу $P$ в стандартном базисе $\mathcal{E} = \{\vec{i}, \vec{j}, \vec{k}\}$:
+
+\begin{solutionbox}
+\[
+P = \begin{pmatrix} 
+\blank[1cm] & \blank[1cm] & \blank[1cm] \\ 
+\blank[1cm] & \blank[1cm] & \blank[1cm] \\ 
+\blank[1cm] & \blank[1cm] & \blank[1cm] 
+\end{pmatrix}
+\]
+\end{solutionbox}
+
+\subsection{Ядро и Образ}
+\textbf{Ядро $\text{Ker }\hat{P}$}: Решите систему $P\vec{x} = \vec{0}$.
+
+\begin{solutionbox}
+Система уравнений:
+\[
+\begin{cases}
+\blank[3cm] \\
+\blank[3cm] \\
+\blank[3cm]
+\end{cases}
+\]
+Базис ядра: $\vec{v}_k = \begin{pmatrix} \blank[1cm] \\ \blank[1cm] \\ \blank[1cm] \end{pmatrix}$.
+Геометрический смысл: \blank[6cm].
+\end{solutionbox}
+
+\textbf{Образ $\text{Im }\hat{P}$}: Какие столбцы матрицы линейно независимы?
+
+\begin{solutionbox}
+Базис образа: $\vec{v}_{im1} = \begin{pmatrix} \blank[1cm] \\ \blank[1cm] \\ \blank[1cm] \end{pmatrix}, \quad \vec{v}_{im2} = \begin{pmatrix} \blank[1cm] \\ \blank[1cm] \\ \blank[1cm] \end{pmatrix}$.
+Геометрический смысл: \blank[6cm].
+\end{solutionbox}
+
+\subsection{Размерности}
+\[
+\text{rank } \hat{P} = \dim(\text{Im }\hat{P}) = \blank[1cm]
+\]
+\[
+\text{def } \hat{P} = \dim(\text{Ker }\hat{P}) = \blank[1cm]
+\]
+Проверка теоремы о ранге и дефекте: $\blank[1cm] + \blank[1cm] = \blank[1cm] = \dim V_3$.
+
+\section{Задание 2. Анализ обратимости оператора $\hat{A}$}
+
+Матрица оператора:
+\[
+A = \begin{pmatrix} 
+2 & -1 & 0 \\ 
+1 & 0 & 0 \\ 
+0 & 0 & k 
+\end{pmatrix}
+\]
+
+\subsection{Определитель и условие обратимости}
+Вычислите определитель $\det A$, разложив его по третьей строке:
+
+\begin{solutionbox}
+\[
+\det A = k \cdot (-1)^{3+3} \cdot \det \begin{pmatrix} 2 & -1 \\ 1 & 0 \end{pmatrix} = k \cdot (\blank[1cm]) = \blank[1cm]
+\]
+Оператор обратим при условии: \blank[3cm].
+\end{solutionbox}
+
+\subsection{Обратная матрица (при $k=1$)}
+Найдите $A^{-1}$ для случая $k=1$. Вы можете использовать метод Гаусса или формулу для обратной матрицы $2 \times 2$ для левого верхнего блока.
+
+\begin{solutionbox}
+\[
+A^{-1} = \begin{pmatrix} 
+\blank[1cm] & \blank[1cm] & 0 \\ 
+\blank[1cm] & \blank[1cm] & 0 \\ 
+0 & 0 & 1 
+\end{pmatrix}
+\]
+\textit{Проверка в Python:} Вставьте сюда вывод скрипта (раздел 2).
+\end{solutionbox}
+
+\section{Задание 3. Восстановление координат}
+
+Дано уравнение $\hat{P}\vec{x} = \vec{y}$, где $\vec{y} = (2, 1, 0)^T$.
+
+\subsection{Общее решение}
+Запишите общее решение системы:
+
+\begin{solutionbox}
+\[
+\vec{x} = \vec{x}_{частное} + \vec{x}_{однородное} = \begin{pmatrix} 2 \\ 1 \\ 0 \end{pmatrix} + C \cdot \begin{pmatrix} \blank[1cm] \\ \blank[1cm] \\ \blank[1cm] \end{pmatrix}
+\]
+где $C \in \mathbb{R}$.
+\end{solutionbox}
+
+\subsection{Регуляризация}
+Какое дополнительное условие нужно наложить, чтобы найти единственную точку, если известно, что объект лежит на плоскости $z = 5$?
+
+\begin{solutionbox}
+Условие: \blank[4cm].
+Итоговый вектор $\vec{x} = \begin{pmatrix} \blank[1cm] \\ \blank[1cm] \\ \blank[1cm] \end{pmatrix}$.
+\end{solutionbox}
+
+\section{Задание 4. IT-приложение (PCA и Ранг)}
+
+Кратко объясните, почему обнуление малых сингулярных чисел (или собственных значений) в методе главных компонент (PCA) эквивалентно проектированию данных на образ оператора меньшего ранга.
+
+\begin{solutionbox}
+\blank[12cm]
+\blank[12cm]
+\blank[12cm]
+\end{solutionbox}
+
+\end{document}

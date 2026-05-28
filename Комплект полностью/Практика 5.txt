@@ -1,0 +1,439 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% Фирменные цвета РТУ МИРЭА
+\definecolor{mireaMain}{RGB}{53,92,168}
+\definecolor{mireaAcc1}{RGB}{95,193,207}
+\definecolor{mireaAcc2}{RGB}{167,217,22}
+\definecolor{mireaAcc3}{RGB}{230,230,230}
+
+% Настройка полей и колонтитулов (исправлено наложение!)
+\geometry{headheight=85pt, top=3.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[width=70pt,height=55pt,keepaspectratio]{logo.jpg}}
+\fancyhead[R]{\parbox[t]{10cm}{\raggedleft\small\color{mireaMain}\textbf{РТУ МИРЭА, Кафедра ВМ-3}\\Линейная алгебра и аналитическая геометрия}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{mireaMain}\leaders\hrule height \headrulewidth\hfill}}
+
+% Стилизация гиперссылок
+\hypersetup{colorlinks=true, linkcolor=mireaMain, citecolor=mireaMain, urlcolor=mireaMain}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.25cm}
+
+% Теоремы и определения
+\theoremstyle{plain}
+\newtheorem{definition}{Определение}[section]
+\newtheorem{theorem}{Теорема}[section]
+\theoremstyle{definition}
+\newtheorem{remark}{Замечание}[section]
+
+% Настройка цветных блоков
+\newtcolorbox{theorybox}{
+  enhanced, breakable,
+  colback=mireaMain!8, colframe=mireaMain,
+  title={\textbf{📘 ТЕОРЕТИЧЕСКИЙ БЛОК}}, fonttitle=\bfseries\color{white},
+  boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-4pt, xshift=8pt},
+  boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{itbox}{
+  enhanced, breakable,
+  colback=mireaAcc2!10, colframe=mireaAcc2,
+  title={\textbf{💡 ПРИКЛАДНОЙ КОНТЕКСТ (IT/ENGINEERING)}}, fonttitle=\bfseries\color{mireaAcc2!80!black},
+  boxrule=0.6pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-4pt, xshift=8pt},
+  boxed title style={colback=mireaAcc2, colframe=mireaAcc2, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{taskbox}[1]{
+  enhanced, breakable,
+  colback=mireaAcc3!30, colframe=mireaMain, 
+  title={\textbf{📝 ЗАДАЧА №#1}}, fonttitle=\bfseries\large\color{white},
+  boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-4pt, xshift=8pt},
+  boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{solbox}{
+  enhanced, breakable,
+  colback=white, colframe=mireaAcc1, 
+  title={\textbf{✅ ПОДРОБНОЕ РЕШЕНИЕ}}, fonttitle=\bfseries\color{mireaMain},
+  boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-4pt, xshift=8pt},
+  boxed title style={colback=mireaAcc1, colframe=mireaAcc1, sharp corners, boxrule=0pt}
+}
+
+\newtcolorbox{cheatbox}{
+  enhanced, breakable,
+  colback=mireaMain!6, colframe=mireaMain, 
+  title={\textbf{📄 КРАТКАЯ ШПАРГАЛКА}}, fonttitle=\bfseries\large\color{white},
+  boxrule=0.8pt, arc=5pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  attach boxed title to top left={yshift=-4pt, xshift=8pt},
+  boxed title style={colback=mireaMain, colframe=mireaMain, sharp corners, boxrule=0pt}
+}
+
+\begin{document}
+
+\begin{center}
+\vspace{-0.5cm}
+{\Large\color{mireaMain}\textbf{Практическое занятие №5}} \\[0.3cm]
+{\Huge\color{mireaMain}\textbf{ЛИНЕЙНЫЕ ОПЕРАТОРЫ}} \\[0.3cm]
+\rule{0.4\textwidth}{1pt} \\[0.2cm]
+{\small Кафедра высшей математики №3 (ВМ-3)}
+\end{center}
+
+\vspace{0.2cm}
+\section*{Необходимый теоретический материал}
+
+\begin{theorybox}
+\subsection*{1. Основные понятия линейного оператора}
+Пусть $L$ -- конечномерное линейное пространство над полем $\mathbb{R}$.
+
+\begin{definition}
+Соответствие $\hat{A}: L \to L$, сопоставляющее каждому вектору $\vec{x} \in L$ единственный вектор $\vec{y} \in L$, называется \textit{отображением} пространства $L$ в себя. Обозначается: $\vec{y} = \hat{A}\vec{x}$, где $\vec{y}$ -- \textit{образ}, а $\vec{x}$ -- \textit{прообраз}.
+\end{definition}
+
+\begin{definition}
+Отображение $\hat{A}: L \to L$ называется \textit{линейным оператором}, если для любых $\vec{x}, \vec{y} \in L$ и любого $\alpha \in \mathbb{R}$ выполняются:
+\begin{enumerate}[label=\arabic*)]
+    \item \textbf{Аддитивность:} $\hat{A}(\vec{x} + \vec{y}) = \hat{A}\vec{x} + \hat{A}\vec{y}$;
+    \item \textbf{Однородность:} $\hat{A}(\alpha \vec{x}) = \alpha \hat{A}\vec{x}$.
+\end{enumerate}
+Оба условия эквивалентны одному: $\hat{A}(\alpha \vec{x} + \beta \vec{y}) = \alpha \hat{A}\vec{x} + \beta \hat{A}\vec{y}$.
+\end{definition}
+
+\begin{remark}
+В прикладных задачах линейные операторы описывают преобразования, сохраняющие линейные комбинации: повороты, масштабирования, сдвиги, проекции. Нелинейные операции (возведение в степень, добавление константы, нелинейные активации) нарушают одно из условий.
+\end{remark}
+
+\subsection*{2. Матрица линейного оператора}
+Пусть в $L$ выбран базис $S = \{\vec{e}_1, \dots, \vec{e}_n\}$. Действие оператора полностью определяется образами базисных векторов:
+\[
+\hat{A}\vec{e}_j = \sum_{i=1}^n a_{ij} \vec{e}_i, \quad j=1,\dots,n.
+\]
+\begin{definition}
+Матрица $A = (a_{ij})$, \textbf{столбцами которой являются координаты образов базисных векторов} $\hat{A}\vec{e}_1, \dots, \hat{A}\vec{e}_n$ в базисе $S$, называется \textit{матрицей линейного оператора} $\hat{A}$ в базисе $S$.
+\end{definition}
+Если $\vec{x}$ имеет координаты $X = (x_1, \dots, x_n)^T$, а образ $\vec{y} = \hat{A}\vec{x}$ -- $Y = (y_1, \dots, y_n)^T$, то:
+\[
+Y = AX.
+\]
+
+\subsection*{3. Преобразование матрицы при смене базиса}
+Пусть оператор $\hat{A}$ в базисе $S_1$ имеет матрицу $A_1$, а в базисе $S_2$ -- $A_2$. Матрица перехода $P$ от $S_1$ к $S_2$ состоит из координат векторов $S_2$, записанных в базисе $S_1$.
+
+\begin{theorem}
+Матрицы одного и того же линейного оператора в разных базисах связаны соотношением подобия:
+\[
+A_2 = P^{-1} A_1 P.
+\]
+\end{theorem}
+\begin{remark}
+В компьютерной графике эта формула соответствует смене системы координат (мировые $\to$ локальные координаты объекта).
+\end{remark}
+
+\subsection*{4. Действия над линейными операторами}
+Множество линейных операторов $\mathcal{L}(L)$ образует алгебру:
+\begin{itemize}
+    \item \textbf{Сумма:} $(\hat{A} + \hat{B})\vec{x} = \hat{A}\vec{x} + \hat{B}\vec{x} \quad \Rightarrow \quad \text{матрица } A+B$.
+    \item \textbf{Умножение на скаляр:} $(\alpha\hat{A})\vec{x} = \alpha(\hat{A}\vec{x}) \quad \Rightarrow \quad \text{матрица } \alpha A$.
+    \item \textbf{Композиция:} $(\hat{A}\hat{B})\vec{x} = \hat{A}(\hat{B}\vec{x}) \quad \Rightarrow \quad \text{матрица } AB$.
+    \item \textbf{Степень:} $\hat{A}^n = \underbrace{\hat{A} \circ \dots \circ \hat{A}}_{n} \quad \Rightarrow \quad \text{матрица } A^n$.
+\end{itemize}
+\begin{remark}
+Композиция некоммутативна: $\hat{A}\hat{B} \neq \hat{B}\hat{A}$. Это фундаментально для порядка применения трансформаций в 3D-движках.
+\end{remark}
+\end{theorybox}
+
+\vspace{0.2cm}
+\begin{cheatbox}
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+    \item \textbf{Линейность:} Проверить $\hat{A}(\vec{x}+\vec{y}) = \hat{A}\vec{x}+\hat{A}\vec{y}$ и $\hat{A}(\alpha\vec{x}) = \alpha\hat{A}\vec{x}$. Свободный член, квадрат, корень, тригонометрия от координат $\Rightarrow$ нелинейно.
+    \item \textbf{Матрица оператора:} Подействовать на каждый $\vec{e}_i$. Координаты $\hat{A}\vec{e}_i$ записать \textbf{по столбцам}.
+    \item \textbf{Образ вектора:} $Y = AX$. Умножить матрицу на столбец координат.
+    \item \textbf{Смена базиса:} $P$ -- столбцы из координат нового базиса в старом. $A_2 = P^{-1} A_1 P$. Порядок важен!
+    \item \textbf{Операции:} Сумма $\leftrightarrow$ сложение матриц, Композиция $\leftrightarrow$ умножение ($\hat{A}\hat{B} \to AB$), Степень $\leftrightarrow$ $A^n$.
+    \item \textbf{Геометрические операторы (канонический базис):}
+    \begin{itemize}
+        \item Проекция на $XOY$: $\operatorname{diag}(1,1,0)$
+        \item Поворот $OZ$ на $\varphi$: $\begin{pmatrix}\cos\varphi&-\sin\varphi&0\\\sin\varphi&\cos\varphi&0\\0&0&1\end{pmatrix}$
+        \item Гомотетия $k$: $kI$
+    \end{itemize}
+\end{enumerate}
+\end{cheatbox}
+
+\vspace{0.3cm}
+\section*{Разбор типовых задач}
+
+\begin{taskbox}{1}
+Оператор $\hat{A}\vec{x} = (4x_1 - x_2,\; 2x_1 + 3x_2)$ действует в $\mathbb{R}^2$.
+\begin{enumerate}[label=\alph*)]
+    \item Проверить линейность $\hat{A}$.
+    \item Записать матрицу $\hat{A}$ в каноническом базисе.
+    \item Найти образ $\vec{a} = (3;\ -2)$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+В 2D-графике такие операторы описывают комбинированные трансформации: растяжение по осям и сдвиг (shear). Линейность гарантирует, что преобразование можно применять к вершинам полигонов независимо, а результаты суперпозируются.
+\end{itbox}
+
+\begin{solbox}
+\textbf{а)} Проверим условия линейности для произвольных $\vec{x}=(x_1;x_2), \vec{y}=(y_1;y_2) \in \mathbb{R}^2$ и $\alpha \in \mathbb{R}$.
+\begin{itemize}
+    \item \textit{Аддитивность:} По определению суммы векторов, $\vec{x}+\vec{y} = (x_1+y_1;\ x_2+y_2)$. Подставляем в формулу оператора:
+    \[
+    \hat{A}(\vec{x}+\vec{y}) = \bigl(4(x_1+y_1) - (x_2+y_2),\; 2(x_1+y_1) + 3(x_2+y_2)\bigr).
+    \]
+    Раскрываем скобки и группируем слагаемые с индексами 1 и 2:
+    \[
+    = (4x_1-x_2,\; 2x_1+3x_2) + (4y_1-y_2,\; 2y_1+3y_2) = \hat{A}\vec{x} + \hat{A}\vec{y}.
+    \]
+    \item \textit{Однородность:} По определению умножения вектора на число, $\alpha\vec{x} = (\alpha x_1;\ \alpha x_2)$. Подставляем:
+    \[
+    \hat{A}(\alpha\vec{x}) = (4\alpha x_1 - \alpha x_2,\; 2\alpha x_1 + 3\alpha x_2) = \alpha(4x_1-x_2,\; 2x_1+3x_2) = \alpha\hat{A}\vec{x}.
+    \]
+\end{itemize}
+Оба условия выполнены $\Rightarrow$ $\hat{A}$ -- линейный оператор.
+
+\textbf{б)} Канонический базис $\mathbb{R}^2$: $\vec{e}_1=(1;0),\; \vec{e}_2=(0;1)$. Находим образы, подставляя координаты в формулу $\hat{A}\vec{x}$:
+\[ \hat{A}\vec{e}_1 = (4\cdot 1 - 0,\; 2\cdot 1 + 3\cdot 0) = (4;\ 2), \]
+\[ \hat{A}\vec{e}_2 = (4\cdot 0 - 1,\; 2\cdot 0 + 3\cdot 1) = (-1;\ 3). \]
+\textit{По определению матрицы оператора:} её первый столбец -- координаты $\hat{A}\vec{e}_1$, второй -- $\hat{A}\vec{e}_2$. Записываем:
+\[ A = \begin{pmatrix} 4 & -1 \\ 2 & 3 \end{pmatrix}. \]
+
+\textbf{в)} Образ вектора $\vec{a} = (3;\ -3)$ вычисляем через матричное уравнение $Y=AX$. Вектор-столбец координат: $X = \begin{pmatrix} 3 \\ -3 \end{pmatrix}$. Умножаем матрицу на столбец (строка на столбец):
+\[ Y = \begin{pmatrix} 4 & -1 \\ 2 & 3 \end{pmatrix} \begin{pmatrix} 3 \\ -3 \end{pmatrix} = \begin{pmatrix} 4\cdot 3 + (-1)\cdot (-3) \\ 2\cdot 3 + 3\cdot (-3) \end{pmatrix} = \begin{pmatrix} 12 + 3 \\ 6 - 9 \end{pmatrix} = \begin{pmatrix} 15 \\ -3 \end{pmatrix}. \]
+Следовательно, $\hat{A}\vec{a} = (15;\ -3)$.
+\end{solbox}
+
+\begin{taskbox}{2}
+Оператор $\hat{A}$ действует в $\mathbb{R}^3$, $\vec{x}=(x_1;x_2;x_3)$. Проверить линейность. В случае линейности найти матрицу в каноническом базисе.
+\begin{enumerate}[label=\alph*)]
+    \item $\hat{A}\vec{x} = (2x_1 + x_3,\; x_1 - 3x_2,\; 4x_2 - x_3)$;
+    \item $\hat{B}\vec{x} = (x_1^2,\; 2x_2 - x_3 + 1,\; x_3)$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+В машинном обучении $\hat{A}$ соответствует линейному слою (Linear layer) без функции активации. $\hat{B}$ содержит квадратичный член и свободное смещение, что характерно для нелинейных преобразований признаков или смещённых регрессий.
+\end{itbox}
+
+\begin{solbox}
+\textbf{а)} Оператор задан линейными комбинациями координат. Проверим аддитивность:
+\[
+\hat{A}(\vec{x}+\vec{y}) = \begin{pmatrix} 2(x_1+y_1) + (x_3+y_3) \\ (x_1+y_1) - 3(x_2+y_2) \\ 4(x_2+y_2) - (x_3+y_3) \end{pmatrix} = \begin{pmatrix} 2x_1+x_3 \\ x_1-3x_2 \\ 4x_2-x_3 \end{pmatrix} + \begin{pmatrix} 2y_1+y_3 \\ y_1-3y_2 \\ 4y_2-y_3 \end{pmatrix} = \hat{A}\vec{x} + \hat{A}\vec{y}.
+\]
+Однородность проверяется аналогично выносом $\alpha$ за скобки в каждой компоненте. Оба свойства выполняются $\Rightarrow$ оператор линеен.
+\textit{Построение матрицы:} Координаты $\hat{A}\vec{e}_1$ получаем подстановкой $x_1=1, x_2=0, x_3=0 \Rightarrow (2;\ 1;\ 0)$. Аналогично для $\vec{e}_2, \vec{e}_3$. Записываем по столбцам:
+\[ A = \begin{pmatrix} 2 & 0 & 1 \\ 1 & -3 & 0 \\ 0 & 4 & -1 \end{pmatrix}. \]
+
+\textbf{б)} Проверим необходимое условие линейности: \textit{любой линейный оператор переводит нулевой вектор в нулевой} ($\hat{A}\vec{0}=\vec{0}$). Это следует из однородности: $\hat{A}\vec{0} = \hat{A}(0\cdot\vec{x}) = 0\cdot\hat{A}\vec{x} = \vec{0}$.
+Подставим $\vec{x}=\vec{0}$ в $\hat{B}$: $\hat{B}\vec{0} = (0^2,\; 0-0+1,\; 0) = (0;\ 1;\ 0) \neq \vec{0}$.
+Следовательно, $\hat{B}$ \textbf{не является линейным оператором} (нарушена однородность из-за свободного члена ``+1'' и нелинейности из-за $x_1^2$).
+\end{solbox}
+
+\begin{taskbox}{3}
+Линейный оператор $\hat{A}$ в базисе $\{\vec{e}_1, \vec{e}_2, \vec{e}_3\}$ задан матрицей $A = \begin{pmatrix} 1 & 2 & 0 \\ -1 & 3 & 1 \\ 0 & 1 & 2 \end{pmatrix}$. Найти матрицу оператора в базисе $\{\vec{f}_1, \vec{f}_2, \vec{f}_3\}$, где:
+\[ \vec{f}_1 = \vec{e}_1,\quad \vec{f}_2 = \vec{e}_1 + \vec{e}_2,\quad \vec{f}_3 = \vec{e}_2 + \vec{e}_3. \]
+\end{taskbox}
+
+\begin{itbox}
+Моделирует смену системы координат в 3D-редакторе: из глобальной (мировой) в локальную систему объекта, оси которой наклонены относительно мировых.
+\end{itbox}
+
+\begin{solbox}
+1) \textit{Построение матрицы перехода $P$:} По определению, столбцы $P$ -- это координаты новых базисных векторов $\vec{f}_j$ в старом базисе $\{\vec{e}_i\}$. Выписываем коэффициенты разложения:
+\[ \vec{f}_1 = 1\vec{e}_1 + 0\vec{e}_2 + 0\vec{e}_3 \Rightarrow \text{1-й столбец: } (1,0,0)^T, \]
+\[ \vec{f}_2 = 1\vec{e}_1 + 1\vec{e}_2 + 0\vec{e}_3 \Rightarrow \text{2-й столбец: } (1,1,0)^T, \]
+\[ \vec{f}_3 = 0\vec{e}_1 + 1\vec{e}_2 + 1\vec{e}_3 \Rightarrow \text{3-й столбец: } (0,1,1)^T. \]
+Таким образом, $P = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \end{pmatrix}$.
+
+2) \textit{Нахождение обратной матрицы $P^{-1}$:} Так как $P$ верхнетреугольная с единицами на диагонали, $\det P = 1$. Находим алгебраические дополнения или используем метод Гаусса. Результат:
+\[ P^{-1} = \begin{pmatrix} 1 & -1 & 1 \\ 0 & 1 & -1 \\ 0 & 0 & 1 \end{pmatrix}. \]
+Проверка (матричное умножение $P P^{-1}$ должна дать $E$):
+\[ \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} 1 & -1 & 1 \\ 0 & 1 & -1 \\ 0 & 0 & 1 \end{pmatrix} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}. \text{ Верно.} \]
+
+3) \textit{Преобразование матрицы оператора:} Применяем теорему $A_2 = P^{-1} A P$. Сначала умножим $P^{-1}A$:
+\[ P^{-1}A = \begin{pmatrix} 1 & -1 & 1 \\ 0 & 1 & -1 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} 1 & 2 & 0 \\ -1 & 3 & 1 \\ 0 & 1 & 2 \end{pmatrix} = \begin{pmatrix} 1+1+0 & 2-3+1 & 0-1+2 \\ 0-1+0 & 0+3-1 & 0+1-2 \\ 0 & 1 & 2 \end{pmatrix} = \begin{pmatrix} 2 & 0 & 1 \\ -1 & 2 & -1 \\ 0 & 1 & 2 \end{pmatrix}. \]
+Теперь умножим результат на $P$ справа:
+\[ A_2 = (P^{-1}A)P = \begin{pmatrix} 2 & 0 & 1 \\ -1 & 2 & -1 \\ 0 & 1 & 2 \end{pmatrix} \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \end{pmatrix} = \begin{pmatrix} 2 & 2+0 & 0+0+1 \\ -1 & -1+2 & 0+2-1 \\ 0 & 1 & 1+2 \end{pmatrix} = \begin{pmatrix} 2 & 2 & 1 \\ -1 & 1 & 1 \\ 0 & 1 & 3 \end{pmatrix}. \]
+\textbf{Ответ:} $A_2 = \begin{pmatrix} 2 & 2 & 1 \\ -1 & 1 & 1 \\ 0 & 1 & 3 \end{pmatrix}$.
+\end{solbox}
+
+\begin{taskbox}{4}
+В каноническом базисе $\mathbb{R}^3$ заданы операторы:
+\[ \hat{A}\vec{x} = (x_1+x_2,\; x_2-x_3,\; 2x_1), \quad \hat{B}\vec{x} = (x_3,\; x_1,\; x_2). \]
+Найти линейный оператор $\hat{C} = \hat{A}\hat{B} - \hat{B}\hat{A}$ и записать его в координатной форме.
+\end{taskbox}
+
+\begin{itbox}
+Коммутатор $[\hat{A}, \hat{B}] = \hat{A}\hat{B} - \hat{B}\hat{A}$ показывает, насколько порядок применения преобразований влияет на результат. Используется в квантовых вычислениях и теории управления.
+\end{itbox}
+
+\begin{solbox}
+1) \textit{Построение матриц:} Выписываем коэффициенты при $x_1,x_2,x_3$ по столбцам.
+Для $\hat{A}$: $\hat{A}\vec{e}_1=(1;0;2), \hat{A}\vec{e}_2=(1;1;0), \hat{A}\vec{e}_3=(0;-1;0) \Rightarrow A = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & -1 \\ 2 & 0 & 0 \end{pmatrix}$.
+Для $\hat{B}$: $\hat{B}\vec{e}_1=(0;1;0), \hat{B}\vec{e}_2=(0;0;1), \hat{B}\vec{e}_3=(1;0;0) \Rightarrow B = \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix}$.
+
+2) \textit{Вычисление композиций:} По теореме, матрица композиции -- произведение матриц.
+\[ AB = \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & -1 \\ 2 & 0 & 0 \end{pmatrix} \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix} = \begin{pmatrix} 0+1+0 & 0+0+0 & 1+0+0 \\ 0+1+0 & 0+0-1 & 0+0+0 \\ 0+0+0 & 0+0+0 & 2+0+0 \end{pmatrix} = \begin{pmatrix} 1 & 0 & 1 \\ 1 & -1 & 0 \\ 0 & 0 & 2 \end{pmatrix}. \]
+\[ BA = \begin{pmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{pmatrix} \begin{pmatrix} 1 & 1 & 0 \\ 0 & 1 & -1 \\ 2 & 0 & 0 \end{pmatrix} = \begin{pmatrix} 0+0+2 & 0+0+0 & 0+0+0 \\ 1+0+0 & 1+0+0 & 0+0+0 \\ 0+0+0 & 0+1+0 & 0-1+0 \end{pmatrix} = \begin{pmatrix} 2 & 0 & 0 \\ 1 & 1 & 0 \\ 0 & 1 & -1 \end{pmatrix}. \]
+
+3) \textit{Разность операторов:} Матрица разности равна разности матриц.
+\[ C = AB - BA = \begin{pmatrix} 1-2 & 0-0 & 1-0 \\ 1-1 & -1-1 & 0-0 \\ 0-0 & 0-1 & 2-(-1) \end{pmatrix} = \begin{pmatrix} -1 & 0 & 1 \\ 0 & -2 & 0 \\ 0 & -1 & 3 \end{pmatrix}. \]
+Записываем оператор в координатной форме, умножая матрицу $C$ на столбец $(x_1,x_2,x_3)^T$:
+\[ \hat{C}\vec{x} = C\vec{x} = \begin{pmatrix} -x_1 + x_3 \\ -2x_2 \\ -x_2 + 3x_3 \end{pmatrix} \Rightarrow \hat{C}\vec{x} = (-x_1 + x_3;\ -2x_2;\ -x_2 + 3x_3). \]
+\end{solbox}
+
+\begin{taskbox}{5}
+Линейный оператор $\hat{A}$ -- ортогональная проекция на плоскость $YOZ$ в $V_3$.
+\begin{enumerate}[label=\alph*)]
+    \item Найти матрицу $\hat{A}$ в базисе $\{\vec{i}, \vec{j}, \vec{k}\}$.
+    \item Найти образ $\vec{a} = (5;\ -2;\ 4)$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+Проекции используются в рендеринге (теневые карты), сжатии данных (PCA) и выделении признаков. Ортогональная проекция на $YOZ$ ``обнуляет'' $X$-компоненту.
+\end{itbox}
+
+\begin{solbox}
+\textbf{а)} По геометрическому определению проекции на $YOZ$: $\hat{A}(x,y,z) = (0, y, z)$. Действуем на базисные векторы канонического базиса:
+\[ \hat{A}\vec{i} = \hat{A}(1,0,0) = (0,0,0), \]
+\[ \hat{A}\vec{j} = \hat{A}(0,1,0) = (0,1,0), \]
+\[ \hat{A}\vec{k} = \hat{A}(0,0,1) = (0,0,1). \]
+Записываем координаты образов по столбцам:
+\[ A = \begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}. \]
+\textbf{б)} Образ вектора $\vec{a}=(5;-2;4)$ вычисляем через матричное умножение $Y=AX$:
+\[ \hat{A}\vec{a} = \begin{pmatrix} 0 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} 5 \\ -2 \\ 4 \end{pmatrix} = \begin{pmatrix} 0\cdot 5 + 0\cdot(-2) + 0\cdot 4 \\ 0\cdot 5 + 1\cdot(-2) + 0\cdot 4 \\ 0\cdot 5 + 0\cdot(-2) + 1\cdot 4 \end{pmatrix} = \begin{pmatrix} 0 \\ -2 \\ 4 \end{pmatrix}. \]
+Геометрически: точка $(5,-2,4)$ спроектирована на плоскость $YOZ$, её $X$-координата стала нулевой. Ответ: $\hat{A}\vec{a} = (0;\ -2;\ 4)$.
+\end{solbox}
+
+\begin{taskbox}{6}
+Линейный оператор $\hat{A}$ -- поворот вокруг оси $OZ$ на угол $90^\circ$ против часовой стрелки в $V_3$.
+\begin{enumerate}[label=\alph*)]
+    \item Найти матрицу $\hat{A}$ в каноническом базисе.
+    \item Найти образ $\vec{a} = (3;\ 4;\ 0)$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{solbox}
+\textbf{а)} При повороте вокруг $OZ$ ось $Z$ остаётся инвариантной ($\vec{k} \to \vec{k}$). В плоскости $XOY$ поворот на $90^\circ$ против часовой стрелки переводит $\vec{i}$ в $\vec{j}$, а $\vec{j}$ в $-\vec{i}$. Таким образом:
+\[ \hat{A}\vec{i} = (0;1;0), \quad \hat{A}\vec{j} = (-1;0;0), \quad \hat{A}\vec{k} = (0;0;1). \]
+Записываем матрицу по столбцам:
+\[ A = \begin{pmatrix} 0 & -1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix}. \]
+\textbf{б)} Находим образ:
+\[ \hat{A}\vec{a} = \begin{pmatrix} 0 & -1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} 3 \\ 4 \\ 0 \end{pmatrix} = \begin{pmatrix} 0\cdot 3 + (-1)\cdot 4 + 0\cdot 0 \\ 1\cdot 3 + 0\cdot 4 + 0\cdot 0 \\ 0\cdot 3 + 0\cdot 4 + 1\cdot 0 \end{pmatrix} = \begin{pmatrix} -4 \\ 3 \\ 0 \end{pmatrix}. \]
+Геометрическая проверка: исходный вектор $(3,4)$ имел длину $5$ и угол $\arctan(4/3)\approx 53.1^\circ$. После поворота на $90^\circ$ угол стал $\approx 143.1^\circ$, координаты $(-4,3)$ действительно соответствуют длине $5$ и новому углу. Ответ: $\hat{A}\vec{a} = (-4;\ 3;\ 0)$.
+\end{solbox}
+
+\begin{taskbox}{7}
+Линейный оператор $\hat{A}: V_2 \to V_2$ -- поворот на угол $\frac{\pi}{6}$ против часовой стрелки.
+\begin{enumerate}[label=\alph*)]
+    \item Найти матрицу $\hat{A}$ в базисе $\{\vec{i}, \vec{j}\}$.
+    \item Найти образ $\vec{a} = (\sqrt{3};\ 1)$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{solbox}
+\textbf{а)} \textit{Вывод матрицы поворота:} Базисный вектор $\vec{i}$ имеет угол $0$. После поворота на $\varphi$ его координаты станут $(\cos\varphi, \sin\varphi)$. Вектор $\vec{j}$ имеет угол $\pi/2$, после поворота угол станет $\pi/2+\varphi$, координаты: $(\cos(\pi/2+\varphi), \sin(\pi/2+\varphi)) = (-\sin\varphi, \cos\varphi)$. Подставляем в столбцы:
+\[ R(\varphi) = \begin{pmatrix} \cos\varphi & -\sin\varphi \\ \sin\varphi & \cos\varphi \end{pmatrix}. \]
+При $\varphi = \frac{\pi}{6}$: $\cos\frac{\pi}{6} = \frac{\sqrt{3}}{2},\ \sin\frac{\pi}{6} = \frac{1}{2}$.
+\[ A = \begin{pmatrix} \frac{\sqrt{3}}{2} & -\frac{1}{2} \\ \frac{1}{2} & \frac{\sqrt{3}}{2} \end{pmatrix}. \]
+\textbf{б)} Образ вектора:
+\[ \hat{A}\vec{a} = \begin{pmatrix} \frac{\sqrt{3}}{2} & -\frac{1}{2} \\ \frac{1}{2} & \frac{\sqrt{3}}{2} \end{pmatrix} \begin{pmatrix} \sqrt{3} \\ 1 \end{pmatrix} = \begin{pmatrix} \frac{\sqrt{3}}{2}\cdot\sqrt{3} - \frac{1}{2}\cdot 1 \\ \frac{1}{2}\cdot\sqrt{3} + \frac{\sqrt{3}}{2}\cdot 1 \end{pmatrix} = \begin{pmatrix} \frac{3}{2} - \frac{1}{2} \\ \frac{\sqrt{3}}{2} + \frac{\sqrt{3}}{2} \end{pmatrix} = \begin{pmatrix} 1 \\ \sqrt{3} \end{pmatrix}. \]
+Исходный вектор имел длину $2$ и угол $30^\circ$. После поворота на $30^\circ$ угол стал $60^\circ$, длина сохранилась. Вектор $(1, \sqrt{3})$ действительно соответствует этим параметрам. Ответ: $\hat{A}\vec{a} = (1;\ \sqrt{3})$.
+\end{solbox}
+
+\begin{taskbox}{8}
+Вычислить $A^n$, где $A = \begin{pmatrix} \cos\varphi & -\sin\varphi \\ \sin\varphi & \cos\varphi \end{pmatrix}$.
+\end{taskbox}
+
+\begin{solbox}
+Матрица $A$ соответствует оператору поворота $R(\varphi)$. Композиция $n$ одинаковых поворотов эквивалентна одному повороту на суммарный угол $n\varphi$: $R(\varphi) \circ \dots \circ R(\varphi) = R(n\varphi)$.
+Матрица оператора $R(n\varphi)$ строится по той же формуле, что и $A$, но с углом $n\varphi$:
+\[ R(n\varphi) = \begin{pmatrix} \cos(n\varphi) & -\sin(n\varphi) \\ \sin(n\varphi) & \cos(n\varphi) \end{pmatrix}. \]
+Поскольку матрица произведения операторов равна произведению их матриц, получаем:
+\[ A^n = \underbrace{A \cdot A \cdots A}_{n} = \begin{pmatrix} \cos(n\varphi) & -\sin(n\varphi) \\ \sin(n\varphi) & \cos(n\varphi) \end{pmatrix}. \]
+\textit{Строгое доказательство:} Индукция по $n$. База $n=1$ верна. Шаг: $A^{k+1} = A^k A = R(k\varphi)R(\varphi)$. Перемножая матрицы и используя формулы сложения $\cos(k\varphi+\varphi), \sin(k\varphi+\varphi)$, получаем $R((k+1)\varphi)$. Ч.т.д.
+\end{solbox}
+
+\begin{taskbox}{9}
+Линейный оператор $\hat{A}$ в базисе $\{\vec{e}_1, \vec{e}_2, \vec{e}_3\}$ переводит векторы:
+$\hat{A}\vec{e}_1 = (2; -1; 3), \quad \hat{A}\vec{e}_2 = (4; 0; -1), \quad \hat{A}\vec{e}_3 = (1; 2; 0)$.
+\begin{enumerate}[label=\alph*)]
+    \item Составить матрицу оператора $\hat{A}$ в этом базисе.
+    \item Найти образ $\vec{v} = 2\vec{e}_1 - \vec{e}_2 + 3\vec{e}_3$.
+\end{enumerate}
+\end{taskbox}
+
+\begin{itbox}
+Конструирование оператора по заданным образам базиса -- стандартная задача при задании преобразований в CAD-системах и при обучении линейных моделей, где известны отклики на базовые входные данные.
+\end{itbox}
+
+\begin{solbox}
+\textbf{а)} По определению матрицы линейного оператора: её $j$-й столбец -- это координаты образа $j$-го базисного вектора $\hat{A}\vec{e}_j$, записанные в том же базисе $\{\vec{e}_i\}$. Поскольку координаты образов уже даны в этом базисе, просто записываем их в столбцы матрицы:
+\[ A = \begin{pmatrix} 2 & 4 & 1 \\ -1 & 0 & 2 \\ 3 & -1 & 0 \end{pmatrix}. \]
+
+\textbf{б)} Координаты вектора $\vec{v}$ в базисе $\{\vec{e}_i\}$ очевидны из разложения: $V = (2;\ -1;\ 3)^T$. Образ вычисляем через матричное уравнение $Y = AV$:
+\[ \hat{A}\vec{v} \leftrightarrow AV = \begin{pmatrix} 2 & 4 & 1 \\ -1 & 0 & 2 \\ 3 & -1 & 0 \end{pmatrix} \begin{pmatrix} 2 \\ -1 \\ 3 \end{pmatrix}. \]
+Выполняем умножение покомпонентно:
+\begin{itemize}
+    \item $y_1 = 2\cdot 2 + 4\cdot(-1) + 1\cdot 3 = 4 - 4 + 3 = 3$;
+    \item $y_2 = (-1)\cdot 2 + 0\cdot(-1) + 2\cdot 3 = -2 + 0 + 6 = 4$;
+    \item $y_3 = 3\cdot 2 + (-1)\cdot(-1) + 0\cdot 3 = 6 + 1 + 0 = 7$.
+\end{itemize}
+Получаем вектор координат образа: $Y = (3;\ 4;\ 7)^T$. Следовательно, $\hat{A}\vec{v} = 3\vec{e}_1 + 4\vec{e}_2 + 7\vec{e}_3$.
+\textbf{Ответ:} $A = \begin{pmatrix} 2 & 4 & 1 \\ -1 & 0 & 2 \\ 3 & -1 & 0 \end{pmatrix}, \quad \hat{A}\vec{v} = (3;\ 4;\ 7)$.
+\end{solbox}
+
+\vspace{0.3cm}
+\section*{Задачи для самостоятельного решения}
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+    \item Операторы $\hat{A}\vec{x}=(x_1+2x_2; -3x_2)$ и $\hat{B}\vec{x}=(2x_1-x_2; 4x_1+2x_2)$ действуют в $\mathbb{R}^2$. Проверить линейность. Записать матрицы в каноническом базисе. Найти образ $\vec{x}=(3; -2)$.
+    \item Какое из преобразований является линейным оператором в $\mathbb{R}^3$? Найти матрицу линейного оператора в каноническом базисе.
+    \begin{enumerate}[label=\alph*)]
+        \item $\hat{A}\vec{x}=(2x_1-x_2+x_3; x_1+4x_3; -x_2+5x_3)$;
+        \item $\hat{B}\vec{x}=(x_1^2; x_2-x_3; x_1+2)$;
+        \item $\hat{C}\vec{x}=(\sin x_1; x_2+x_3; 0)$.
+    \end{enumerate}
+    \item В каноническом базисе $\mathbb{R}^4$ оператор $\hat{A}$ действует по правилу: $\hat{A}\vec{x}=(x_1-2x_2+3x_3-x_4; 2x_1+x_3; x_1+2x_2-2x_3+x_4; 3x_1-2x_2+x_3-4x_4)$. Показать линейность.
+    \item В базисе $\{\vec{e}_1, \vec{e}_2\}$ линейный оператор $\hat{A}$ имеет матрицу $A=\begin{pmatrix} 4 & -2 \\ 3 & 1 \end{pmatrix}$. Найти его матрицу в базисе $\{\vec{e}_1+\vec{e}_2, 2\vec{e}_1-\vec{e}_2\}$.
+    \item Линейный оператор $\hat{A}$ в базисе $\{\vec{e}_1, \vec{e}_2, \vec{e}_3\}$ задан матрицей $A=\begin{pmatrix} 1 & 0 & 2 \\ 3 & -1 & 0 \\ 0 & 2 & 1 \end{pmatrix}$. Найти матрицу $\hat{A}$ в базисе $\{\vec{f}_1, \vec{f}_2, \vec{f}_3\}$, где $\vec{f}_1=\vec{e}_1+\vec{e}_2, \vec{f}_2=\vec{e}_2+\vec{e}_3, \vec{f}_3=\vec{e}_3$.
+    \item В каноническом базисе $\mathbb{R}^3$ заданы операторы: $\hat{A}\vec{x}=(x_2+x_3; x_1-x_3; 2x_1+x_2)$ и $\hat{B}\vec{x}=(x_1; 2x_2-x_3; x_1+x_3)$. Найти матрицы операторов $\hat{A}\hat{B}, \hat{A}^2+2\hat{B}$ и $\hat{A}(\hat{B}-\hat{A})$.
+    \item Линейный оператор $\hat{A}$ -- проекция на плоскость $XOY$ в $V_3$. Найти матрицу в базисе $\{\vec{i}, \vec{j}, \vec{k}\}$ и образ $\vec{a}=(2; -3; 5)$.
+    \item Линейный оператор $\hat{A}$ -- зеркальное отражение относительно плоскости $XOY$ в $V_3$. Найти матрицу в каноническом базисе и образ $\vec{a}=(-1; 4; 2)$.
+    \item Линейный оператор $\hat{A}$ -- гомотетия с коэффициентом $k=-2$ в $V_3$. Найти матрицу и образ $\vec{a}=(3; 0; -1)$.
+    \item Оператор $\hat{A}$ действует на квадратные матрицы $2\times 2$ по правилу $\hat{A}(X) = X^T - X$. Показать линейность. Составить матрицу оператора в каноническом базисе $M_2(\mathbb{R})$ (базис из матричных единиц $E_{11}, E_{12}, E_{21}, E_{22}$).
+    \item Доказать, что существует единственный линейный оператор в $\mathbb{R}^3$, переводящий $\vec{a}_1=(1;0;0) \to \vec{b}_1=(2;1;-1)$, $\vec{a}_2=(0;1;0) \to \vec{b}_2=(0;3;2)$, $\vec{a}_3=(0;0;1) \to \vec{b}_3=(1;0;4)$. Найти его матрицу.
+    \item В пространстве $V_3$ оператор действует по правилу $\hat{A}(\vec{x}) = [\vec{x}, \vec{a}]$, где $\vec{a} = \vec{i} + 2\vec{j}$. Показать линейность, найти матрицу в каноническом базисе. (Подсказка: векторное раскладывается по базису, координаты записываются в столбец).
+    \item Вычислить $\begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}^{2026}$.
+    \item Линейный оператор $\hat{A}$ задаётся формулой $\hat{A}\vec{x} = (\vec{x}, \vec{c})\vec{c}$, где $\vec{c}=(1;2;0)$, $(\cdot,\cdot)$ -- скалярное произведение. Показать линейность, найти матрицу в каноническом базисе $\mathbb{R}^3$.
+    \item Даны матрицы операторов в $\mathbb{R}^3$: $A=\begin{pmatrix} 1 & 2 & 0 \\ 0 & 1 & 1 \\ 2 & 0 & 1 \end{pmatrix}$, $B=\begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$. Найти матрицу оператора $\hat{C} = 3\hat{A}\hat{B} - 2\hat{B}\hat{A}$ и проверить, равен ли он нулевому оператору.
+\end{enumerate}
+
+\vspace{0.5cm}
+\begin{center}
+\textcolor{mireaMain}{\rule{0.6\textwidth}{1pt}} \\
+\small \textbf{РТУ МИРЭА, Кафедра ВМ-3} \\
+\small Практическое занятие №5. Линейные операторы.
+\end{center}
+
+\end{document}

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лекция 6: Робототехника и Смена Базиса</title>
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Math.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        #canvas-wrapper {
+            flex: 2;
+            position: relative;
+            background: white;
+            border-right: 1px solid #ccc;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #sidebar {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #4682B4; /* defcolor */
+            padding-bottom: 10px;
+        }
+
+        .control-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type=range] {
+            width: 100%;
+        }
+
+        .math-display {
+            background: #fff;
+            padding: 10px;
+            border-left: 4px solid #4682B4;
+            margin: 10px 0;
+            overflow-x: auto;
+            text-align: center;
+            min-height: 1.5em;
+        }
+
+        .it-note {
+            background: #e8f5e9;
+            border-left: 4px solid #3CB464; /* itcolor */
+            padding: 10px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .legend {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .color-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+            background-color: #4682B4;
+        }
+    </style>
+</head>
+<body>
+
+<div id="canvas-wrapper">
+    <canvas id="mainCanvas"></canvas>
+    <div style="position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 4px; pointer-events: none; border: 1px solid #ddd;">
+        <small>🖱 ЛКМ: Переместить цель $\vec{v}_{world}$<br>🖱 Ползунок: Повернуть робота $\alpha$</small>
+    </div>
+</div>
+
+<div id="sidebar">
+    <h2>Робототехника: Смена Базиса</h2>
+
+    <div class="control-box">
+        <label for="angleSlider">Угол поворота робота $\alpha$: <span id="angleVal">30</span>°</label>
+        <input type="range" id="angleSlider" min="-180" max="180" value="30" step="1">
+    </div>
+
+    <div class="control-box">
+        <label>Задача:</label>
+        <p style="font-size: 0.9em; color: #555;">
+            Робот находится в начале координат и повернут на угол $\alpha$. 
+            Цель $\vec{v}_{world}$ задана в глобальных координатах. 
+            Необходимо найти координаты цели $\vec{v}_{local}$ в <strong>локальной системе координат робота</strong>, чтобы навести на нее сенсор.
+        </p>
+    </div>
+
+    <div class="control-box">
+        <label>Математическая модель:</label>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-box" style="background: blue;"></div>
+                <span>$\vec{v}_{world}$</span> — Цель в мире
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background: red;"></div>
+                <span>$\vec{v}_{local}$</span> — Цель для робота
+            </div>
+        </div>
+        
+        <div class="math-display">
+            $$ \vec{v}_{local} = R^{-1}(\alpha) \cdot \vec{v}_{world} $$
+        </div>
+        <p style="font-size: 0.85em; color: #666;">
+            Так как $R(\alpha)$ — ортогональная матрица, то $R^{-1} = R^T = R(-\alpha)$.
+        </p>
+    </div>
+
+    <div class="control-box">
+        <label>Вычисления в реальном времени:</label>
+        <div class="math-display" id="matrixDisplay"></div>
+        <div class="math-display" id="vectorDisplay"></div>
+    </div>
+
+    <div class="it-note">
+        <strong>IT-Контекст (GameDev/Robotics):</strong><br>
+        В игровых движках (Unity/Unreal) это преобразование называется <code>InverseTransformPoint</code>. 
+        Оно необходимо для AI (понимает ли робот, что враг слева или справа?) и для физики столкновений.
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const angleSlider = document.getElementById('angleSlider');
+    const angleVal = document.getElementById('angleVal');
+    const matrixDisplay = document.getElementById('matrixDisplay');
+    const vectorDisplay = document.getElementById('vectorDisplay');
+
+    // State
+    let width, height, cx, cy;
+    const scale = 50; 
+    
+    // Robot Angle
+    let angleRad = Math.PI / 6; // 30 degrees
+
+    // Target Vector in World Coordinates (Interactive)
+    let vecWorld = { x: 3.0, y: 2.0 }; 
+
+    function resize() {
+        width = canvas.parentElement.clientWidth;
+        height = canvas.parentElement.clientHeight;
+        canvas.width = width;
+        canvas.height = height;
+        cx = width / 2;
+        cy = height / 2;
+        draw();
+    }
+
+    window.addEventListener('resize', resize);
+
+    // Interaction
+    let isDragging = false;
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        
+        const tipX = cx + vecWorld.x * scale;
+        const tipY = cy - vecWorld.y * scale; 
+        
+        const dist = Math.sqrt((mx - tipX)**2 + (my - tipY)**2);
+        if (dist < 20) {
+            isDragging = true;
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        
+        vecWorld.x = (mx - cx) / scale;
+        vecWorld.y = -(my - cy) / scale; 
+        draw();
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'crosshair';
+    });
+
+    angleSlider.addEventListener('input', (e) => {
+        const deg = parseInt(e.target.value);
+        angleVal.textContent = deg;
+        angleRad = deg * Math.PI / 180;
+        draw();
+    });
+
+    // --- Drawing Functions ---
+
+    function drawGrid() {
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        
+        for (let x = cx % scale; x < width; x += scale) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+        }
+        for (let y = cy % scale; y < height; y += scale) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+        }
+
+        // Axes
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, cy); ctx.lineTo(width, cy);
+        ctx.moveTo(cx, 0); ctx.lineTo(cx, height);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#aaa';
+        ctx.font = "12px Arial";
+        ctx.fillText("x (World)", width - 70, cy - 5);
+        ctx.fillText("y (World)", cx + 5, 15);
+    }
+
+    function drawRobot(alpha) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-alpha); // Canvas rotation is clockwise for positive, math is CCW
+        
+        // Draw Robot Body (Triangle)
+        ctx.beginPath();
+        ctx.fillStyle = '#4682B4';
+        ctx.moveTo(20, 0);
+        ctx.lineTo(-15, 15);
+        ctx.lineTo(-15, -15);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw Local Axes
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(60, 0); ctx.stroke(); // X_local
+        ctx.fillStyle = 'red';
+        ctx.fillText("x'", 65, 5);
+
+        ctx.strokeStyle = 'green';
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -60); ctx.stroke(); // Y_local (up in robot frame)
+        ctx.fillStyle = 'green';
+        ctx.fillText("y'", 5, -65);
+
+        ctx.restore();
+    }
+
+    function drawArrow(fromX, fromY, vecX, vecY, color, label, dashed = false) {
+        const toX = fromX + vecX * scale;
+        const toY = fromY - vecY * scale;
+
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        if (dashed) ctx.setLineDash([6, 4]);
+        else ctx.setLineDash([]);
+        
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const headLen = 12;
+        const angle = Math.atan2(-vecY, vecX); 
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+        ctx.fill();
+
+        if (label) {
+            ctx.fillStyle = color;
+            ctx.font = "bold 14px Segoe UI";
+            ctx.fillText(label, toX + 10, toY - 10);
+        }
+    }
+
+    function updateLatex(vW, vL, alpha) {
+        const fmt = (n) => n.toFixed(2);
+        const deg = (alpha * 180 / Math.PI).toFixed(0);
+        
+        const c = Math.cos(alpha).toFixed(2);
+        const s = Math.sin(alpha).toFixed(2);
+        const cn = Math.cos(-alpha).toFixed(2);
+        const sn = Math.sin(-alpha).toFixed(2);
+
+        // Matrix Display
+        const matrixLatex = `
+            R^{-1}(\\alpha) = R(-\\alpha) = 
+            \\begin{pmatrix} 
+            ${cn} & ${-sn} \\\\ 
+            ${sn} & ${cn} 
+            \\end{pmatrix}
+        `;
+        katex.render(matrixLatex, matrixDisplay, { displayMode: true });
+
+        // Vector Display
+        const vecLatex = `
+            \\begin{aligned}
+            \\vec{v}_{world} &= \\begin{pmatrix} ${fmt(vW.x)} \\\\ ${fmt(vW.y)} \\end{pmatrix} 
+            \\implies 
+            \\vec{v}_{local} = \\begin{pmatrix} ${fmt(vL.x)} \\\\ ${fmt(vL.y)} \\end{pmatrix}
+            \\end{aligned}
+        `;
+        katex.render(vecLatex, vectorDisplay, { displayMode: true });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+        drawGrid();
+        drawRobot(angleRad);
+
+        // Calculate Local Coordinates
+        // v_local = R(-alpha) * v_world
+        const c = Math.cos(-angleRad);
+        const s = Math.sin(-angleRad);
+        
+        const xLocal = c * vecWorld.x - s * vecWorld.y;
+        const yLocal = s * vecWorld.x + c * vecWorld.y;
+        
+        const vecLocal = { x: xLocal, y: yLocal };
+
+        // Draw World Vector (Blue)
+        drawArrow(cx, cy, vecWorld.x, vecWorld.y, 'blue', 'v_world');
+
+        // Draw Local Vector Visualization
+        // To visualize v_local, we draw it starting from the robot's center, 
+        // but aligned with the robot's axes? 
+        // Actually, simpler: Draw the vector components relative to the rotated frame visually.
+        // But standard practice: Show the vector in the "Local Frame" overlay or just show the result.
+        
+        // Let's draw the "Ghost" vector in local coordinates superimposed on the robot's axes
+        // We need to transform it back to world coords to draw it on top of the robot correctly oriented?
+        // No, let's just draw the vector v_local starting from origin, but using the ROBOT'S basis vectors.
+        
+        // Basis vectors of Robot in World Coords:
+        // e1' = (cos a, sin a)
+        // e2' = (-sin a, cos a)
+        
+        // Visualizing v_local means: go v_local.x along e1' and v_local.y along e2'
+        const e1x = Math.cos(angleRad);
+        const e1y = Math.sin(angleRad);
+        const e2x = -Math.sin(angleRad);
+        const e2y = Math.cos(angleRad);
+        
+        // Tip of the vector if we use local coords on the robot frame
+        const visX = vecLocal.x * e1x + vecLocal.y * e2x;
+        const visY = vecLocal.x * e1y + vecLocal.y * e2y;
+        
+        // This should match vecWorld exactly (geometric identity)
+        // So drawing it is redundant? 
+        // Instead, let's draw the projection lines onto the Robot's axes.
+        
+        // Projection on X_local
+        const projX_x = vecLocal.x * e1x;
+        const projX_y = vecLocal.x * e1y;
+        
+        // Projection on Y_local
+        const projY_x = vecLocal.y * e2x;
+        const projY_y = vecLocal.y * e2y;
+
+        // Draw Dashed Lines for decomposition in Local Frame
+        ctx.beginPath();
+        ctx.strokeStyle = 'red';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 2;
+        
+        // From Tip of World Vector, drop perpendicular to Robot X axis
+        // Point on Robot X axis: (projX_x, projX_y)
+        const tipWX = cx + vecWorld.x * scale;
+        const tipWY = cy - vecWorld.y * scale;
+        const ptOnLocX_x = cx + projX_x * scale;
+        const ptOnLocX_y = cy - projX_y * scale;
+        
+        ctx.moveTo(tipWX, tipWY);
+        ctx.lineTo(ptOnLocX_x, ptOnLocX_y);
+        ctx.stroke();
+        
+        // From Tip of World Vector, drop perpendicular to Robot Y axis
+        const ptOnLocY_x = cx + projY_x * scale;
+        const ptOnLocY_y = cy - projY_y * scale;
+        
+        ctx.moveTo(tipWX, tipWY);
+        ctx.lineTo(ptOnLocY_x, ptOnLocY_y);
+        ctx.stroke();
+        
+        ctx.setLineDash([]);
+
+        // Update Text
+        updateLatex(vecWorld, vecLocal, angleRad);
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });
+        resize();
+    });
+
+</script>
+</body>
+</html>
