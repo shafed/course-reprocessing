@@ -23,7 +23,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
-\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
 \fancyhead[R]{\thepage}
 
 % Окружения с цветами
@@ -391,7 +391,7 @@
 
   \textit{Достаточность.} Пусть $\vec{a} \parallel \vec{b}$ и $\vec{a}
   \neq \vec{0}$ (если $\vec{a} = \vec{0}$, то по свойствам системы из
-  одного вектора и зависимости подсистемы пара $\vec{a}, \vec{b}$ линейно
+    одного вектора и зависимости подсистемы пара $\vec{a}, \vec{b}$ линейно
   зависима). Тогда найдётся число $\lambda$ такое, что $\vec{b} =
   \lambda\vec{a}$, а это по критерию линейной зависимости означает, что
   $\vec{a}$ и $\vec{b}$ линейно зависимы.
@@ -419,7 +419,7 @@
 
   \textit{Достаточность.} Пусть $\vec{a}, \vec{b}, \vec{c}$ компланарны и
   $\vec{a} \nparallel \vec{b}$ (если $\vec{a} \parallel \vec{b}$, то
-  $\vec{a}, \vec{b}$ уже линейно зависимы, и по свойству о зависимости
+    $\vec{a}, \vec{b}$ уже линейно зависимы, и по свойству о зависимости
   подсистемы вся тройка линейно зависима). Приведём векторы $\vec{a},
   \vec{b}, \vec{c}$ к одному началу $O$ (рис.~\ref{fig:coplanar}).
   Раскладывая $\vec{c} = \overrightarrow{OC}$ по сторонам
@@ -456,7 +456,7 @@
     \node[below left] at (O) {$O$};
   \end{tikzpicture}
   \caption{$\vec{c} = \overrightarrow{OA} + \overrightarrow{OB} =
-  \alpha\vec{a} + \beta\vec{b}$ -- вектор $\vec{c}$ лежит в плоскости
+    \alpha\vec{a} + \beta\vec{b}$ -- вектор $\vec{c}$ лежит в плоскости
   векторов $\vec{a}$ и $\vec{b}$.}
   \label{fig:coplanar}
 \end{figure}
@@ -469,144 +469,149 @@
   Пусть $\Sigma = \{\vec{a}, \vec{b}, \vec{c}, \vec{d}\}$. Рассмотрим
   подсистему $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$.
 
-  1) Если $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$ линейно зависима, то и
-  вся система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}, \vec{d}\}$ линейно
-  зависима (зависимость подсистемы влечёт зависимость системы).
+1) Если $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$ линейно зависима, то и
+вся система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}, \vec{d}\}$ линейно
+зависима (зависимость подсистемы влечёт зависимость системы).
 
-  2) Если $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$ линейно независима, то
-  по критерию компланарности векторы $\vec{a}, \vec{b}, \vec{c}$
-  некомпланарны. Приведём все векторы к одному началу $O$
-  (рис.~\ref{fig:four}). Достраивая параллелепипед, разложим $\vec{d}$ по
-  трём рёбрам:
-  \[
-    \vec{d} = \overrightarrow{OA} + \overrightarrow{OB} +
-    \overrightarrow{OC} = \alpha\vec{a} + \beta\vec{b} + \gamma\vec{c}.
-  \]
-  Значит, $\vec{d}$ линейно выражается через $\vec{a}, \vec{b}, \vec{c}$,
-  и система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}, \vec{d}\}$ линейно
-  зависима.
+2) Если $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$ линейно независима, то
+по критерию компланарности векторы $\vec{a}, \vec{b}, \vec{c}$
+некомпланарны. Приведём все векторы к одному началу $O$
+(рис.~\ref{fig:four}). Достраивая параллелепипед, разложим $\vec{d}$ по
+трём рёбрам:
+\[
+\vec{d} = \overrightarrow{OA} + \overrightarrow{OB} +
+\overrightarrow{OC} = \alpha\vec{a} + \beta\vec{b} + \gamma\vec{c}.
+\]
+Значит, $\vec{d}$ линейно выражается через $\vec{a}, \vec{b}, \vec{c}$,
+и система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}, \vec{d}\}$ линейно
+зависима.
 
-  В обоих случаях четыре вектора линейно зависимы.
+В обоих случаях четыре вектора линейно зависимы.
 \end{myproof}
 
 \begin{figure}[h!]
-  \centering
-  \begin{tikzpicture}[scale=1.3]
-    \coordinate (O) at (0,0);
-    \coordinate (A) at (2,0);          % a
-    \coordinate (B) at (1,0.6);        % b
-    \coordinate (C) at (0,1.8);        % c
-    \coordinate (AB) at (3,0.6);
-    \coordinate (AC) at (2,1.8);
-    \coordinate (BC) at (1,2.4);
-    \coordinate (D) at (3,2.4);        % d
+\centering
+\begin{tikzpicture}[scale=1.3]
+\coordinate (O) at (0,0);
+\coordinate (A) at (2,0);          % a
+\coordinate (B) at (1,0.6);        % b
+\coordinate (C) at (0,1.8);        % c
+\coordinate (AB) at (3,0.6);
+\coordinate (AC) at (2,1.8);
+\coordinate (BC) at (1,2.4);
+\coordinate (D) at (3,2.4);        % d
 
-    % Hidden/back edges dashed
-    \draw[dashed, gray] (O) -- (B);
-    \draw[dashed, gray] (B) -- (AB);
-    \draw[dashed, gray] (B) -- (BC);
+% Hidden/back edges dashed
+\draw[dashed, gray] (O) -- (B);
+\draw[dashed, gray] (B) -- (AB);
+\draw[dashed, gray] (B) -- (BC);
 
-    % Front edges
-    \draw[gray] (A) -- (AB) -- (D) -- (AC) -- cycle;
-    \draw[gray] (C) -- (AC);
-    \draw[gray] (C) -- (BC) -- (D);
-    \draw[gray] (A) -- (AB);
+% Front edges
+\draw[gray] (A) -- (AB) -- (D) -- (AC) -- cycle;
+\draw[gray] (C) -- (AC);
+\draw[gray] (C) -- (BC) -- (D);
+\draw[gray] (A) -- (AB);
 
-    % Vectors
-    \draw[->, red, thick] (O) -- (A) node[midway, below] {$\vec{a}$};
-    \draw[->, blue, thick] (O) -- (B) node[midway, above left] {$\vec{b}$};
-    \draw[->, green!60!black, thick] (O) -- (C) node[midway, left] {$\vec{c}$};
-    \draw[->, purple, thick] (O) -- (D) node[midway, above right] {$\vec{d}$};
+% Vectors
+\draw[->, red, thick] (O) -- (A) node[midway, below] {$\vec{a}$};
+\draw[->, blue, thick] (O) -- (B) node[midway, above left] {$\vec{b}$};
+\draw[->, green!60!black, thick] (O) -- (C) node[midway, left] {$\vec{c}$};
+\draw[->, purple, thick] (O) -- (D) node[midway, above right] {$\vec{d}$};
 
-    \node[below left] at (O) {$O$};
-    \node[below right] at (A) {$A$};
-    \node[above left] at (B) {$B$};
-    \node[left] at (C) {$C$};
-    \node[above right] at (D) {$D$};
-  \end{tikzpicture}
-  \caption{$\vec{d} = \alpha\vec{a} + \beta\vec{b} + \gamma\vec{c}$ --
-  любой четвёртый вектор раскладывается по трём некомпланарным.}
-  \label{fig:four}
+\node[below left] at (O) {$O$};
+\node[below right] at (A) {$A$};
+\node[above left] at (B) {$B$};
+\node[left] at (C) {$C$};
+\node[above right] at (D) {$D$};
+\end{tikzpicture}
+\caption{$\vec{d} = \alpha\vec{a} + \beta\vec{b} + \gamma\vec{c}$ --
+любой четвёртый вектор раскладывается по трём некомпланарным.}
+\label{fig:four}
 \end{figure}
 
 \begin{remarkIT}{Размерность 3D-пространства}{dim3_it}
-  Теорема о четырёх векторах -- это строгое объяснение того, почему наше
-  пространство трёхмерно: максимальное число линейно независимых векторов
-  в $V_3$ равно трём. В компьютерной графике именно три независимых
-  вектора образуют базис локальной системы координат объекта (model
-  space), а любой четвёртый вектор гарантированно выражается через них.
+Теорема о четырёх векторах -- это строгое объяснение того, почему наше
+пространство трёхмерно: максимальное число линейно независимых векторов
+в $V_3$ равно трём. В компьютерной графике именно три независимых
+вектора образуют базис локальной системы координат объекта (model
+space), а любой четвёртый вектор гарантированно выражается через них.
 \end{remarkIT}
 
 \subsubsection*{Пример: исследование системы векторов}
 
 \begin{definition}{Исследование тройки векторов на линейную
-  зависимость}{mixed_prod_example}
-  Исследовать на линейную зависимость систему векторов $\Sigma =
-  \{\vec{a}, \vec{b}, \vec{c}\} \subset V_3$, если
-  \[
-    \vec{a}(2, -1, 3), \quad \vec{b}(3, 2, 1), \quad \vec{c}(1, 0, 4).
-  \]
+зависимость}{mixed_prod_example}
+Исследовать на линейную зависимость систему векторов $\Sigma =
+\{\vec{a}, \vec{b}, \vec{c}\} \subset V_3$, если
+\[
+\vec{a}(2, -1, 3), \quad \vec{b}(3, 2, 1), \quad \vec{c}(1, 0, 4).
+\]
 
-  \textbf{Идея решения.} По критерию компланарности три вектора в $V_3$
-  линейно зависимы тогда и только тогда, когда они компланарны, а это
-  равносильно равенству нулю их \emph{смешанного произведения}:
-  \[
-    \Sigma \text{ линейно зависима} \iff \vec{a}, \vec{b}, \vec{c} \text{
-    компланарны} \iff (\vec{a}, \vec{b}, \vec{c}) = 0.
-  \]
-  Смешанное произведение равно определителю, составленному из координат
-  векторов:
-  \[
-    (\vec{a}, \vec{b}, \vec{c}) =
-    \begin{vmatrix}
-      2 & -1 & 3 \\
-      3 & 2 & 1 \\
-      1 & 0 & 4
-    \end{vmatrix}.
-  \]
+\textbf{Идея решения.} По критерию компланарности три вектора в $V_3$
+линейно зависимы тогда и только тогда, когда они компланарны, а это
+равносильно равенству нулю их \emph{смешанного произведения}:
+\[
+\Sigma \text{ линейно зависима} \iff \vec{a}, \vec{b}, \vec{c} \text{
+компланарны} \iff (\vec{a}, \vec{b}, \vec{c}) = 0.
+\]
+Смешанное произведение равно определителю, составленному из координат
+векторов:
+\[
+(\vec{a}, \vec{b}, \vec{c}) =
+\begin{vmatrix}
+  2 & -1 & 3 \\
+  3 & 2 & 1 \\
+  1 & 0 & 4
+\end{vmatrix}.
+\]
 
-  \textbf{Вычисление.} Удобно разложить определитель по третьей строке,
-  так как в ней есть нуль:
-  \[
-    \begin{vmatrix}
-      2 & -1 & 3 \\
-      3 & 2 & 1 \\
-      1 & 0 & 4
-    \end{vmatrix}
-    = 1 \cdot
-    \begin{vmatrix} -1 & 3 \\ 2 & 1 \end{vmatrix}
-    - 0 \cdot
-    \begin{vmatrix} 2 & 3 \\ 3 & 1 \end{vmatrix}
-    + 4 \cdot
-    \begin{vmatrix} 2 & -1 \\ 3 & 2 \end{vmatrix}.
-  \]
-  Считаем миноры:
-  \[
-    \begin{vmatrix} -1 & 3 \\ 2 & 1 \end{vmatrix} = (-1)\cdot 1 - 3\cdot 2
-    = -1 - 6 = -7,
-    \qquad
-    \begin{vmatrix} 2 & -1 \\ 3 & 2 \end{vmatrix} = 2\cdot 2 - (-1)\cdot 3
-    = 4 + 3 = 7.
-  \]
-  Следовательно,
-  \[
-    (\vec{a}, \vec{b}, \vec{c}) = 1\cdot(-7) + 4\cdot 7 = -7 + 28 = 21
-    \neq 0.
-  \]
+\textbf{Вычисление.} Удобно разложить определитель по третьей строке,
+так как в ней есть нуль:
+\[
+\begin{vmatrix}
+  2 & -1 & 3 \\
+  3 & 2 & 1 \\
+  1 & 0 & 4
+\end{vmatrix}
+= 1 \cdot
+\begin{vmatrix} -1 & 3 \\ 2 & 1
+\end{vmatrix}
+- 0 \cdot
+\begin{vmatrix} 2 & 3 \\ 3 & 1
+\end{vmatrix}
++ 4 \cdot
+\begin{vmatrix} 2 & -1 \\ 3 & 2
+\end{vmatrix}.
+\]
+Считаем миноры:
+\[
+\begin{vmatrix} -1 & 3 \\ 2 & 1
+\end{vmatrix} = (-1)\cdot 1 - 3\cdot 2
+= -1 - 6 = -7,
+\qquad
+\begin{vmatrix} 2 & -1 \\ 3 & 2
+\end{vmatrix} = 2\cdot 2 - (-1)\cdot 3
+= 4 + 3 = 7.
+\]
+Следовательно,
+\[
+(\vec{a}, \vec{b}, \vec{c}) = 1\cdot(-7) + 4\cdot 7 = -7 + 28 = 21
+\neq 0.
+\]
 
-  \textbf{Вывод.} Поскольку смешанное произведение $(\vec{a}, \vec{b},
-  \vec{c}) = 21 \neq 0$, векторы $\vec{a}, \vec{b}, \vec{c}$
-  некомпланарны, а значит, система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}\}$
-  \textbf{линейно независима}.
+\textbf{Вывод.} Поскольку смешанное произведение $(\vec{a}, \vec{b},
+\vec{c}) = 21 \neq 0$, векторы $\vec{a}, \vec{b}, \vec{c}$
+некомпланарны, а значит, система $\Sigma = \{\vec{a}, \vec{b}, \vec{c}\}$
+\textbf{линейно независима}.
 \end{definition}
 
 \begin{remarkIT}{Проверка базиса в коде}{basis_check_it}
-  На практике проверка тройки векторов на линейную независимость в $V_3$
-  сводится к вычислению определителя $3\times 3$ (что в коде есть
-  \texttt{numpy.linalg.det}). Ненулевой определитель гарантирует, что
-  векторы образуют базис и матрица перехода обратима. Если же
-  определитель близок к нулю, базис «вырожден» -- это сигнал о численной
-  неустойчивости при пересчёте координат.
+На практике проверка тройки векторов на линейную независимость в $V_3$
+сводится к вычислению определителя $3\times 3$ (что в коде есть
+\texttt{numpy.linalg.det}). Ненулевой определитель гарантирует, что
+векторы образуют базис и матрица перехода обратима. Если же
+определитель близок к нулю, базис «вырожден» -- это сигнал о численной
+неустойчивости при пересчёте координат.
 \end{remarkIT}
 
 \section*{Заключение}
