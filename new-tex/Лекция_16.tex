@@ -20,33 +20,42 @@
 \definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
 
 % Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
 \fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
 \fancyhead[R]{\thepage}
 
-% Окружения с цветами
-\newtcbtheorem[number within=section]{definition}{Определение}{
+% Окружения с цветами (без автонумерации заголовков)
+\newtcbtheorem[no counter]{definition}{Определение}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=defcolor}
 }{def}
 
-\newtcbtheorem[number within=section]{theorem}{Теорема}{
+\newtcbtheorem[no counter]{theorem}{Теорема}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=thmcolor}
 }{thm}
 
-\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
   enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=itcolor}
 }{it}
+
+\newtcbtheorem[auto counter]{exampleBox}{Пример}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=gray!5, colframe=proofcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=proofcolor}
+}{ex}
 
 \newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
 
@@ -60,7 +69,7 @@
 \begin{document}
 
 \maketitle
-\setcounter{section}{16}
+\thispagestyle{fancy}
 
 \section*{Введение: Зачем нужны базис и размерность?}
 
@@ -109,7 +118,7 @@
   (JPEG, MP3).
 \end{remarkIT}
 
-\subsection{Понятие базиса и размерности}
+\subsection*{Понятие базиса и размерности}
 
 Начнём с интуиции. Размерность --- это максимальное число направлений,
 вдоль которых можно двигаться «независимо», то есть так, чтобы ни одно
@@ -210,7 +219,7 @@
   растёт размерность, а значит и число свободных параметров.
 \end{remarkIT}
 
-\subsection{Теорема о разложении вектора по базису.
+\subsection*{Теорема о разложении вектора по базису.
 Преобразование координат}
 
 Главная ценность базиса в том, что он задаёт \emph{однозначные}
@@ -366,7 +375,7 @@
     \vec{e}\,'_n = c_{1n}\vec{e}_1 + c_{2n}\vec{e}_2 + \dots +
     c_{nn}\vec{e}_n.
   \end{cases}
-  \tag{16.5}
+  \tag{16.3}
 \end{equation}
 Коэффициенты разложений соберём в матрицу
 \[
@@ -382,12 +391,12 @@
 $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание: координаты
 вектора $\vec{e}\,'_i$ в базисе $\mathcal{B}$ стоят в $i$-м
 \emph{столбце} матрицы $C$. В строчной (символической) форме равенства
-(16.5) записываются как
+(16.3) записываются как
 \begin{equation}
   \mathcal{E}' = \mathcal{E} \cdot C, \qquad
   \mathcal{E} = (\vec{e}_1, \dots, \vec{e}_n), \quad
   \mathcal{E}' = (\vec{e}\,'_1, \dots, \vec{e}\,'_n).
-  \tag{16.6}
+  \tag{16.4}
 \end{equation}
 
 Подставим разложения базисных векторов в $\vec{u} = \sum_i x'_i
@@ -402,7 +411,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
 совпадают:
 \begin{equation}
   x_j = \sum_{i=1}^{n} c_{ji} x'_i, \qquad j = 1, 2, \dots, n.
-  \tag{16.7}
+  \tag{16.5}
 \end{equation}
 Подробно это система
 \begin{equation}
@@ -412,7 +421,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
     \quad \vdots \\
     x_n = c_{n1}x'_1 + c_{n2}x'_2 + \dots + c_{nn}x'_n,
   \end{cases}
-  \tag{16.8}
+  \tag{16.6}
 \end{equation}
 которую в матричном виде записывают так:
 \begin{equation}
@@ -421,7 +430,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
   = C \cdot
   \begin{pmatrix} x'_1 \\ x'_2 \\ \vdots \\ x'_n
   \end{pmatrix}_{\mathcal{B}'}.
-  \tag{16.9}
+  \tag{16.7}
 \end{equation}
 
 \begin{theorem}{Невырожденность матрицы перехода}{transition_thm}
@@ -432,7 +441,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
 \begin{myproof}
   Так как и $\mathcal{B}$, и $\mathcal{B}'$ --- базисы, можно
   разложить старый базис через новый: $\mathcal{E} = \mathcal{E}'
-  \cdot C'$ с некоторой матрицей $C'$. Подставляя в (16.6), получаем
+  \cdot C'$ с некоторой матрицей $C'$. Подставляя в (16.4), получаем
   \[
     \mathcal{E} = \mathcal{E}' \cdot C' = \mathcal{E} \cdot C \cdot
     C' = \mathcal{E} \cdot D, \qquad D = C \cdot C'.
@@ -442,10 +451,10 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
   \begin{equation}
     \vec{0} = d_{1i}\vec{e}_1 + \dots + (d_{ii} - 1)\vec{e}_i + \dots
     + d_{ni}\vec{e}_n.
-    \tag{16.10}
+    \tag{16.8}
   \end{equation}
   Так как $\vec{e}_1, \dots, \vec{e}_n$ линейно независимы,
-  комбинация (16.10) тривиальна:
+  комбинация (16.8) тривиальна:
   \[
     d_{1i} = 0, \dots, d_{ii} - 1 = 0, \dots, d_{ni} = 0
     \implies d_{ij} = \delta_{ij} =
@@ -456,7 +465,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
   C^{-1}$ и $\det C \neq 0$. Матрица $C$ невырождена.
 \end{myproof}
 
-Так как $C$ невырождена, из формулы (16.9) можно выразить новые
+Так как $C$ невырождена, из формулы (16.7) можно выразить новые
 координаты через старые:
 \begin{equation}
   \begin{pmatrix} x'_1 \\ x'_2 \\ \vdots \\ x'_n
@@ -464,13 +473,13 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
   = C^{-1} \cdot
   \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n
   \end{pmatrix}_{\mathcal{B}}.
-  \tag{16.11}
+  \tag{16.9}
 \end{equation}
-Формула (16.11) --- это \textbf{преобразование координат вектора при
+Формула (16.9) --- это \textbf{преобразование координат вектора при
 переходе к новому базису}.
 
 \begin{remarkIT}{Системы координат в игровых движках}{gamedev_basis}
-  Формулы (16.9) и (16.11) --- основа работы графического конвейера.
+  Формулы (16.7) и (16.9) --- основа работы графического конвейера.
   Матрица перехода $C$ соответствует матрице модели (Model matrix),
   переводящей координаты из локального пространства объекта в мировое,
   а обратная матрица $C^{-1}$ --- переходу из мирового пространства в
@@ -517,7 +526,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
     \end{pmatrix}.
   \]
 
-  \textbf{3. Новые координаты} по формуле (16.11):
+  \textbf{3. Новые координаты} по формуле (16.9):
   \[
     \begin{pmatrix} x'_1 \\ x'_2
     \end{pmatrix}_{\mathcal{B}'}
@@ -538,12 +547,12 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
     \end{pmatrix}.
   \]
 
-  \textbf{Проверка} по формуле (16.9): $\vec{u} = 3\vec{e}\,'_1 +
+  \textbf{Проверка} по формуле (16.7): $\vec{u} = 3\vec{e}\,'_1 +
   1\cdot\vec{e}\,'_2 = 3(1,1)^T + (1,-1)^T = (4, 2)^T$. Совпадает с
   исходным вектором --- верно.
 \end{definition}
 
-\subsection{Линейная оболочка. Система образующих.
+\subsection*{Линейная оболочка. Система образующих.
 Второе определение базиса}
 
 До сих пор базис мы определяли через размерность ($n$ независимых
@@ -832,7 +841,7 @@ $\mathcal{B}$ к базису $\mathcal{B}'$. Обратите внимание:
     векторами сводятся к операциям над координатами.
   \item Переход к другому базису описывается невырожденной матрицей
     перехода $C$: старые координаты получаются из новых по формуле
-    (16.9), а новые из старых --- по формуле (16.11) с матрицей
+    (16.7), а новые из старых --- по формуле (16.9) с матрицей
     $C^{-1}$.
   \item Понятия линейной оболочки, системы образующих и теорема
     Штейница дают второе, эквивалентное определение базиса как линейно

@@ -20,28 +20,30 @@
 \definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
 
 % Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
 \fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
 \fancyhead[R]{\thepage}
 
-% Окружения с цветами
-\newtcbtheorem[number within=section]{definition}{Определение}{
+% Окружения с цветами (без автонумерации заголовков)
+\newtcbtheorem[no counter]{definition}{Определение}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=defcolor}
 }{def}
 
-\newtcbtheorem[number within=section]{theorem}{Теорема}{
+\newtcbtheorem[no counter]{theorem}{Теорема}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=thmcolor}
 }{thm}
 
-\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
   enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
@@ -60,7 +62,7 @@
 \begin{document}
 
 \maketitle
-\setcounter{section}{11}
+\thispagestyle{fancy}
 
 \section*{Введение: Зачем IT-специалисту квадрики?}
 
@@ -129,7 +131,7 @@
 порядка, научиться по уравнению распознавать тип поверхности и
 понимать её геометрию через метод сечений.
 
-\subsection{Алгебраические поверхности и их порядок}
+\subsection*{Алгебраические поверхности и их порядок}
 
 Прежде чем перечислять конкретные формы, дадим строгое определение
 того, что мы классифицируем.
@@ -155,18 +157,20 @@
 \begin{definition}{Примеры поверхностей первого и второго
   порядка}{order_examples}
   \textbf{Первый порядок.} Уравнение
-  \[
-    Ax + By + Cz + D = 0
-  \]
+  \begin{equation}
+    Ax + By + Cz + D = 0 \tag{11.1}
+  \end{equation}
   задаёт алгебраическую поверхность 1-го порядка — это
   \textbf{плоскость} (при условии, что не все $A, B, C$ равны нулю).
 
   \textbf{Второй порядок (общий вид).}
-  \begin{align*}
+  \begin{equation}
+  \begin{aligned}
     \Phi(x, y, z) = {}& a_{11}x^2 + a_{22}y^2 + a_{33}z^2
     + 2a_{12}xy + 2a_{13}xz + 2a_{23}yz \\
     & {}+ 2a_1 x + 2a_2 y + 2a_3 z + a_0 = 0.
-  \end{align*}
+  \end{aligned} \tag{11.2}
+  \end{equation}
   Это \textbf{алгебраическая поверхность 2-го порядка}. Старшие члены
   образуют квадратичную форму с матрицей
   \[
@@ -198,22 +202,22 @@
 параллельными координатным, и анализируются получающиеся плоские
 кривые.
 
-\subsection{Невырожденные поверхности второго порядка}
+\subsection*{Невырожденные поверхности второго порядка}
 
 \subsubsection*{1. Эллипсоид}
 
 \begin{definition}{Эллипсоид}{ellipsoid_def}
   \textbf{Эллипсоидом} называется поверхность, задаваемая в
   канонической системе координат уравнением
-  \[
-    \frac{x^2}{a^2} + \frac{y^2}{b^2} + \frac{z^2}{c^2} = 1,
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} + \frac{y^2}{b^2} + \frac{z^2}{c^2} = 1, \tag{11.3}
+  \end{equation}
   где $a, b, c > 0$ — \textbf{полуоси} эллипсоида.
 
   В частном случае $a = b = c = R$ получаем \textbf{сферу}:
-  \[
-    x^2 + y^2 + z^2 = R^2.
-  \]
+  \begin{equation}
+    x^2 + y^2 + z^2 = R^2. \tag{11.4}
+  \end{equation}
 
   \textbf{Метод сечений.} Сечение плоскостью $z = h$ (при $|h| < c$)
   даёт эллипс
@@ -261,9 +265,9 @@
 
 \begin{definition}{Однополостный гиперболоид}{one_hyperboloid_def}
   \textbf{Однополостным гиперболоидом} называется поверхность
-  \[
-    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1.
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1. \tag{11.5}
+  \end{equation}
 
   \textbf{Метод сечений.} Сечение любой горизонтальной плоскостью
   $z = h$ — эллипс
@@ -302,9 +306,9 @@
 
 \begin{definition}{Двуполостный гиперболоид}{two_hyperboloid_def}
   \textbf{Двуполостным гиперболоидом} называется поверхность
-  \[
-    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = -1.
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = -1. \tag{11.6}
+  \end{equation}
 
   \textbf{Метод сечений.} При $z = h$ имеем
   \[
@@ -344,9 +348,9 @@
 
 \begin{definition}{Конус}{cone_def}
   \textbf{Конусом второго порядка} называется поверхность
-  \[
-    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 0.
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 0. \tag{11.7}
+  \end{equation}
 
   \textbf{Метод сечений.} При $z = h$ получаем эллипс
   $\frac{x^2}{a^2} + \frac{y^2}{b^2} = \frac{h^2}{c^2}$, радиус
@@ -389,9 +393,9 @@
 
 \begin{definition}{Эллиптический параболоид}{ell_paraboloid_def}
   \textbf{Эллиптическим параболоидом} называется поверхность
-  \[
-    \frac{x^2}{p} + \frac{y^2}{q} = 2z, \qquad p > 0,\; q > 0.
-  \]
+  \begin{equation}
+    \frac{x^2}{p} + \frac{y^2}{q} = 2z, \qquad p > 0,\; q > 0. \tag{11.8}
+  \end{equation}
 
   \textbf{Метод сечений.} Сечение $z = h > 0$ — эллипс
   $\frac{x^2}{p} + \frac{y^2}{q} = 2h$ (при $h < 0$ точек нет, при
@@ -432,9 +436,9 @@
 \begin{definition}{Гиперболический параболоид}{hyp_paraboloid_def}
   \textbf{Гиперболическим параболоидом} («седлом») называется
   поверхность
-  \[
-    \frac{x^2}{p} - \frac{y^2}{q} = 2z, \qquad p > 0,\; q > 0.
-  \]
+  \begin{equation}
+    \frac{x^2}{p} - \frac{y^2}{q} = 2z, \qquad p > 0,\; q > 0. \tag{11.9}
+  \end{equation}
 
   \textbf{Метод сечений.} Сечение $z = h \ne 0$ — гипербола (при
   $h = 0$ — пара пересекающихся прямых). Сечение плоскостью $y = 0$ —
@@ -470,7 +474,7 @@
   специально проектируются, чтобы «выскакивать» из седловых областей.
 \end{remarkIT}
 
-\subsection{Цилиндрические поверхности}
+\subsection*{Цилиндрические поверхности}
 
 Цилиндр получается параллельным переносом плоской кривой
 (направляющей) вдоль фиксированного направления (образующей). Если
@@ -482,9 +486,9 @@
 
 \begin{definition}{Эллиптический цилиндр}{ell_cyl_def}
   \textbf{Эллиптическим цилиндром} называется поверхность
-  \[
-    \frac{x^2}{a^2} + \frac{y^2}{b^2} = 1.
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} + \frac{y^2}{b^2} = 1. \tag{11.10}
+  \end{equation}
   В сечении любой плоскостью $z = \text{const}$ — один и тот же эллипс
   с полуосями $a$ и $b$; образующие — прямые, параллельные оси $Oz$.
   При $a = b$ получается круговой цилиндр.
@@ -514,9 +518,9 @@
 
 \begin{definition}{Гиперболический цилиндр}{hyp_cyl_def}
   \textbf{Гиперболическим цилиндром} называется поверхность
-  \[
-    \frac{x^2}{a^2} - \frac{y^2}{b^2} = 1.
-  \]
+  \begin{equation}
+    \frac{x^2}{a^2} - \frac{y^2}{b^2} = 1. \tag{11.11}
+  \end{equation}
   В каждом сечении $z = \text{const}$ — одна и та же гипербола с
   асимптотами $y = \pm \frac{b}{a} x$; образующие параллельны оси
   $Oz$. Поверхность состоит из двух «желобов».
@@ -552,9 +556,9 @@
 
 \begin{definition}{Параболический цилиндр}{par_cyl_def}
   \textbf{Параболическим цилиндром} называется поверхность
-  \[
-    y^2 = 2px.
-  \]
+  \begin{equation}
+    y^2 = 2px. \tag{11.12}
+  \end{equation}
   В каждом сечении $z = \text{const}$ — одна и та же парабола;
   образующие параллельны оси $Oz$.
 \end{definition}
@@ -585,7 +589,7 @@
   для раскроя листового металла.
 \end{remarkIT}
 
-\subsection{Прямолинейные образующие}
+\subsection*{Прямолинейные образующие}
 
 \begin{definition}{Прямолинейная образующая}{ruling_def}
   \textbf{Прямолинейной образующей} поверхности называется прямая

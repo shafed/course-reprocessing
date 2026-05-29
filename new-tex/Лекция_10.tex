@@ -20,28 +20,30 @@
 \definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
 
 % Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
 \fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
 \fancyhead[R]{\thepage}
 
-% Окружения с цветами
-\newtcbtheorem[number within=section]{definition}{Определение}{
+% Окружения с цветами (без автонумерации заголовков)
+\newtcbtheorem[no counter]{definition}{Определение}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=defcolor}
 }{def}
 
-\newtcbtheorem[number within=section]{theorem}{Теорема}{
+\newtcbtheorem[no counter]{theorem}{Теорема}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=thmcolor}
 }{thm}
 
-\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
   enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
@@ -60,7 +62,7 @@
 \begin{document}
 
 \maketitle
-\setcounter{section}{10}
+\thispagestyle{fancy}
 
 \section*{Введение: Геометрия пространства как язык 3D-вычислений}
 
@@ -121,7 +123,7 @@
 которых строятся геометрические алгоритмы во всех IT-областях. Перейдём
 к их аналитическому описанию.
 
-\subsection{Уравнения плоскости в пространстве}
+\subsection*{Уравнения плоскости в пространстве}
 
 Начнём с общего понятия поверхности, заданной уравнением, а затем
 получим все формы уравнения плоскости.
@@ -155,7 +157,7 @@
   Любая плоскость в пространстве задаётся уравнением вида
   \begin{equation}
     Ax + By + Cz + D = 0, \qquad A^2+B^2+C^2 \neq 0.
-    \label{eq:general}
+    \tag{10.1}\label{eq:general}
   \end{equation}
   И обратно: всякое уравнение вида \eqref{eq:general} определяет в
   пространстве плоскость.
@@ -175,7 +177,7 @@
   проходящей через точку $M_0$ перпендикулярно $\vec{n}$:
   \begin{equation}
     A(x - x_0) + B(y - y_0) + C(z - z_0) = 0.
-    \label{eq:point_normal}
+    \tag{10.2}\label{eq:point_normal}
   \end{equation}
   Раскроем скобки:
   \[
@@ -225,7 +227,7 @@
   получим \textbf{уравнение плоскости в отрезках}:
   \begin{equation}
     \frac{x}{a} + \frac{y}{b} + \frac{z}{c} = 1.
-    \label{eq:intercept}
+    \tag{10.3}\label{eq:intercept}
   \end{equation}
   Числа $a, b, c$ --- это длины (с учётом знака) отрезков, отсекаемых
   плоскостью на координатных осях.
@@ -251,7 +253,7 @@
       x_2 - x_1 & y_2 - y_1 & z_2 - z_1 \\
       x_3 - x_1 & y_3 - y_1 & z_3 - z_1
     \end{vmatrix} = 0.
-    \label{eq:three_points}
+    \tag{10.4}\label{eq:three_points}
   \end{equation}
 \end{definition}
 
@@ -259,7 +261,7 @@
   \textbf{Нормальным уравнением плоскости} называется
   \begin{equation}
     x\cos\alpha + y\cos\beta + z\cos\gamma - p = 0,
-    \label{eq:normal_form}
+    \tag{10.5}\label{eq:normal_form}
   \end{equation}
   где $\cos\alpha, \cos\beta, \cos\gamma$ --- направляющие косинусы
   нормального вектора, направленного из начала координат в сторону
@@ -272,7 +274,7 @@
   $Q\colon Ax + By + Cz + D = 0$ равно
   \begin{equation}
     d = \frac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2 + B^2 + C^2}}.
-    \label{eq:dist}
+    \tag{10.6}\label{eq:dist}
   \end{equation}
 \end{theorem}
 
@@ -381,7 +383,7 @@
   \]
 \end{definition}
 
-\subsection{Уравнения прямой в пространстве}
+\subsection*{Уравнения прямой в пространстве}
 
 Прежде чем перейти к прямой, опишем линию в пространстве в общем виде.
 
@@ -392,13 +394,13 @@
     \begin{cases}
       x = x(t), \\ y = y(t), \\ z = z(t),
     \end{cases} \qquad t \in [\alpha, \beta].
-    \label{eq:line_param}
+    \tag{10.7}\label{eq:line_param}
   \end{equation}
   Эквивалентная \textbf{векторная} форма:
   \begin{equation}
     \vec{r}(t) = x(t)\vec{i} + y(t)\vec{j} + z(t)\vec{k}, \quad
     \text{или} \quad \vec{r}(t) = (x(t), y(t), z(t)).
-    \label{eq:line_vec}
+    \tag{10.8}\label{eq:line_vec}
   \end{equation}
   Функция $\vec{r}(t)$ называется \textbf{вектор-функцией скалярного
   аргумента} $t$.
@@ -418,7 +420,7 @@
   \textbf{каноническим уравнением}:
   \begin{equation}
     \frac{x - x_0}{l} = \frac{y - y_0}{m} = \frac{z - z_0}{n}.
-    \label{eq:canonical}
+    \tag{10.9}\label{eq:canonical}
   \end{equation}
 \end{definition}
 
@@ -429,7 +431,7 @@
     \begin{cases}
       x = x_0 + l\,t, \\ y = y_0 + m\,t, \\ z = z_0 + n\,t.
     \end{cases}
-    \label{eq:line_param_eq}
+    \tag{10.10}\label{eq:line_param_eq}
   \end{equation}
 \end{definition}
 
@@ -441,7 +443,7 @@
       A_1x + B_1y + C_1z + D_1 = 0, \\
       A_2x + B_2y + C_2z + D_2 = 0.
     \end{cases}
-    \label{eq:line_planes}
+    \tag{10.11}\label{eq:line_planes}
   \end{equation}
   В этом случае направляющий вектор прямой находится как векторное
   произведение нормалей: $\vec{q} = [\vec{n}_1, \vec{n}_2]$.

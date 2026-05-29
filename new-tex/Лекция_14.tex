@@ -20,6 +20,8 @@
 \definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
 
 % Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
@@ -27,21 +29,21 @@
 \fancyhead[R]{\thepage}
 
 % Окружения с цветами
-\newtcbtheorem[number within=section]{definition}{Определение}{
+\newtcbtheorem[no counter]{definition}{Определение}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=defcolor}
 }{def}
 
-\newtcbtheorem[number within=section]{theorem}{Теорема}{
+\newtcbtheorem[no counter]{theorem}{Теорема}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=thmcolor}
 }{thm}
 
-\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
   enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
@@ -60,7 +62,7 @@
 \begin{document}
 
 \maketitle
-\setcounter{section}{14}
+\thispagestyle{fancy}
 
 \section*{Введение: Что такое линейное пространство и зачем оно нужно?}
 
@@ -98,7 +100,7 @@
   \end{itemize}
 \end{remarkIT}
 
-\subsection{Понятие линейного пространства. Примеры линейных пространств}
+\subsection*{Понятие линейного пространства. Примеры линейных пространств}
 
 Дадим формальное определение, перечислив все аксиомы. Подчеркнём: сами
 элементы пространства могут быть какими угодно (числа, функции,
@@ -180,7 +182,7 @@ $\vec{y} = (y_1, y_2, \dots, y_n)$. Тогда:
 (BLAS) и фреймворков глубокого обучения.
 \end{remarkIT}
 
-\subsection{Простейшие свойства линейных пространств}
+\subsection*{Простейшие свойства линейных пространств}
 
 Из восьми аксиом вытекает ряд свойств, которыми мы будем пользоваться
 постоянно. Важно, что они доказываются \emph{только} с опорой на
@@ -226,8 +228,8 @@ $\vec{a} + \vec{a}'' = \vec{a}'' + \vec{a} = \vec{o}$. Тогда,
 \begin{theorem}{Произведение на нуль}{zero_mult_thm}
 Для любого вектора $\vec{a}$ и любого числа $\lambda$ справедливо:
 \begin{align}
-0 \cdot \vec{a} &= \vec{o}, \label{eq:zeroa} \\
-\lambda \cdot \vec{o} &= \vec{o}. \label{eq:lzero}
+0 \cdot \vec{a} &= \vec{o}, \tag{14.1}\label{eq:zeroa} \\
+\lambda \cdot \vec{o} &= \vec{o}. \tag{14.2}\label{eq:lzero}
 \end{align}
 \end{theorem}
 
@@ -318,7 +320,7 @@ $\vec{a}$ (а он, как доказано выше, единствен):
 синхронизации игр.
 \end{remarkIT}
 
-\subsection{Линейное подпространство}
+\subsection*{Линейное подпространство}
 
 На практике нас часто интересует не всё пространство, а его часть,
 которая «замкнута» относительно линейных операций (например, множество

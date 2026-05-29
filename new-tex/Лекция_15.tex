@@ -20,28 +20,30 @@
 \definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
 
 % Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
 \fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
 \fancyhead[R]{\thepage}
 
-% Окружения с цветами
-\newtcbtheorem[number within=section]{definition}{Определение}{
+% Окружения с цветами (без автонумерации заголовков)
+\newtcbtheorem[no counter]{definition}{Определение}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=defcolor}
 }{def}
 
-\newtcbtheorem[number within=section]{theorem}{Теорема}{
+\newtcbtheorem[no counter]{theorem}{Теорема}{
   enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
   boxed title style={sharp corners, colback=thmcolor}
 }{thm}
 
-\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
   enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
   fonttitle=\bfseries, coltitle=white, attach boxed title to top
   left={yshift=-2mm},
@@ -60,7 +62,7 @@
 \begin{document}
 
 \maketitle
-\setcounter{section}{15}
+\thispagestyle{fancy}
 
 \section*{Введение: Зачем нужна линейная независимость?}
 
@@ -100,7 +102,7 @@
   невозможно.
 \end{remarkIT}
 
-\subsection{Понятие линейной зависимости и линейной независимости}
+\subsection*{Понятие линейной зависимости и линейной независимости}
 
 Пусть дано линейное пространство $V$ и в нём система векторов $\{\vec{u}_1,
 \dots, \vec{u}_m\}$. Прежде чем говорить о зависимости, введём центральное
@@ -109,11 +111,11 @@
 \begin{definition}{Линейная комбинация}{lin_comb_def}
   \textbf{Линейной комбинацией} векторов $\vec{u}_1, \vec{u}_2, \dots,
   \vec{u}_m \in V$ называется вектор вида
-  \[
+  \begin{equation}
     \vec{y} = \lambda_1 \vec{u}_1 + \lambda_2 \vec{u}_2 + \dots +
     \lambda_m \vec{u}_m,
     \tag{15.1}
-  \]
+  \end{equation}
   где $\lambda_1, \lambda_2, \dots, \lambda_m$ -- произвольные числа
   (коэффициенты комбинации).
 \end{definition}
@@ -164,7 +166,7 @@
   в графике — «независимой осью координат».
 \end{remarkIT}
 
-\subsection{Свойства линейно зависимых и независимых систем}
+\subsection*{Свойства линейно зависимых и независимых систем}
 
 Сформулируем и докажем основные свойства, которыми мы будем постоянно
 пользоваться.
@@ -193,11 +195,11 @@
   \textit{Необходимость.} Пусть $\Sigma$ линейно зависима. Тогда
   существуют числа $\lambda_1, \dots, \lambda_m$, одновременно не равные
   нулю, такие что
-  \[
+  \begin{equation}
     \lambda_1 \vec{u}_1 + \lambda_2 \vec{u}_2 + \dots + \lambda_m
     \vec{u}_m = \vec{0}.
     \tag{15.2}
-  \]
+  \end{equation}
   Пусть $\lambda_i \neq 0$. Тогда из (15.2) можно выразить $\vec{u}_i$,
   перенеся остальные слагаемые вправо и поделив на $\lambda_i$:
   \[
@@ -290,21 +292,21 @@
 
 \begin{myproof}
   Так как $\Sigma'$ линейно зависима, существует нетривиальная комбинация
-  \[
+  \begin{equation}
     \lambda_1 \vec{u}_1 + \lambda_2 \vec{u}_2 + \dots + \lambda_m
     \vec{u}_m + \lambda_0 \vec{v} = \vec{0},
     \tag{15.3}
-  \]
+  \end{equation}
   где хотя бы одно из чисел $\lambda_1, \lambda_2, \dots, \lambda_m,
   \lambda_0$ не равно нулю.
 
   Предположим, что $\lambda_0 = 0$. Тогда ненулевой коэффициент находится
   среди $\lambda_1, \dots, \lambda_m$, и равенство (15.3) превращается в
-  \[
+  \begin{equation}
     \lambda_1 \vec{u}_1 + \lambda_2 \vec{u}_2 + \dots + \lambda_m
     \vec{u}_m = \vec{0},
     \tag{15.4}
-  \]
+  \end{equation}
   где (15.4) -- нетривиальная линейная комбинация, равная нулевому
   вектору. Это противоречит линейной независимости системы $\Sigma =
   \{\vec{u}_1, \dots, \vec{u}_m\}$.
@@ -371,7 +373,7 @@
   многочлены (Чебышёва, Лежандра).
 \end{remarkIT}
 
-\subsection{Геометрический смысл линейной зависимости и независимости}
+\subsection*{Геометрический смысл линейной зависимости и независимости}
 
 Для геометрических векторов (в $V_2$ и $V_3$) понятия линейной
 зависимости имеют наглядную геометрическую интерпретацию: коллинеарность,
