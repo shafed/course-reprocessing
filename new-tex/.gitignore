@@ -1,0 +1,14 @@
+# Промежуточные артефакты компиляции LaTeX
+build/*.aux
+build/*.log
+build/*.out
+build/*.toc
+build/*.fls
+build/*.fdb_latexmk
+
+# Артефакты в корне (компиляция должна идти в build/)
+*.aux
+*.log
+*.out
+*.toc
+/Лекция_*.pdf
