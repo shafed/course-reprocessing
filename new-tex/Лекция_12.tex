@@ -1,0 +1,820 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[number within=section]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+\title{Лекция 12: Комплексные числа}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\setcounter{section}{12}
+
+\section*{Введение: Зачем IT-специалисту мнимая единица?}
+
+До сих пор мы работали в пределах поля действительных чисел
+$\mathbb{R}$. Однако этого поля оказывается «недостаточно»: уже простое
+уравнение $x^2 + 1 = 0$ не имеет в нём решений. Расширение числовой
+системы до \textbf{комплексных чисел} $\mathbb{C}$ замыкает эту брешь и
+делает алгебру по-настоящему завершённой: любой многочлен степени $n$
+имеет ровно $n$ корней (основная теорема алгебры).
+
+Для студента IT-направления комплексные числа -- это не абстрактная
+экзотика, а рабочий инструмент целого ряда технологий.
+
+\begin{remarkIT}{Цифровая обработка сигналов (DSP)}{dsp}
+  Любой звуковой или радиосигнал раскладывается в сумму гармоник с
+  помощью \textbf{дискретного преобразования Фурье} (DFT/FFT). Ядром
+  преобразования служит комплексная экспонента $e^{-i\,2\pi kn/N}$.
+  Алгоритм быстрого преобразования Фурье (FFT), лежащий в основе
+  кодеков MP3, JPEG и Wi-Fi (OFDM-модуляция), напрямую опирается на
+  свойства комплексных корней из единицы, которые равномерно
+  распределены по окружности.
+\end{remarkIT}
+
+\begin{remarkIT}{Компьютерная графика и геймдев}{graphics}
+  Комплексное число $z = r(\cos\varphi + i\sin\varphi)$ кодирует
+  одновременно \emph{поворот} (на угол $\varphi$) и
+  \emph{масштабирование} (в $r$ раз) на плоскости. Умножение
+  комплексных чисел складывает углы и перемножает модули, поэтому в
+  2D-движках поворот спрайта -- это одно комплексное умножение.
+  В 3D эта идея обобщается до \textbf{кватернионов}, которыми в
+  Unity и Unreal Engine хранят ориентацию объектов без эффекта
+  Gimbal Lock.
+\end{remarkIT}
+
+\begin{remarkIT}{Теория управления и электротехника}{control}
+  Устойчивость цифровых фильтров и систем автоматического управления
+  определяется расположением \emph{полюсов} передаточной функции на
+  комплексной плоскости: система устойчива, если все полюса лежат в
+  левой полуплоскости (для непрерывных систем) или внутри единичной
+  окружности (для дискретных). Так комплексная плоскость становится
+  «картой устойчивости» алгоритма.
+\end{remarkIT}
+
+В этой лекции мы введём комплексные числа, изучим их алгебраическую,
+тригонометрическую и показательную формы, научимся выполнять все
+арифметические операции, возводить числа в степень по формуле Муавра и
+извлекать корни любой степени.
+
+\subsection{Определение комплексного числа. Алгебраическая форма.
+Комплексная плоскость}
+
+\begin{definition}{Комплексное число}{complex_def}
+  \textbf{Комплексными числами} называется множество выражений вида
+  \[
+    z = x + iy, \qquad x, y \in \mathbb{R},
+  \]
+  где $i$ -- \textbf{мнимая единица}, удовлетворяющая условию
+  $i^2 = -1$, с введёнными на этом множестве операциями сложения и
+  умножения. Для чисел $z_1 = x_1 + iy_1$ и $z_2 = x_2 + iy_2$:
+  \[
+    z_1 + z_2 = (x_1 + x_2) + i(y_1 + y_2),
+  \]
+  \[
+    z_1 \cdot z_2 = (x_1 x_2 - y_1 y_2) + i(x_1 y_2 + y_1 x_2).
+  \]
+\end{definition}
+
+Правило умножения не нужно запоминать отдельно: достаточно перемножить
+скобки «как обычно» и заменить $i^2$ на $-1$:
+\[
+  (x_1 + iy_1)(x_2 + iy_2) = x_1 x_2 + i x_1 y_2 + i y_1 x_2 + i^2 y_1 y_2
+  = (x_1 x_2 - y_1 y_2) + i(x_1 y_2 + y_1 x_2).
+\]
+
+\begin{definition}{Равенство, действительная и мнимая части}{parts_def}
+  Два комплексных числа $z_1 = x_1 + iy_1$ и $z_2 = x_2 + iy_2$ равны
+  тогда и только тогда, когда
+  \[
+    x_1 = x_2 \quad \text{и} \quad y_1 = y_2.
+  \]
+  Число $x$ называется \textbf{действительной частью} комплексного
+  числа $z$, а число $y$ -- его \textbf{мнимой частью}:
+  \[
+    x = \operatorname{Re} z, \qquad y = \operatorname{Im} z.
+  \]
+  Запись $z = x + iy$ называется \textbf{алгебраической формой}
+  комплексного числа.
+\end{definition}
+
+Обратите внимание: мнимая часть $\operatorname{Im} z = y$ -- это
+действительное число (коэффициент при $i$), а не $iy$. Если
+$\operatorname{Im} z = 0$, то $z = x$ является обычным действительным
+числом, поэтому $\mathbb{R} \subset \mathbb{C}$.
+
+\subsubsection*{Геометрическое изображение комплексных чисел}
+
+Зафиксируем на плоскости декартову систему координат $Oxy$. Каждому
+комплексному числу $z = x + iy$ сопоставим точку $M(x, y)$ (или
+радиус-вектор $\vec{r}$, идущий из начала координат в эту точку). Ось
+$Ox$ при этом называют \textbf{действительной осью}, ось $Oy$ --
+\textbf{мнимой осью}, а саму плоскость -- \textbf{комплексной
+плоскостью}.
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.3]
+    \draw[->, gray] (-1.7,0) -- (3,0) node[right] {$x$};
+    \draw[->, gray] (0,-1.3) -- (0,2.6) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    % метки единиц
+    \draw (1,0.05) -- (1,-0.05) node[below] {$1$};
+    \draw (-1,0.05) -- (-1,-0.05) node[below] {$-1$};
+    \draw (0.05,1) -- (-0.05,1) node[left] {$i$};
+    \draw (0.05,-1) -- (-0.05,-1) node[left] {$-i$};
+    % точка z
+    \coordinate (Z) at (2.2,1.7);
+    \draw[->, thick, blue] (0,0) -- (Z) node[above right] {$z$};
+    \node[blue] at (1,1) {$\vec{r}$};
+    \draw[dashed, gray] (Z) -- (2.2,0) node[below] {$x$};
+    \draw[dashed, gray] (Z) -- (0,1.7) node[left] {$iy$};
+    \node at (-1.2,2.0) {мнимая ось};
+    \node at (2.2,-1.0) {действительная ось};
+  \end{tikzpicture}
+  \caption{Изображение комплексного числа $z = x + iy$ точкой $M(x,y)$
+  на комплексной плоскости.}
+  \label{fig:complex_plane}
+\end{figure}
+
+\begin{remarkIT}{Сложение как сумма векторов}{vec_add}
+  Поскольку комплексное число можно изображать не только точкой, но и
+  вектором, сложение, вычитание и умножение на действительное число
+  выполняются по тем же правилам, что и для геометрических векторов
+  (правило параллелограмма). Это объясняет, почему комплексные числа
+  так удобны для описания плоских перемещений в физических движках:
+  сумма $z_1 + z_2$ -- это диагональ параллелограмма, построенного на
+  векторах $\vec{r}_1$ и $\vec{r}_2$.
+\end{remarkIT}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.2]
+    \draw[->, gray] (-0.7,0) -- (4,0) node[right] {$x$};
+    \draw[->, gray] (0,-0.9) -- (0,2.6) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    \draw (1,0.05) -- (1,-0.05) node[below] {$1$};
+    \draw (0.05,1) -- (-0.05,1) node[left] {$i$};
+    \coordinate (Z1) at (1,1.8);
+    \coordinate (Z2) at (2.5,0.5);
+    \coordinate (S)  at (3.5,2.3);
+    \draw[->, thick, blue] (0,0) -- (Z1) node[above left] {$z_1$};
+    \draw[->, thick, blue] (0,0) -- (Z2) node[right] {$z_2$};
+    \draw[->, thick, red] (0,0) -- (S) node[above right] {$z_1 + z_2$};
+    \draw[dashed, gray] (Z1) -- (S);
+    \draw[dashed, gray] (Z2) -- (S);
+    \node[blue] at (0.3,1.1) {$\vec{r}_1$};
+    \node[blue] at (1.5,0.1) {$\vec{r}_2$};
+    \node[red] at (1.6,1.4) {$\vec{r}_1 + \vec{r}_2$};
+  \end{tikzpicture}
+  \caption{Сложение комплексных чисел по правилу параллелограмма.}
+  \label{fig:complex_add}
+\end{figure}
+
+\subsection{Тригонометрическая форма. Операции над комплексными числами}
+
+Положение точки $z$ на плоскости можно задать не только декартовыми
+координатами $(x, y)$, но и полярными: расстоянием $r$ от начала
+координат и углом $\varphi$ наклона радиус-вектора к действительной оси.
+
+\begin{definition}{Модуль и аргумент}{mod_arg_def}
+  \textbf{Модулем} комплексного числа $z = x + iy$ называется длина его
+  радиус-вектора:
+  \[
+    r = |z| = \sqrt{x^2 + y^2}.
+  \]
+  \textbf{Аргументом} $\varphi = \arg z$ называется угол между
+  радиус-вектором и положительным направлением действительной оси.
+  Связь координат:
+  \[
+    \begin{cases} x = r\cos\varphi, \\ y = r\sin\varphi, \end{cases}
+    \qquad
+    \cos\varphi = \frac{x}{r}, \quad \sin\varphi = \frac{y}{r}.
+  \]
+\end{definition}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.4]
+    \draw[->, gray] (-0.5,0) -- (3,0) node[right] {$x$};
+    \draw[->, gray] (0,-0.5) -- (0,2.3) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    \coordinate (Z) at (2.2,1.5);
+    \draw[->, thick, blue] (0,0) -- (Z) node[above right] {$z$};
+    \node[blue] at (0.9,0.9) {$r$};
+    \draw[dashed, gray] (Z) -- (2.2,0) node[below] {$x$};
+    \draw[dashed, gray] (Z) -- (0,1.5) node[left] {$iy$};
+    \draw[->] (0.7,0) arc (0:34:0.7);
+    \node at (0.95,0.25) {$\varphi$};
+  \end{tikzpicture}
+  \caption{Полярные координаты точки $z$: модуль $r$ и аргумент $\varphi$.}
+  \label{fig:trig_form}
+\end{figure}
+
+Подставив $x = r\cos\varphi$ и $y = r\sin\varphi$ в алгебраическую
+форму, получаем
+\[
+  z = x + iy = r\!\left(\frac{x}{r} + i\frac{y}{r}\right)
+    = r(\cos\varphi + i\sin\varphi).
+\]
+
+\begin{definition}{Тригонометрическая форма}{trig_def}
+  Представление
+  \[
+    z = r(\cos\varphi + i\sin\varphi)
+  \]
+  называется \textbf{тригонометрической формой} комплексного числа,
+  где $r = |z| = \sqrt{x^2 + y^2}$ -- модуль, а $\varphi = \arg z$ --
+  аргумент числа $z$.
+\end{definition}
+
+\textit{Замечание.} Аргумент определён неоднозначно, с точностью до
+$2\pi k$. Чтобы корректно восстановить угол, нужно учитывать знаки
+$x$ и $y$ (четверть, в которой лежит точка): только пары
+$\cos\varphi = x/r$ и $\sin\varphi = y/r$ вместе однозначно задают
+$\varphi$ на промежутке длины $2\pi$.
+
+\begin{definition}{Пример: перевод в тригонометрическую форму}{trig_ex}
+  Пусть $z = 2\sqrt{3} - 2i$. Найдём его тригонометрическую форму.
+
+  \textbf{Модуль:}
+  \[
+    r = |z| = \sqrt{\left(2\sqrt{3}\right)^2 + (-2)^2}
+      = \sqrt{12 + 4} = \sqrt{16} = 4.
+  \]
+
+  \textbf{Аргумент:} вынесем модуль за скобку
+  \[
+    z = 4\!\left(\frac{2\sqrt{3}}{4} - i\,\frac{2}{4}\right)
+      = 4\!\left(\frac{\sqrt{3}}{2} - i\,\frac{1}{2}\right).
+  \]
+  Отсюда $\cos\varphi = \dfrac{\sqrt{3}}{2}$,
+  $\sin\varphi = -\dfrac{1}{2}$. Точка лежит в четвёртой четверти
+  ($x > 0$, $y < 0$), поэтому $\varphi = -\dfrac{\pi}{6}$. Итого:
+  \[
+    z = 4\!\left(\cos\!\left(-\frac{\pi}{6}\right)
+      + i\sin\!\left(-\frac{\pi}{6}\right)\right).
+  \]
+\end{definition}
+
+\subsubsection*{Умножение комплексных чисел в тригонометрической форме}
+
+Пусть $z_1 = r_1(\cos\varphi_1 + i\sin\varphi_1)$ и
+$z_2 = r_2(\cos\varphi_2 + i\sin\varphi_2)$. Тогда, раскрывая
+произведение и применяя формулы сложения для синуса и косинуса,
+получаем
+\begin{equation}
+  z_1 \cdot z_2 = r_1 r_2\bigl(\cos(\varphi_1 + \varphi_2)
+    + i\sin(\varphi_1 + \varphi_2)\bigr).
+  \label{eq:mult}
+\end{equation}
+Следовательно,
+\[
+  |z_1 \cdot z_2| = |z_1| \cdot |z_2|, \qquad
+  \arg(z_1 \cdot z_2) = \arg z_1 + \arg z_2.
+\]
+
+\begin{remarkIT}{Умножение = поворот и масштаб}{mult_geom}
+  Формула~\eqref{eq:mult} раскрывает геометрический смысл умножения:
+  при умножении на $z_2$ вектор $z_1$ \emph{поворачивается} на угол
+  $\varphi_2$ и \emph{растягивается} в $r_2$ раз. В частности,
+  умножение на $i = \cos\frac{\pi}{2} + i\sin\frac{\pi}{2}$ -- это
+  поворот на $90^\circ$ без изменения длины. Именно поэтому в 2D-графике
+  комплексное умножение заменяет матрицу поворота.
+\end{remarkIT}
+
+\subsubsection*{Комплексно сопряжённое число}
+
+\begin{definition}{Сопряжённое число}{conj_def}
+  Числом, \textbf{комплексно сопряжённым} к $z = x + iy$, называется
+  число
+  \[
+    \bar{z} = x - iy.
+  \]
+  Геометрически $\bar{z}$ -- это отражение точки $z$ относительно
+  действительной оси. Если $z \in \mathbb{R}$ (то есть
+  $\operatorname{Im} z = 0$), то $\bar{z} = z$.
+\end{definition}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.3]
+    \draw[->, gray] (-0.5,0) -- (3,0) node[right] {$x$};
+    \draw[->, gray] (0,-1.9) -- (0,2.3) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    \coordinate (Z)  at (2.2,1.5);
+    \coordinate (ZC) at (2.2,-1.5);
+    \draw[->, thick, blue] (0,0) -- (Z) node[above right] {$z$};
+    \draw[->, thick, red] (0,0) -- (ZC) node[below right] {$\bar{z}$};
+    \draw[dashed, gray] (Z) -- (0,1.5) node[left] {$iy$};
+    \draw[dashed, gray] (ZC) -- (0,-1.5) node[left] {$-iy$};
+    \draw[dashed, gray] (Z) -- (2.2,0) node[below right] {$x$};
+    \draw[dashed, gray] (ZC) -- (2.2,0);
+  \end{tikzpicture}
+  \caption{Комплексно сопряжённое число $\bar{z}$ как отражение $z$
+  относительно действительной оси.}
+  \label{fig:conj}
+\end{figure}
+
+\noindent\textbf{Свойства операции сопряжения.}
+\begin{enumerate}
+  \item $\overline{z_1 \cdot z_2} = \bar{z}_1 \cdot \bar{z}_2$;
+  \item $\overline{\left(\dfrac{z_1}{z_2}\right)}
+    = \dfrac{\bar{z}_1}{\bar{z}_2}$;
+  \item $z \cdot \bar{z} = (x + iy)(x - iy) = x^2 + y^2 = |z|^2$.
+\end{enumerate}
+
+Третье свойство особенно важно: произведение числа на сопряжённое --
+это всегда неотрицательное \emph{действительное} число, равное квадрату
+модуля. Именно оно позволяет избавляться от мнимости в знаменателе.
+
+\subsubsection*{Деление комплексных чисел}
+
+Чтобы разделить $z_1$ на $z_2$ в алгебраической форме, умножим числитель
+и знаменатель на число, сопряжённое к знаменателю:
+\[
+  \frac{z_1}{z_2} = \frac{z_1 \cdot \bar{z}_2}{z_2 \cdot \bar{z}_2}
+    = \frac{z_1 \cdot \bar{z}_2}{|z_2|^2}.
+\]
+В знаменателе при этом получается действительное число $|z_2|^2$.
+
+\begin{definition}{Пример: деление в алгебраической форме}{div_ex}
+  Вычислим $\dfrac{1 - i}{1 + i}$. Умножим на сопряжённое к знаменателю
+  $\overline{1+i} = 1 - i$:
+  \[
+    \frac{1 - i}{1 + i} = \frac{(1 - i)(1 - i)}{(1 + i)(1 - i)}
+      = \frac{(1 - i)^2}{1^2 + 1^2}
+      = \frac{1 - 2i + i^2}{2}
+      = \frac{1 - 2i - 1}{2}
+      = \frac{-2i}{2} = -i.
+  \]
+\end{definition}
+
+\subsubsection*{Деление комплексных чисел в тригонометрической форме}
+
+Пусть $z_1 = r_1(\cos\varphi_1 + i\sin\varphi_1)$ и
+$z_2 = r_2(\cos\varphi_2 + i\sin\varphi_2)$, $z_2 \neq 0$. Тогда
+\begin{equation}
+  \frac{z_1}{z_2} = \frac{r_1}{r_2}\bigl(\cos(\varphi_1 - \varphi_2)
+    + i\sin(\varphi_1 - \varphi_2)\bigr),
+  \label{eq:div}
+\end{equation}
+откуда
+\[
+  \left|\frac{z_1}{z_2}\right| = \frac{|z_1|}{|z_2|}, \qquad
+  \arg\!\left(\frac{z_1}{z_2}\right) = \arg z_1 - \arg z_2.
+\]
+Таким образом, при делении модули делятся, а аргументы вычитаются.
+
+\subsection{Возведение в степень и извлечение корня}
+
+\subsubsection*{Возведение в степень. Формула Муавра}
+
+\begin{theorem}{Формула Муавра}{moivre_thm}
+  Если $z = r(\cos\varphi + i\sin\varphi)$, то для любого целого
+  $n \in \mathbb{Z}$
+  \begin{equation}
+    z^n = r^n(\cos n\varphi + i\sin n\varphi).
+    \label{eq:moivre}
+  \end{equation}
+\end{theorem}
+
+\begin{myproof}
+  Рассмотрим три случая.
+
+  1) \textit{Случай $n \in \mathbb{N}$.} Формула получается
+  $(n-1)$-кратным применением правила умножения~\eqref{eq:mult}: каждое
+  умножение на $z$ умножает модуль на $r$ и прибавляет к аргументу
+  $\varphi$. По индукции после $n$ шагов модуль равен $r^n$, а аргумент
+  $n\varphi$.
+
+  2) \textit{Случай $n = 0$:} $z^0 = 1 = r^0(\cos 0 + i\sin 0)$ --
+  формула верна.
+
+  3) \textit{Случай $n < 0$.} Пусть $n = -m$, где $m \in \mathbb{N}$.
+  Используя уже доказанный пункт~1 и деление~\eqref{eq:div}, имеем
+  \begin{align*}
+    z^n = z^{-m} &= \frac{1}{z^m}
+      = \frac{1}{r^m(\cos m\varphi + i\sin m\varphi)} \\
+    &= \frac{1}{r^m} \cdot
+      \frac{\cos m\varphi - i\sin m\varphi}
+           {(\cos m\varphi + i\sin m\varphi)(\cos m\varphi - i\sin m\varphi)} \\
+    &= r^{-m}\bigl(\cos(-m\varphi) + i\sin(-m\varphi)\bigr)
+      = r^n(\cos n\varphi + i\sin n\varphi).
+  \end{align*}
+  (Здесь знаменатель равен $\cos^2 m\varphi + \sin^2 m\varphi = 1$.)
+\end{myproof}
+
+\begin{definition}{Пример: $z^{30}$ по формуле Муавра}{moivre_ex}
+  Пусть $z = 1 + i\sqrt{3}$. Найдём $z^{30}$.
+
+  \textbf{Модуль:} $|z| = \sqrt{1^2 + (\sqrt{3})^2} = \sqrt{1 + 3}
+  = 2$.
+
+  \textbf{Тригонометрическая форма:}
+  \[
+    z = 2\!\left(\frac{1}{2} + i\,\frac{\sqrt{3}}{2}\right)
+      = 2\!\left(\cos\frac{\pi}{3} + i\sin\frac{\pi}{3}\right).
+  \]
+
+  \textbf{Степень} по формуле~\eqref{eq:moivre}:
+  \[
+    z^{30} = 2^{30}\!\left(\cos\frac{\pi}{3}\cdot 30
+      + i\sin\frac{\pi}{3}\cdot 30\right)
+      = 2^{30}(\cos 10\pi + i\sin 10\pi).
+  \]
+  Так как $10\pi = 2\pi \cdot 5$, то $\cos 10\pi = 1$,
+  $\sin 10\pi = 0$, и окончательно
+  \[
+    z^{30} = 2^{30}(\cos 0 + i\sin 0) = 2^{30}.
+  \]
+\end{definition}
+
+\subsubsection*{Извлечение корня из комплексного числа}
+
+\begin{definition}{Корень $n$-й степени}{root_def}
+  Пусть $n \in \mathbb{N}$. \textbf{Корнем $n$-й степени} из
+  комплексного числа $z$ называется такое комплексное число $\alpha$,
+  что $\alpha^n = z$.
+\end{definition}
+
+\begin{theorem}{О корнях $n$-й степени}{root_thm}
+  Для любого ненулевого комплексного числа
+  $z = r(\cos\varphi + i\sin\varphi)$ существует ровно $n$ различных
+  корней $\alpha_0, \alpha_1, \dots, \alpha_{n-1}$ $n$-й степени,
+  задаваемых формулой
+  \[
+    \sqrt[n]{z} = \alpha_k = \sqrt[n]{r}\!\left(
+      \cos\frac{\varphi + 2\pi k}{n}
+      + i\sin\frac{\varphi + 2\pi k}{n}\right),
+    \quad k = 0, 1, 2, \dots, n-1.
+  \]
+\end{theorem}
+
+\begin{myproof}
+  Будем искать корень в тригонометрической форме
+  $\alpha = \rho(\cos\theta + i\sin\theta)$. Условие $\alpha^n = z$ по
+  формуле Муавра даёт
+  \[
+    \rho^n(\cos n\theta + i\sin n\theta)
+      = r(\cos\varphi + i\sin\varphi).
+  \]
+  Два комплексных числа равны, когда равны их модули, а аргументы
+  совпадают с точностью до $2\pi k$:
+  \[
+    \rho^n = r \;\Rightarrow\; \rho = \sqrt[n]{r}, \qquad
+    n\theta = \varphi + 2\pi k \;\Rightarrow\;
+    \theta = \frac{\varphi + 2\pi k}{n}, \;\; k \in \mathbb{Z}.
+  \]
+  Различные значения углов получаются при $k = 0, 1, \dots, n-1$;
+  далее они начинают повторяться (с периодом $2\pi$). Отсюда и следует
+  формула.
+\end{myproof}
+
+\begin{remarkIT}{Геометрия корней: правильный $n$-угольник}{roots_geom}
+  Все $n$ корней имеют одинаковый модуль $R = \sqrt[n]{r}$, то есть
+  лежат на одной окружности, и равномерно распределены по ней с шагом
+  $\dfrac{2\pi}{n}$ -- в вершинах правильного $n$-угольника. Корни
+  $n$-й степени из единицы являются основой быстрого преобразования
+  Фурье (FFT): именно их симметрия позволяет свести вычисление DFT с
+  $O(n^2)$ до $O(n\log n)$ операций.
+\end{remarkIT}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.3]
+    \draw[->, gray] (-1.9,0) -- (1.9,0) node[right] {$x$};
+    \draw[->, gray] (0,-1.9) -- (0,1.9) node[above] {$y$};
+    \draw[thick] (0,0) circle (1.3);
+    \foreach \k in {0,...,8} {
+      \fill ({30+\k*40}:1.3) circle (1.2pt);
+    }
+    \node[above right] at ({30}:1.3) {$\alpha_0$};
+    \node[above] at ({70}:1.3) {$\alpha_1$};
+    \node[below right] at ({-10}:1.3) {$\alpha_{n-1}$};
+    \node at (1.55,0.95) {$R=\sqrt[n]{r}$};
+  \end{tikzpicture}
+  \caption{Корни $n$-й степени лежат на окружности радиуса
+  $R = \sqrt[n]{r}$ в вершинах правильного $n$-угольника.}
+  \label{fig:roots}
+\end{figure}
+
+\subsection{Показательная форма комплексного числа}
+
+\begin{theorem}{Формула Эйлера}{euler_thm}
+  Для любого действительного $\varphi$ справедливо
+  \begin{equation}
+    e^{i\varphi} = \cos\varphi + i\sin\varphi.
+    \label{eq:euler}
+  \end{equation}
+\end{theorem}
+
+Заменяя в~\eqref{eq:euler} $\varphi$ на $-\varphi$ и учитывая чётность
+косинуса и нечётность синуса, получаем
+\begin{equation}
+  e^{-i\varphi} = \cos\varphi - i\sin\varphi.
+  \label{eq:euler_neg}
+\end{equation}
+Складывая и вычитая~\eqref{eq:euler} и~\eqref{eq:euler_neg}, выводим
+известные представления:
+\[
+  \cos\varphi = \frac{e^{i\varphi} + e^{-i\varphi}}{2}, \qquad
+  \sin\varphi = \frac{e^{i\varphi} - e^{-i\varphi}}{2i}.
+\]
+
+\begin{definition}{Показательная форма}{exp_def}
+  С учётом формулы Эйлера тригонометрическую форму можно записать
+  компактно:
+  \[
+    z = re^{i\varphi},
+  \]
+  где $r = |z|$, $\varphi = \arg z$. Это \textbf{показательная форма}
+  комплексного числа. При этом
+  \[
+    \bar{z} = re^{-i\varphi}.
+  \]
+\end{definition}
+
+В показательной форме операции выглядят особенно прозрачно: умножение и
+деление сводятся к действиям со степенями, формула Муавра принимает вид
+\[
+  z^n = r^n e^{in\varphi},
+\]
+а извлечение корня --
+\[
+  \sqrt[n]{z} = \sqrt[n]{r}\,
+    e^{i\left(\frac{\varphi}{n} + \frac{2\pi k}{n}\right)},
+    \quad k = 0, 1, 2, \dots, n-1.
+\]
+
+\begin{definition}{Пример: $\sqrt[3]{-1}$}{cube_root_ex}
+  Найдём все значения $\sqrt[3]{-1}$.
+
+  Представим $-1$ в тригонометрической форме: $|-1| = 1$,
+  $\arg(-1) = \pi$, поэтому
+  \[
+    -1 = 1\cdot(\cos\pi + i\sin\pi).
+  \]
+  По формуле для корней (в показательной форме)
+  \[
+    \sqrt[3]{-1} = \sqrt[3]{1}\,
+      e^{i\left(\frac{\pi}{3} + \frac{2\pi k}{3}\right)},
+      \quad k = 0, 1, 2.
+  \]
+  Вычислим корни:
+  \begin{align*}
+    \alpha_0 &= e^{i\frac{\pi}{3}}
+      = \cos\frac{\pi}{3} + i\sin\frac{\pi}{3}
+      = \frac{1}{2} + i\,\frac{\sqrt{3}}{2}, \\
+    \alpha_1 &= e^{i\pi} = \cos\pi + i\sin\pi = -1, \\
+    \alpha_2 &= e^{i\frac{5\pi}{3}}
+      = \cos\frac{5\pi}{3} + i\sin\frac{5\pi}{3}
+      = \frac{1}{2} - i\,\frac{\sqrt{3}}{2}.
+  \end{align*}
+  Три корня лежат в вершинах правильного треугольника, вписанного в
+  единичную окружность. (Заметим, что действительный корень
+  $\alpha_1 = -1$ -- лишь один из трёх; остальные два комплексные.)
+\end{definition}
+
+\subsection{Разобранные задачи}
+
+\begin{definition}{Действия в алгебраической форме}{ex_arith}
+  Пусть $z_1 = 3 - 4i$, $z_2 = 1 + 2i$. Найти:
+  \begin{enumerate}
+    \item $z_1 \cdot z_2 + \bar{z}_1 \cdot \bar{z}_2$;
+    \item $\dfrac{z_1}{z_2} - \dfrac{\bar{z}_2}{\bar{z}_1}$.
+  \end{enumerate}
+
+  \textbf{1)} Сначала $\bar{z}_1 = 3 + 4i$, $\bar{z}_2 = 1 - 2i$.
+  \[
+    z_1 z_2 = (3 - 4i)(1 + 2i) = 3 + 6i - 4i - 8i^2 = 3 + 2i + 8 = 11 + 2i,
+  \]
+  \[
+    \bar{z}_1 \bar{z}_2 = (3 + 4i)(1 - 2i)
+      = 3 - 6i + 4i - 8i^2 = 3 - 2i + 8 = 11 - 2i.
+  \]
+  Складывая, мнимые части взаимно уничтожаются:
+  \[
+    z_1 z_2 + \bar{z}_1 \bar{z}_2 = (11 + 2i) + (11 - 2i) = 22.
+  \]
+  (Это закономерно: $\bar{z}_1\bar{z}_2 = \overline{z_1 z_2}$, а сумма
+  числа с сопряжённым равна удвоенной действительной части.)
+
+  \textbf{2)} Приведём дроби к общему знаменателю
+  $z_2 \bar{z}_1 = (1 + 2i)(3 + 4i)$:
+  \[
+    \frac{z_1}{z_2} - \frac{\bar{z}_2}{\bar{z}_1}
+      = \frac{3 - 4i}{1 + 2i} - \frac{1 - 2i}{3 + 4i}
+      = \frac{(3 - 4i)(3 + 4i) - (1 - 2i)(1 + 2i)}{(1 + 2i)(3 + 4i)}.
+  \]
+  Числитель (используем $z\bar z = x^2 + y^2$):
+  \[
+    (3 - 4i)(3 + 4i) - (1 - 2i)(1 + 2i)
+      = (9 + 16) - (1 + 4) = 25 - 5 = 20.
+  \]
+  Знаменатель:
+  \[
+    (1 + 2i)(3 + 4i) = 3 + 4i + 6i + 8i^2 = 3 + 10i - 8 = -5 + 10i.
+  \]
+  Значит,
+  \[
+    \frac{z_1}{z_2} - \frac{\bar{z}_2}{\bar{z}_1}
+      = \frac{20}{-5 + 10i} = \frac{20}{5(-1 + 2i)} = \frac{4}{-1 + 2i}
+      = -\frac{4}{1 - 2i}.
+  \]
+  Умножим на сопряжённое $\overline{1 - 2i} = 1 + 2i$:
+  \[
+    -\frac{4}{1 - 2i} = -\frac{4(1 + 2i)}{(1 - 2i)(1 + 2i)}
+      = -\frac{4(1 + 2i)}{1 + 4} = -\frac{4(1 + 2i)}{5}
+      = -\frac{4}{5} - \frac{8}{5}i.
+  \]
+\end{definition}
+
+\begin{definition}{Комплексное число во всех формах}{ex_full}
+  Пусть $z = 2\sqrt{3} + 2i$. Найти:
+  (1)~модуль; (2)~аргумент; (3)~тригонометрическую форму;
+  (4)~показательную форму; (5)~$z^{48}$; (6)~$\sqrt[4]{z}$;
+  (7)~$z^{4/5}$.
+
+  \textbf{1) Модуль:}
+  \[
+    |z| = \sqrt{\left(2\sqrt{3}\right)^2 + 2^2} = \sqrt{12 + 4}
+      = \sqrt{16} = 4.
+  \]
+
+  \textbf{2) Аргумент:}
+  \[
+    z = 4\!\left(\frac{2\sqrt{3}}{4} + \frac{2}{4}\,i\right)
+      = 4\!\left(\frac{\sqrt{3}}{2} + \frac{1}{2}\,i\right)
+      = 4\!\left(\cos\frac{\pi}{6} + i\sin\frac{\pi}{6}\right)
+    \;\Rightarrow\; \varphi = \frac{\pi}{6}.
+  \]
+  (Точка лежит в первой четверти, $\cos\varphi = \sqrt3/2$,
+  $\sin\varphi = 1/2$.)
+
+  \textbf{3) Тригонометрическая форма:}
+  \[
+    z = 4\!\left(\cos\frac{\pi}{6} + i\sin\frac{\pi}{6}\right).
+  \]
+
+  \textbf{4) Показательная форма:}
+  \[
+    z = 4e^{i\frac{\pi}{6}}.
+  \]
+
+  \textbf{5) Степень $z^{48}$:}
+  \[
+    z^{48} = 4^{48} e^{i\frac{\pi}{6}\cdot 48}
+      = 4^{48} e^{i8\pi} = 2^{96} e^{i0}
+      = 2^{96}(\cos 0 + i\sin 0) = 2^{96}.
+  \]
+  (Здесь $4^{48} = (2^2)^{48} = 2^{96}$, а $8\pi = 2\pi\cdot 4$, поэтому
+  $e^{i8\pi} = 1$.)
+
+  \textbf{6) Корень $\sqrt[4]{z}$:}
+  \[
+    \sqrt[4]{z} = \sqrt[4]{4}\,
+      e^{i\left(\frac{\pi/6}{4} + \frac{2\pi k}{4}\right)}
+      = \sqrt{2}\,e^{i\left(\frac{\pi}{24} + \frac{\pi k}{2}\right)},
+      \quad k = 0, 1, 2, 3.
+  \]
+  Четыре значения:
+  \[
+    \alpha_0 = \sqrt{2}\,e^{i\frac{\pi}{24}}, \quad
+    \alpha_1 = \sqrt{2}\,e^{i\frac{13\pi}{24}}, \quad
+    \alpha_2 = \sqrt{2}\,e^{i\frac{25\pi}{24}}, \quad
+    \alpha_3 = \sqrt{2}\,e^{i\frac{37\pi}{24}}.
+  \]
+  Они лежат в вершинах квадрата на окружности радиуса $\sqrt{2}$.
+
+  \textbf{7) Дробная степень $z^{4/5}$.} Сначала возведём в степень
+  $4$:
+  \[
+    z^4 = 4^4 e^{i\frac{\pi}{6}\cdot 4} = 256\, e^{i\frac{2\pi}{3}}.
+  \]
+  Затем извлечём корень пятой степени:
+  \[
+    z^{4/5} = \sqrt[5]{256}\,
+      e^{i\left(\frac{2\pi/3}{5} + \frac{2\pi k}{5}\right)}
+      = \sqrt[5]{256}\,
+      e^{i\left(\frac{2\pi}{15} + \frac{2\pi k}{5}\right)},
+      \quad k = 0, 1, 2, 3, 4.
+  \]
+  Пять значений:
+  \[
+    \alpha_0 = \sqrt[5]{256}\,e^{i\frac{2\pi}{15}}, \quad
+    \alpha_1 = \sqrt[5]{256}\,e^{i\frac{8\pi}{15}}, \quad
+    \alpha_2 = \sqrt[5]{256}\,e^{i\frac{14\pi}{15}},
+  \]
+  \[
+    \alpha_3 = \sqrt[5]{256}\,e^{i\frac{20\pi}{15}}
+      = \sqrt[5]{256}\,e^{i\frac{4\pi}{3}}, \quad
+    \alpha_4 = \sqrt[5]{256}\,e^{i\frac{26\pi}{15}}.
+  \]
+  Они образуют правильный пятиугольник на окружности радиуса
+  $\sqrt[5]{256}$.
+\end{definition}
+
+\begin{definition}{Степень частного: $\left(\dfrac{1+\sqrt3\,i}{1-i}\right)^{32}$}{ex_quot_pow}
+  Найти $z = \left(\dfrac{1 + \sqrt{3}\,i}{1 - i}\right)^{32}$.
+
+  \textbf{Числитель} $z_1 = 1 + \sqrt{3}\,i$:
+  \[
+    |z_1| = \sqrt{1 + 3} = 2, \qquad
+    z_1 = 2\!\left(\frac{1}{2} + i\,\frac{\sqrt{3}}{2}\right)
+      = 2\!\left(\cos\frac{\pi}{3} + i\sin\frac{\pi}{3}\right)
+      = 2e^{i\frac{\pi}{3}}.
+  \]
+
+  \textbf{Знаменатель} $z_2 = 1 - i$:
+  \[
+    |z_2| = \sqrt{1 + 1} = \sqrt{2}, \qquad
+    z_2 = \sqrt{2}\!\left(\frac{1}{\sqrt{2}} - i\,\frac{1}{\sqrt{2}}\right)
+      = \sqrt{2}\!\left(\cos\!\left(-\frac{\pi}{4}\right)
+      + i\sin\!\left(-\frac{\pi}{4}\right)\right)
+      = \sqrt{2}\,e^{-i\frac{\pi}{4}}.
+  \]
+
+  \textbf{Частное} (модули делятся, аргументы вычитаются):
+  \[
+    \frac{z_1}{z_2} = \frac{2}{\sqrt{2}}\,
+      e^{i\left(\frac{\pi}{3} - \left(-\frac{\pi}{4}\right)\right)}
+      = \sqrt{2}\,e^{i\frac{7\pi}{12}},
+  \]
+  поскольку $\dfrac{\pi}{3} + \dfrac{\pi}{4}
+  = \dfrac{4\pi + 3\pi}{12} = \dfrac{7\pi}{12}$.
+
+  \textbf{Возведение в степень} $32$ по формуле Муавра:
+  \[
+    z = \left(\sqrt{2}\,e^{i\frac{7\pi}{12}}\right)^{32}
+      = \left(\sqrt{2}\right)^{32} e^{i\frac{7\pi}{12}\cdot 32}
+      = 2^{16}\, e^{i\frac{56\pi}{3}}.
+  \]
+  Приведём аргумент: $\dfrac{56\pi}{3} = \dfrac{54\pi + 2\pi}{3}
+  = 18\pi + \dfrac{2\pi}{3}$, а $18\pi = 2\pi\cdot 9$ -- девять полных
+  оборотов, поэтому $e^{i\frac{56\pi}{3}} = e^{i\frac{2\pi}{3}}$.
+  Окончательно
+  \[
+    z = 2^{16}\, e^{i\frac{2\pi}{3}}.
+  \]
+  При желании ответ можно записать и в алгебраической форме:
+  \[
+    z = 2^{16}\!\left(\cos\frac{2\pi}{3} + i\sin\frac{2\pi}{3}\right)
+      = 2^{16}\!\left(-\frac{1}{2} + i\,\frac{\sqrt{3}}{2}\right)
+      = -2^{15} + 2^{15}\sqrt{3}\,i.
+  \]
+\end{definition}
+
+\end{document}

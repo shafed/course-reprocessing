@@ -1,0 +1,605 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[number within=section]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+\title{Лекция 14: Линейные пространства}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\setcounter{section}{14}
+
+\section*{Введение: Что такое линейное пространство и зачем оно нужно?}
+
+До сих пор мы работали с конкретными объектами: геометрическими
+векторами на плоскости и в пространстве, матрицами, столбцами чисел.
+Все эти объекты, на первый взгляд совершенно разные, обладают общим
+свойством: их можно \textbf{складывать} друг с другом и
+\textbf{умножать на число}, получая при этом объекты того же типа.
+
+Идея \emph{линейного (векторного) пространства} состоит в том, чтобы
+выделить эти две операции и сформулировать набор естественных правил
+(аксиом), которым они подчиняются. Как только мы доказали, что
+некоторое множество удовлетворяет этим аксиомам, мы получаем право
+применять к нему \textbf{весь аппарат линейной алгебры}: понятия
+базиса, размерности, координат, линейных операторов, скалярного
+произведения. Один раз доказанные теоремы автоматически работают для
+векторов, матриц, многочленов, функций и сигналов.
+
+\begin{remarkIT}{Зачем абстракция программисту}{intro_it}
+  Линейное пространство — это математический аналог \emph{интерфейса}
+  (или абстрактного класса) в программировании. Мы описываем не
+  конкретную реализацию, а \textbf{контракт}: «здесь определены
+  сложение и умножение на скаляр, и они ведут себя предсказуемо».
+  \begin{itemize}
+    \item \textbf{Машинное обучение и графика:} изображения, эмбеддинги
+      слов (word2vec), цвета RGB, аудиосигналы — все это элементы
+      линейных пространств. Складывая эмбеддинги или интерполируя цвета,
+      мы используем именно структуру векторного пространства.
+    \item \textbf{Обработка сигналов:} непрерывные функции образуют
+      линейное пространство; разложение сигнала в ряд Фурье — это
+      разложение вектора по базису из синусов и косинусов.
+    \item \textbf{Полиморфизм алгоритмов:} алгоритм Грама–Шмидта, метод
+      наименьших квадратов, PCA пишутся один раз «в терминах векторного
+      пространства» и применяются к любым данным, удовлетворяющим аксиомам.
+  \end{itemize}
+\end{remarkIT}
+
+\subsection{Понятие линейного пространства. Примеры линейных пространств}
+
+Дадим формальное определение, перечислив все аксиомы. Подчеркнём: сами
+элементы пространства могут быть какими угодно (числа, функции,
+матрицы) — важны лишь свойства операций над ними.
+
+\begin{definition}{Линейное пространство}{lin_space_def}
+  \textbf{Линейным пространством} называется множество
+  $V = \{\vec{a}, \vec{b}, \vec{c}, \dots\}$, элементы которого
+  $\vec{a}, \vec{b}, \vec{c}, \dots$ называются \textbf{векторами},
+  если для любых двух векторов $\vec{a}, \vec{b}$ и любого числа
+  $\lambda \in \mathbb{R}$ определены сумма $\vec{a} + \vec{b} \in V$ и
+  произведение $\lambda\vec{a} \in V$, причём выполнены следующие
+  аксиомы:
+  \begin{enumerate}
+    \item $\vec{a} + \vec{b} = \vec{b} + \vec{a}$;
+    \item $(\vec{a} + \vec{b}) + \vec{c} = \vec{a} + (\vec{b} + \vec{c})
+      \qquad \forall \vec{a}, \vec{b}, \vec{c} \in V$;
+    \item $\forall \vec{a} \in V \ \exists$ нулевой вектор
+      $\vec{o} \in V$: $\vec{a} + \vec{o} = \vec{o} + \vec{a} = \vec{a}$;
+    \item $\forall \vec{a} \in V \ \exists$ противоположный вектор
+      $-\vec{a} \in V$: $\vec{a} + (-\vec{a}) = (-\vec{a}) + \vec{a} = \vec{o}$;
+    \item $(\lambda \cdot \mu)\vec{a} = \lambda(\mu\vec{a})$;
+    \item $\lambda(\vec{a} + \vec{b}) = \lambda\vec{a} + \lambda\vec{b}$;
+    \item $(\lambda + \mu)\vec{a} = \lambda\vec{a} + \mu\vec{a}
+      \qquad \forall \vec{a}, \vec{b} \in V \text{ и } \forall \lambda, \mu \in \mathbb{R}$;
+    \item $1 \cdot \vec{a} = \vec{a}$.
+  \end{enumerate}
+  Аксиомы 1)--4) относятся к операции сложения элементов, аксиомы
+  5)--8) — к операции умножения элемента на число.
+\end{definition}
+
+\noindent\textbf{Замечание.} Линейное пространство называют также
+\textbf{векторным пространством}, а его элементы — векторами,
+независимо от их природы (это могут быть функции, матрицы, многочлены).
+
+\subsubsection*{Примеры линейных пространств}
+
+Перечислим важнейшие примеры. Все они постоянно встречаются в
+вычислительной практике.
+
+\begin{enumerate}
+  \item Пространства геометрических векторов: $V_1$ — на прямой;
+    $V_2$ — на плоскости; $V_3$ — в пространстве.
+  \item Множества чисел $\mathbb{R}$ и $\mathbb{C}$.
+  \item Множество матриц $\mathbb{R}^{m \times n}$ (фиксированного
+    размера).
+  \item Множество многочленов степени $\le n$ — обозначается $P_n$.
+  \item Множество функций, непрерывных на отрезке $[a, b]$ —
+    обозначается $C_{[a,b]}$.
+  \item $n$-мерное пространство арифметических векторов $\mathbb{R}^n$ —
+    множество всевозможных упорядоченных наборов из $n$ действительных
+    чисел, называемых \textbf{арифметическими векторами}:
+    \[
+      \mathbb{R}^n = \{ \vec{x} = (x_1, x_2, \dots, x_n);\ x_i \in \mathbb{R} \}.
+    \]
+\end{enumerate}
+
+Остановимся подробнее на пространстве $\mathbb{R}^n$, поскольку именно с
+ним напрямую работают все языки программирования (массивы, тензоры).
+Пусть $\vec{x} = (x_1, x_2, \dots, x_n)$ и
+$\vec{y} = (y_1, y_2, \dots, y_n)$. Тогда:
+\begin{enumerate}
+  \item $\vec{x} = \vec{y} \iff x_i = y_i,\ \forall i = 1, 2, \dots, n$;
+  \item $\vec{x} + \vec{y} = (x_1 + y_1, \dots, x_n + y_n)$;
+  \item $\lambda\vec{x} = (\lambda x_1, \lambda x_2, \dots, \lambda x_n)$.
+\end{enumerate}
+То есть операции выполняются \textbf{покоординатно} — ровно так, как
+сложение массивов и умножение на скаляр реализовано в NumPy или в
+шейдерных языках для векторов.
+
+\begin{remarkIT}{Покоординатные операции и SIMD}{rn_simd}
+  Покоординатный характер операций в $\mathbb{R}^n$ — причина, по
+  которой векторные вычисления так хорошо распараллеливаются.
+  Современные процессоры (инструкции SIMD: SSE, AVX) и графические
+  ускорители (GPU) обрабатывают сразу несколько координат за один такт.
+  Именно поэтому представление данных в виде элементов $\mathbb{R}^n$
+  лежит в основе высокопроизводительных библиотек линейной алгебры
+  (BLAS) и фреймворков глубокого обучения.
+\end{remarkIT}
+
+\subsection{Простейшие свойства линейных пространств}
+
+Из восьми аксиом вытекает ряд свойств, которыми мы будем пользоваться
+постоянно. Важно, что они доказываются \emph{только} с опорой на
+аксиомы и не требуют знания конкретной природы векторов.
+
+\begin{theorem}{Единственность нулевого вектора}{zero_unique_thm}
+  В линейном пространстве существует единственный нулевой элемент
+  $\vec{o}$.
+\end{theorem}
+
+\begin{myproof}
+  Пусть существуют $\vec{o}_1$ и $\vec{o}_2$ — два нулевых вектора.
+  Применим аксиому 3) дважды. Рассматривая $\vec{o}_2$ как обычный
+  вектор и прибавляя к нему нуль $\vec{o}_1$, а затем наоборот,
+  получаем:
+  \[
+    \vec{o}_1 + \vec{o}_2 = \vec{o}_2
+    \quad \text{и} \quad
+    \vec{o}_1 + \vec{o}_2 = \vec{o}_1.
+  \]
+  Следовательно, $\vec{o}_1 = \vec{o}_1 + \vec{o}_2 = \vec{o}_2$, то
+  есть оба нуля совпадают.
+\end{myproof}
+
+\begin{theorem}{Единственность противоположного вектора}{opp_unique_thm}
+  Для любого вектора линейного пространства существует единственный
+  противоположный вектор.
+\end{theorem}
+
+\begin{myproof}
+  Пусть $\vec{a}'$ и $\vec{a}''$ — два противоположных элемента к
+  элементу $\vec{a}$, то есть
+  $\vec{a} + \vec{a}' = \vec{a}' + \vec{a} = \vec{o}$ и
+  $\vec{a} + \vec{a}'' = \vec{a}'' + \vec{a} = \vec{o}$. Тогда,
+  пользуясь определением нуля и ассоциативностью:
+  \[
+    \vec{a}' = \vec{a}' + \vec{o} = \vec{a}' + (\vec{a} + \vec{a}'')
+    = (\vec{a}' + \vec{a}) + \vec{a}'' = \vec{o} + \vec{a}'' = \vec{a}''.
+  \]
+  Значит, противоположный вектор единствен.
+\end{myproof}
+
+\begin{theorem}{Произведение на нуль}{zero_mult_thm}
+  Для любого вектора $\vec{a}$ и любого числа $\lambda$ справедливо:
+  \begin{align}
+    0 \cdot \vec{a} &= \vec{o}, \label{eq:zeroa} \\
+    \lambda \cdot \vec{o} &= \vec{o}. \label{eq:lzero}
+  \end{align}
+\end{theorem}
+
+\begin{myproof}
+  Для доказательства равенства \eqref{eq:zeroa} достаточно показать, что
+  $\vec{b} + 0 \cdot \vec{a} = \vec{b}$ для всех $\vec{b} \in V$ (тогда
+  $0\cdot\vec{a}$ ведёт себя как нуль, а нуль единствен). Действительно:
+  \begin{align*}
+    \vec{b} + 0 \cdot \vec{a}
+    &= (\vec{b} + \vec{o}) + 0 \cdot \vec{a}
+    = \vec{b} + \big((-\vec{a}) + \vec{a}\big) + 0 \cdot \vec{a} \\
+    &= \big(\vec{b} + (-\vec{a})\big) + 1\vec{a} + 0\vec{a}
+    = \big(\vec{b} + (-\vec{a})\big) + (1 + 0)\vec{a} \\
+    &= \big(\vec{b} + (-\vec{a})\big) + \vec{a}
+    = \vec{b} + \big((-\vec{a}) + \vec{a}\big)
+    = \vec{b} + \vec{o} = \vec{b}.
+  \end{align*}
+  Равенство \eqref{eq:lzero} доказывается с помощью уже доказанного
+  \eqref{eq:zeroa} и аксиомы 5):
+  \[
+    \lambda \cdot \vec{o} = \lambda(0 \cdot \vec{a})
+    = (\lambda \cdot 0)\vec{a} = 0 \cdot \vec{a} = \vec{o}.
+  \]
+\end{myproof}
+
+\begin{theorem}{Условие обнуления произведения}{null_product_thm}
+  В линейном пространстве из равенства $\lambda\vec{a} = \vec{o}$
+  следует, что либо $\lambda = 0$, либо $\vec{a} = \vec{o}$.
+\end{theorem}
+
+\begin{myproof}
+  Из равенства \eqref{eq:zeroa} видно, что случай $\lambda = 0$
+  возможен (при $\lambda = 0$ произведение равно нулю при любом
+  $\vec{a}$). Пусть теперь $\lambda \neq 0$. Тогда существует обратное
+  число $\tfrac{1}{\lambda}$, и, пользуясь аксиомами 8) и 5):
+  \[
+    \vec{a} = 1 \cdot \vec{a}
+    = \left(\frac{1}{\lambda}\lambda\right)\vec{a}
+    = \frac{1}{\lambda}(\lambda\vec{a})
+    = \frac{1}{\lambda} \cdot \vec{o} = \vec{o}.
+  \]
+  Таким образом, если $\lambda \neq 0$, то обязательно $\vec{a} = \vec{o}$.
+\end{myproof}
+
+\begin{theorem}{Связь противоположного вектора и множителя $-1$}{minus_one_thm}
+  Для любого вектора справедливо $-\vec{a} = (-1)\vec{a}$.
+\end{theorem}
+
+\begin{myproof}
+  Покажем, что вектор $(-1)\vec{a}$ является противоположным к
+  $\vec{a}$ (а он, как доказано выше, единствен):
+  \[
+    \vec{a} + (-1)\vec{a} = 1 \cdot \vec{a} + (-1)\vec{a}
+    = (1 + (-1))\vec{a} = 0 \cdot \vec{a} = \vec{o}.
+  \]
+  Следовательно, $(-1)\vec{a} = -\vec{a}$.
+\end{myproof}
+
+\begin{theorem}{Существование и единственность разности}{difference_thm}
+  Для любых двух векторов $\vec{a}$ и $\vec{b}$ в линейном пространстве
+  существует, и притом единственная, разность $\vec{b} - \vec{a}$.
+\end{theorem}
+
+\begin{myproof}
+  \textit{Существование.} Положим $\vec{b} - \vec{a} := \vec{b} + (-\vec{a})$.
+  Этот вектор является решением уравнения $\vec{a} + \vec{x} = \vec{b}$:
+  \[
+    \vec{a} + \big(\vec{b} + (-\vec{a})\big)
+    = \big(\vec{a} + (-\vec{a})\big) + \vec{b}
+    = \vec{o} + \vec{b} = \vec{b}.
+  \]
+  \textit{Единственность.} Пусть $\vec{c} = \vec{b} - \vec{a}$ — некоторая
+  разность, то есть $\vec{a} + \vec{c} = \vec{b}$. Тогда
+  \[
+    \vec{c} = \vec{c} + \vec{o} = \vec{c} + \big(\vec{a} + (-\vec{a})\big)
+    = (\vec{c} + \vec{a}) + (-\vec{a}) = \vec{b} + (-\vec{a}).
+  \]
+  Значит, любая разность совпадает с $\vec{b} + (-\vec{a})$.
+\end{myproof}
+
+\begin{remarkIT}{Почему важна единственность нуля}{zero_it}
+  В компьютерной графике и физических движках «нулевой вектор» (нулевое
+  смещение, отсутствие силы) — это нейтральный элемент, относительно
+  которого ведутся все расчёты. Единственность нуля и противоположного
+  элемента гарантирует, что операции «отменить смещение» или
+  «обнулить накопленную скорость» дают однозначный, воспроизводимый
+  результат — критично для детерминированной симуляции и сетевой
+  синхронизации игр.
+\end{remarkIT}
+
+\subsection{Линейное подпространство}
+
+На практике нас часто интересует не всё пространство, а его часть,
+которая «замкнута» относительно линейных операций (например, множество
+всех симметричных матриц внутри всех матриц). Такие части называются
+подпространствами.
+
+\begin{definition}{Линейное подпространство}{subspace_def}
+  Подмножество $M \subset V$ называется \textbf{линейным
+  подпространством} линейного пространства $V$, если оно само является
+  линейным пространством относительно тех же операций сложения
+  элементов и умножения элемента на число.
+\end{definition}
+
+Проверять все восемь аксиом для подмножества не нужно: они автоматически
+наследуются от объемлющего пространства $V$. Достаточно убедиться лишь в
+\textbf{замкнутости} операций — что результат не «выходит» за пределы $M$.
+
+\begin{theorem}{Критерий подпространства}{subspace_crit_thm}
+  Подмножество $M \subset V$ является линейным подпространством линейного
+  пространства $V$ тогда и только тогда, когда:
+  \begin{enumerate}
+    \item $\forall \vec{a}, \vec{b} \in M \Rightarrow \vec{a} + \vec{b} \in M$
+      (замкнутость относительно сложения);
+    \item $\forall \lambda \in \mathbb{R}$ и
+      $\forall \vec{a} \in M \Rightarrow \lambda\vec{a} \in M$
+      (замкнутость относительно умножения на число).
+  \end{enumerate}
+  Эти два условия можно объединить в одно: $M \subset V$ есть линейное
+  подпространство тогда и только тогда, когда
+  \[
+    \forall \vec{a}, \vec{b} \in M \text{ и } \forall \alpha, \beta \in \mathbb{R}
+    \Rightarrow \alpha\vec{a} + \beta\vec{b} \in M.
+  \]
+\end{theorem}
+
+\subsubsection*{Пример 1. Геометрические векторы $V^3$}
+
+\begin{definition}{$V^3$ — линейное пространство}{v3_example}
+  Докажем, что множество геометрических векторов $V^3$ является линейным
+  пространством.
+\end{definition}
+
+\begin{myproof}
+  Для любых $\vec{a}, \vec{b} \in V^3$ и любого $\lambda \in \mathbb{R}$
+  сумма и произведение снова являются геометрическими векторами:
+  $\vec{a} + \vec{b} \in V^3$ и $\lambda\vec{a} \in V^3$. Все восемь
+  аксиом — это известные свойства операций над геометрическими векторами:
+  \begin{enumerate}
+    \item $\vec{a} + \vec{b} = \vec{b} + \vec{a}
+      \qquad \forall \vec{a}, \vec{b} \in V^3$;
+    \item $(\vec{a} + \vec{b}) + \vec{c} = \vec{a} + (\vec{b} + \vec{c})
+      \qquad \forall \vec{a}, \vec{b}, \vec{c} \in V^3$;
+    \item для $\forall \vec{a} \in V^3 \ \exists \vec{o} \in V^3$:
+      $\vec{a} + \vec{o} = \vec{o} + \vec{a} = \vec{a}$;
+    \item для $\forall \vec{a} \in V^3 \ \exists (-\vec{a}) \in V^3$:
+      $\vec{a} + (-\vec{a}) = (-\vec{a}) + \vec{a} = \vec{o}$;
+    \item $(\lambda \cdot \mu)\vec{a} = \lambda(\mu\vec{a})
+      \qquad \forall \vec{a} \in V^3,\ \forall \lambda, \mu \in \mathbb{R}$;
+    \item $\lambda(\vec{a} + \vec{b}) = \lambda\vec{a} + \lambda\vec{b}
+      \qquad \forall \vec{a}, \vec{b} \in V^3,\ \forall \lambda \in \mathbb{R}$;
+    \item $(\lambda + \mu)\vec{a} = \lambda\vec{a} + \mu\vec{a}
+      \qquad \forall \vec{a} \in V^3,\ \forall \lambda, \mu \in \mathbb{R}$;
+    \item $1 \cdot \vec{a} = \vec{a} \qquad \forall \vec{a} \in V^3$.
+  \end{enumerate}
+  Все аксиомы выполнены, следовательно, $V^3$ — линейное пространство.
+\end{myproof}
+
+\subsubsection*{Пример 2. Матрицы $\mathbb{R}^{2\times 2}$}
+
+\begin{definition}{$\mathbb{R}^{2\times 2}$ — линейное пространство}{mat_example}
+  Докажем, что множество матриц размера $2 \times 2$, то есть
+  $\mathbb{R}^{2\times 2}$, является линейным пространством.
+\end{definition}
+
+\begin{myproof}
+  Для любых $A, B \in \mathbb{R}^{2\times 2}$ и любого
+  $\lambda \in \mathbb{R}$ имеем $A + B \in \mathbb{R}^{2\times 2}$ и
+  $\lambda A \in \mathbb{R}^{2\times 2}$ (сумма и кратное матрицы $2\times 2$
+  снова есть матрица $2\times 2$). Аксиомы выполнены как известные
+  свойства матричных операций:
+  \begin{enumerate}
+    \item $A + B = B + A \qquad \forall A, B \in \mathbb{R}^{2\times 2}$;
+    \item $(A + B) + C = A + (B + C)
+      \qquad \forall A, B, C \in \mathbb{R}^{2\times 2}$;
+    \item для $\forall A \in \mathbb{R}^{2\times 2}\ \exists O \in
+      \mathbb{R}^{2\times 2}$ (нулевая матрица): $A + O = O + A = A$;
+    \item для $\forall A \in \mathbb{R}^{2\times 2}\ \exists (-A) \in
+      \mathbb{R}^{2\times 2}$: $A + (-A) = (-A) + A = O$;
+    \item $(\lambda \cdot \mu)A = \lambda(\mu A)
+      \qquad \forall A,\ \forall \lambda, \mu \in \mathbb{R}$;
+    \item $\lambda(A + B) = \lambda A + \lambda B
+      \qquad \forall A, B,\ \forall \lambda \in \mathbb{R}$;
+    \item $(\lambda + \mu)A = \lambda A + \mu A
+      \qquad \forall A,\ \forall \lambda, \mu \in \mathbb{R}$;
+    \item $1 \cdot A = A \qquad \forall A \in \mathbb{R}^{2\times 2}$.
+  \end{enumerate}
+  Следовательно, $\mathbb{R}^{2\times 2}$ — линейное пространство.
+\end{myproof}
+
+\subsubsection*{Пример 3. Многочлены, делящиеся на $t^2 + t + 1$}
+
+\begin{definition}{Подпространство многочленов в $P_4$}{poly_example}
+  Пусть $M$ — множество многочленов степени $\le 4$, которые делятся на
+  $t^2 + t + 1$. Докажем, что $M$ — линейное подпространство в линейном
+  пространстве $P_4$.
+\end{definition}
+
+\begin{myproof}
+  Любой элемент $M$ имеет вид
+  \[
+    M = \{ p(t) = (at^2 + bt + c)(t^2 + t + 1);\ a, b, c \in \mathbb{R} \}.
+  \]
+  Раскроем скобки, чтобы видеть структуру таких многочленов:
+  \[
+    p(t) = (at^2 + bt + c)(t^2 + t + 1)
+    = a(t^4 + t^3 + t^2) + b(t^3 + t^2 + t) + c(t^2 + t + 1).
+  \]
+  Возьмём два произвольных элемента $M$:
+  \begin{align*}
+    p_1(t) &= a_1(t^4 + t^3 + t^2) + b_1(t^3 + t^2 + t) + c_1(t^2 + t + 1); \\
+    p_2(t) &= a_2(t^4 + t^3 + t^2) + b_2(t^3 + t^2 + t) + c_2(t^2 + t + 1).
+  \end{align*}
+  Рассмотрим их линейную комбинацию и сгруппируем по одинаковым множителям:
+  \begin{align*}
+    \alpha p_1(t) + \beta p_2(t)
+    &= (\alpha a_1 + \beta a_2)(t^4 + t^3 + t^2) \\
+    &\quad + (\alpha b_1 + \beta b_2)(t^3 + t^2 + t)
+      + (\alpha c_1 + \beta c_2)(t^2 + t + 1).
+  \end{align*}
+  Обозначим новые коэффициенты:
+  \[
+    \left.
+    \begin{array}{l}
+      \alpha a_1 + \beta a_2 = a \\
+      \alpha b_1 + \beta b_2 = b \\
+      \alpha c_1 + \beta c_2 = c
+    \end{array}
+    \right\}
+    \;\Rightarrow\;
+    \alpha p_1(t) + \beta p_2(t)
+    = a(t^4 + t^3 + t^2) + b(t^3 + t^2 + t) + c(t^2 + t + 1).
+  \]
+  Полученный многочлен снова делится на $t^2 + t + 1$, то есть
+  $\alpha p_1(t) + \beta p_2(t) \in M$ для всех
+  $p_1(t), p_2(t) \in M$ и всех $\alpha, \beta \in \mathbb{R}$.
+  По критерию подпространства $M$ — линейное подпространство в $P_4$.
+\end{myproof}
+
+\begin{remarkIT}{Помехоустойчивое кодирование}{coding_it}
+  Множество многочленов, делящихся на фиксированный многочлен, — это в
+  точности структура \textbf{циклического кода} (CRC, коды
+  Боуза–Чоудхури–Хоквингема). Кодовые слова образуют подпространство,
+  порождённое порождающим многочленом $g(t)$. Замкнутость относительно
+  линейных операций означает, что сумма двух корректных кодовых слов
+  снова является корректным кодовым словом — это и позволяет эффективно
+  обнаруживать и исправлять ошибки передачи.
+\end{remarkIT}
+
+\subsubsection*{Пример 4. Симметричные матрицы $2\times 2$}
+
+\begin{definition}{Подпространство симметричных матриц}{sym_example}
+  Пусть $M$ — множество симметричных матриц размера $2 \times 2$.
+  Докажем, что $M$ — линейное подпространство в линейном пространстве
+  $\mathbb{R}^{2\times 2}$.
+\end{definition}
+
+\begin{myproof}
+  Симметричная матрица $2\times 2$ имеет вид
+  \[
+    M = \left\{ X = \begin{pmatrix} a & c \\ c & b \end{pmatrix};\
+      a, b, c \in \mathbb{R} \right\}.
+  \]
+  Возьмём два элемента
+  $A = \begin{pmatrix} a_1 & c_1 \\ c_1 & b_1 \end{pmatrix}$ и
+  $B = \begin{pmatrix} a_2 & c_2 \\ c_2 & b_2 \end{pmatrix}$ и образуем
+  линейную комбинацию:
+  \[
+    \alpha A + \beta B
+    = \begin{pmatrix} \alpha a_1 & \alpha c_1 \\ \alpha c_1 & \alpha b_1 \end{pmatrix}
+    + \begin{pmatrix} \beta a_2 & \beta c_2 \\ \beta c_2 & \beta b_2 \end{pmatrix}
+    = \begin{pmatrix}
+        \alpha a_1 + \beta a_2 & \alpha c_1 + \beta c_2 \\
+        \alpha c_1 + \beta c_2 & \alpha b_1 + \beta b_2
+      \end{pmatrix}.
+  \]
+  Полученная матрица симметрична (вне диагонали стоят равные элементы),
+  поэтому $\alpha A + \beta B \in M$ для всех $A, B \in M$ и всех
+  $\alpha, \beta \in \mathbb{R}$. Следовательно, $M$ — линейное
+  подпространство в $\mathbb{R}^{2\times 2}$.
+\end{myproof}
+
+\begin{remarkIT}{Симметричные матрицы в ML}{sym_it}
+  Симметричные матрицы встречаются повсеместно: матрицы ковариации
+  признаков, матрицы Грама в ядерных методах (SVM, kernel trick),
+  гессианы функций потерь при оптимизации. То, что они образуют
+  \emph{подпространство}, означает, что взвешенное усреднение нескольких
+  ковариационных матриц снова даёт симметричную матрицу — это
+  используется, например, при регуляризации ковариации
+  (shrinkage estimation) в финансовой аналитике и распознавании образов.
+\end{remarkIT}
+
+\subsubsection*{Пример 5. Функции вида $a + b\cos^2 t + c\cos 2t$}
+
+\begin{definition}{Линейное пространство тригонометрических функций}{trig_example}
+  Пусть $M$ — это множество функций вида
+  \[
+    f(t) = a + b\cos^2 t + c\cos 2t.
+  \]
+  Докажем, что $M$ — линейное пространство (точнее, линейное
+  подпространство в пространстве непрерывных функций $C_{(-\infty;+\infty)}$).
+\end{definition}
+
+\begin{myproof}
+  Сначала упростим описание множества $M$. Воспользуемся тождеством
+  понижения степени
+  $\cos^2 t = \dfrac{1 + \cos 2t}{2}$. Подставим его в выражение для
+  произвольного элемента (для наглядности обозначим коэффициенты
+  $\alpha, \beta, \gamma$):
+  \begin{align*}
+    f(t) &= \alpha + \beta \cos^2 t + \gamma \cos 2t
+    = \alpha + \beta \frac{1 + \cos 2t}{2} + \gamma \cos 2t \\
+    &= \alpha + \frac{\beta}{2} + \frac{\beta}{2}\cos 2t + \gamma \cos 2t
+    = \left(\alpha + \frac{\beta}{2}\right)
+      + \left(\frac{\beta}{2} + \gamma\right)\cos 2t.
+  \end{align*}
+  Обозначим
+  \[
+    \left.
+    \begin{array}{l}
+      \alpha + \dfrac{\beta}{2} = a \\[4pt]
+      \dfrac{\beta}{2} + \gamma = b
+    \end{array}
+    \right\}
+    \;\Rightarrow\;
+    f(t) = a + b\cos 2t.
+  \]
+  Таким образом,
+  \[
+    M = \{ f(t) = a + b\cos 2t;\ a, b \in \mathbb{R} \}.
+  \]
+  Рассмотрим $C_{(-\infty;+\infty)}$ — линейное пространство функций,
+  непрерывных на интервале $(-\infty; +\infty)$. Очевидно,
+  $M \subset C_{(-\infty;+\infty)}$. Докажем, что $M$ — линейное
+  подпространство в $C_{(-\infty;+\infty)}$. Возьмём два элемента
+  \[
+    f_1(t) = a_1 + b_1 \cos 2t, \qquad
+    f_2(t) = a_2 + b_2 \cos 2t,
+  \]
+  и образуем линейную комбинацию:
+  \begin{align*}
+    \lambda f_1(t) + \mu f_2(t)
+    &= \lambda a_1 + \lambda b_1 \cos 2t + \mu a_2 + \mu b_2 \cos 2t \\
+    &= (\lambda a_1 + \mu a_2) + (\lambda b_1 + \mu b_2)\cos 2t.
+  \end{align*}
+  Обозначим
+  \[
+    \left.
+    \begin{array}{l}
+      \lambda a_1 + \mu a_2 = a \\
+      \lambda b_1 + \mu b_2 = b
+    \end{array}
+    \right\}
+    \;\Rightarrow\;
+    \lambda f_1(t) + \mu f_2(t) = a + b\cos 2t.
+  \]
+  Значит, $\lambda f_1(t) + \mu f_2(t) \in M$ для всех
+  $f_1(t), f_2(t) \in M$ и всех $\lambda, \mu \in \mathbb{R}$.
+  Следовательно, $M$ — линейное подпространство в
+  $C_{(-\infty;+\infty)}$. То есть $M$ само по себе является линейным
+  пространством.
+\end{myproof}
+
+\begin{remarkIT}{Тригонометрический базис и анализ Фурье}{fourier_it}
+  Только что мы фактически нашли \textbf{базис} пространства $M$: это
+  функции $1$ и $\cos 2t$ (размерность $M$ равна 2, хотя исходно
+  множество описывалось тремя «лишними» параметрами $a, b, c$). Это —
+  миниатюрная иллюстрация идеи анализа Фурье: сложный сигнал
+  раскладывается по базису из гармоник $\{1, \cos t, \sin t, \cos 2t,
+  \dots\}$. Цифровая обработка звука и изображений (форматы MP3, JPEG)
+  основана именно на том, что сигнал — это вектор в пространстве функций,
+  а сжатие достигается отбрасыванием координат при малозначимых
+  гармониках.
+\end{remarkIT}
+
+\end{document}

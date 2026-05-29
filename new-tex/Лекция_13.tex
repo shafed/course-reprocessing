@@ -1,0 +1,736 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+\usepackage{array}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[number within=section]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+\title{Лекция 13: Многочлены. Деление, корни и разложение}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\setcounter{section}{13}
+
+\section*{Введение: Зачем IT-специалисту многочлены?}
+
+Многочлен (полином) — это, пожалуй, самый универсальный
+вычислительный объект во всей прикладной математике. С точки зрения
+программиста он представляет собой просто массив коэффициентов, но за
+этим простым представлением скрывается мощнейший аппарат, на котором
+держатся целые области информатики.
+
+В этой лекции мы изучим, как делить многочлены с остатком (полный
+аналог деления целых чисел), научимся быстро вычислять их значения и
+находить корни, познакомимся с теоремой Безу, схемой Горнера, основной
+теоремой алгебры и теоремой Виета. Прежде чем погрузиться в теорию,
+посмотрим, где всё это работает на практике.
+
+\begin{remarkIT}{Криптография и помехоустойчивое кодирование}{crypto}
+  Современные системы хранения и передачи данных немыслимы без
+  многочленов над конечными полями.
+  \begin{itemize}
+    \item \textbf{Коды Рида--Соломона} (используются в QR-кодах,
+      DVD/Blu-ray, спутниковой связи, RAID-массивах) трактуют блок
+      данных как коэффициенты многочлена. Деление многочленов с
+      остатком и теорема Безу лежат в основе кодирования и
+      восстановления повреждённых байтов.
+    \item \textbf{CRC (Cyclic Redundancy Check)} — контрольная сумма,
+      которую вычисляет почти каждый сетевой адаптер и архиватор, —
+      это в точности \emph{остаток} от деления многочлена сообщения на
+      фиксированный порождающий многочлен.
+  \end{itemize}
+\end{remarkIT}
+
+\begin{remarkIT}{Компьютерная графика и анимация}{graphics}
+  Гладкие траектории движения камеры, кривые шрифтов TrueType,
+  поверхности в САПР — всё это \textbf{кривые Безье} и
+  \textbf{сплайны}, то есть кусочно-полиномиальные функции. Поиск
+  пересечения луча с кривой в трассировке лучей сводится к нахождению
+  \emph{корней многочлена}. Кратность корня при этом отвечает за то,
+  касается луч поверхности или пересекает её.
+\end{remarkIT}
+
+\begin{remarkIT}{Научные вычисления и Data Science}{ds}
+  Полиномиальная регрессия, интерполяция табличных данных, численное
+  интегрирование (квадратурные формулы Гаусса строятся на корнях
+  ортогональных многочленов) — всё это требует устойчивого вычисления
+  значений и корней полиномов. Характеристический многочлен матрицы,
+  корни которого суть собственные значения, — фундамент PCA, анализа
+  устойчивости и спектральных методов машинного обучения.
+\end{remarkIT}
+
+\subsection{Основные понятия. Деление многочленов. Теорема Безу}
+
+\begin{definition}{Многочлен}{poly_def}
+  \textbf{Многочленом $n$-й степени} называется функция
+  \[
+    P(x) = a_0 x^n + a_1 x^{n-1} + \dots + a_{n-1} x + a_n,
+  \]
+  где $x \in \mathbb{C}$, коэффициенты $a_i \in \mathbb{C}$,
+  $i = 0, 1, 2, \dots, n$, причём старший коэффициент $a_0 \neq 0$.
+\end{definition}
+
+\noindent\textbf{Обозначение.} Степень многочлена $P(x)$ обозначается
+$\deg P$.
+
+\begin{remarkIT}{Представление в памяти}{repr}
+  В коде многочлен почти всегда хранится как массив коэффициентов
+  (например, \texttt{numpy.poly1d} в Python или \texttt{double[]} в
+  C++). Степень — это длина массива минус один. Именно поэтому условие
+  $a_0 \neq 0$ важно: ведущие нули «искусственно» завышали бы степень.
+\end{remarkIT}
+
+\begin{theorem}{Степень суммы и произведения}{deg_thm}
+  Сложение и умножение многочленов определяются обычным образом, при
+  этом:
+  \[
+    \deg(P + Q) \le \max(\deg P,\ \deg Q), \qquad
+    \deg(P \cdot Q) = \deg P + \deg Q.
+  \]
+\end{theorem}
+
+\noindent Неравенство для суммы строгое именно тогда, когда старшие
+члены сокращаются (например, $(x^2 + x) + (-x^2 + 1)$ имеет степень
+$1$, а не $2$). Для произведения старшие коэффициенты перемножаются и,
+будучи отличными от нуля, не могут сократиться, поэтому здесь всегда
+равенство.
+
+\subsubsection*{Деление многочленов с остатком}
+
+Точно так же, как целое число не всегда делится на другое нацело
+(но всегда есть частное и остаток), многочлен можно разделить на
+другой с остатком. Это фундаментальная операция, на которой строится
+весь дальнейший материал.
+
+\begin{theorem}{О делении с остатком}{division_thm}
+  Для любых двух многочленов $f(x)$ и $g(x)$, где $g(x) \neq 0$,
+  существует, и притом единственная, пара многочленов $q(x)$ и $r(x)$
+  такая, что
+  \begin{equation}
+    f(x) = g(x) \cdot q(x) + r(x), \label{eq:division}
+  \end{equation}
+  где либо $r(x) = 0$, либо $\deg r < \deg g$.
+
+  При этом $f(x)$ — \textbf{делимое}, $g(x)$ — \textbf{делитель},
+  $q(x)$ — \textbf{частное}, $r(x)$ — \textbf{остаток}.
+\end{theorem}
+
+\begin{myproof}
+  \textit{Существование.} Если $f(x) = 0$, берём $q(x) = r(x) = 0$, и
+  утверждение очевидно. Пусть $f(x) \neq 0$.
+
+  \textbf{I случай:} $\deg f < \deg g$. Тогда полагаем
+  $f = g \cdot 0 + f$, то есть $q = 0$, $r = f$, причём
+  $\deg r = \deg f < \deg g$.
+
+  \textbf{II случай:} $\deg f \ge \deg g$. Запишем
+  \[
+    f(x) = a_0 x^n + a_1 x^{n-1} + \dots + a_{n-1} x + a_n, \qquad
+    g(x) = b_0 x^m + b_1 x^{m-1} + \dots + b_{m-1} x + b_m.
+  \]
+  Применим метод математической индукции по степени $n$ многочлена
+  $f(x)$.
+
+  1) База: $n = 0$. Тогда и $m = 0$, и можно взять
+  $q(x) = \dfrac{a_n}{b_m}$, $r(x) = 0$ — утверждение верно.
+
+  2) Шаг: предположим, что теорема верна для любого многочлена степени
+  меньше $n$. Рассмотрим вспомогательный многочлен, в котором старший
+  член $f$ уничтожается:
+  \begin{equation}
+    f_1(x) = f(x) - \frac{a_0}{b_0}\, x^{n-m} \cdot g(x).
+    \label{eq:f1}
+  \end{equation}
+  По построению либо $f_1(x) = 0$, либо $\deg f_1 < n$.
+
+  Если $f_1(x) = 0$, то $f(x) = \dfrac{a_0}{b_0} x^{n-m} \cdot g(x)$,
+  то есть $q(x) = \dfrac{a_0}{b_0} x^{n-m}$, $r(x) = 0$ — теорема верна.
+
+  Если же $\deg f_1 < n$, то по предположению индукции
+  $f_1(x) = g(x)\cdot q_1(x) + r(x)$, где либо $r(x) = 0$, либо
+  $\deg r < \deg g$. Подставляя это в~\eqref{eq:f1}, получаем
+  \begin{align*}
+    f(x) &= f_1(x) + \frac{a_0}{b_0} x^{n-m} g(x)
+         = g(x) q_1(x) + r(x) + \frac{a_0}{b_0} x^{n-m} g(x) \\
+         &= g(x)\left( \frac{a_0}{b_0} x^{n-m} + q_1(x) \right) + r(x)
+         = g(x)\, q(x) + r(x),
+  \end{align*}
+  где $q(x) = \dfrac{a_0}{b_0} x^{n-m} + q_1(x)$. Существование доказано.
+
+  \medskip
+  \textit{Единственность.} Пусть наряду с~\eqref{eq:division}
+  существует ещё одно представление
+  \begin{equation}
+    f(x) = g(x) \cdot q_1(x) + r_1(x), \qquad \deg r_1 < \deg g.
+    \label{eq:division2}
+  \end{equation}
+  Вычитая~\eqref{eq:division2} из~\eqref{eq:division}, получаем
+  \[
+    0 = g(x)\bigl(q(x) - q_1(x)\bigr) + r(x) - r_1(x)
+    \ \Longrightarrow\
+    g(x)\bigl(q(x) - q_1(x)\bigr) = r_1(x) - r(x).
+  \]
+  Допустим $q \neq q_1$. Тогда в левой части
+  $\deg\bigl(g\cdot(q - q_1)\bigr) \ge \deg g$. Но в правой части
+  $\deg(r_1 - r) \le \max(\deg r_1, \deg r) < \deg g$ — противоречие.
+  Следовательно, $q = q_1$, а тогда и $r_1 = r$.
+\end{myproof}
+
+\begin{remarkIT}{Деление «уголком» = цикл вычитаний}{long_div}
+  Деление многочленов «в столбик» — это в точности алгоритм из
+  доказательства: на каждом шаге мы убиваем старший член делимого,
+  домножая делитель на $\frac{a_0}{b_0} x^{n-m}$ и вычитая. Тот же
+  принцип реализован аппаратно в вычислителях CRC: сдвиговый регистр
+  выполняет последовательные «вычитания» (XOR) делителя.
+\end{remarkIT}
+
+\begin{definition}{Деление многочленов уголком (пример)}{div_example}
+  Разделим $f(x) = 3x^4 + x^3 - 1$ на $g(x) = x^2 + x + 1$.
+
+  \medskip
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{r@{\;}l|l}
+    & $3x^4 + x^3 \phantom{+0x^2+0x} - 1$ & \;$x^2 + x + 1$ \\
+    \cline{3-3}
+    $-$ & $3x^4 + 3x^3 + 3x^2$ & \;$3x^2 - 2x - 1$ \\
+    \cline{2-2}
+    & $\phantom{3x^4+}-2x^3 - 3x^2 \phantom{+0x}- 1$ & \\
+    $-$ & $\phantom{3x^4+}-2x^3 - 2x^2 - 2x$ & \\
+    \cline{2-2}
+    & $\phantom{3x^4+2x^3+}-x^2 + 2x - 1$ & \\
+    $-$ & $\phantom{3x^4+2x^3+}-x^2 - x - 1$ & \\
+    \cline{2-2}
+    & $\phantom{3x^4+2x^3+0x^2+}3x$ & \\
+  \end{tabular}
+  \end{center}
+
+  \medskip
+  Разберём шаги:
+  \begin{itemize}
+    \item $\dfrac{3x^4}{x^2} = 3x^2$; вычитаем
+      $3x^2(x^2+x+1) = 3x^4 + 3x^3 + 3x^2$ — остаётся
+      $-2x^3 - 3x^2 - 1$.
+    \item $\dfrac{-2x^3}{x^2} = -2x$; вычитаем
+      $-2x(x^2+x+1) = -2x^3 - 2x^2 - 2x$ — остаётся
+      $-x^2 + 2x - 1$.
+    \item $\dfrac{-x^2}{x^2} = -1$; вычитаем
+      $-1\cdot(x^2+x+1) = -x^2 - x - 1$ — остаётся $3x$.
+  \end{itemize}
+  Степень остатка $\deg(3x) = 1 < 2 = \deg g$, деление окончено.
+  Итак,
+  \[
+    q(x) = 3x^2 - 2x - 1, \qquad r(x) = 3x,
+  \]
+  \[
+    3x^4 + x^3 - 1 = (x^2 + x + 1)(3x^2 - 2x - 1) + 3x.
+  \]
+\end{definition}
+
+\subsubsection*{Теорема Безу}
+
+\begin{theorem}{Теорема Безу}{bezout_thm}
+  Остаток от деления многочлена $f(x)$ на двучлен $x - a$ равен
+  значению многочлена в точке $a$, то есть равен $f(a)$.
+\end{theorem}
+
+\begin{myproof}
+  Разделим $f(x)$ на $x - a$ с остатком:
+  $f(x) = (x - a)\, q(x) + r(x)$. Так как $\deg(x - a) = 1$, остаток
+  имеет степень $\deg r < 1$, то есть $r(x) = r = \mathrm{const}$.
+  Подставляя $x = a$, получаем
+  $f(a) = (a - a) q(a) + r = r$. Следовательно, $r = f(a)$.
+\end{myproof}
+
+\begin{remarkIT}{Быстрое вычисление значения и схема Горнера}{horner}
+  Из теоремы Безу немедленно следует, что вычислить $f(a)$ можно,
+  деля $f$ на $x - a$. Эффективнее всего это делается \textbf{схемой
+  Горнера} — последовательностью «умножить на $a$ и прибавить
+  коэффициент». Она требует всего $n$ умножений и $n$ сложений вместо
+  наивных $O(n^2)$ операций и реализована в стандартных библиотеках
+  численных вычислений как самый устойчивый способ оценки полинома.
+\end{remarkIT}
+
+\subsection{Корни многочленов. Кратность корня. Теорема Виета}
+
+\begin{definition}{Корень многочлена}{root_def}
+  Число $x = \alpha$ называется \textbf{корнем} многочлена $f(x)$,
+  если $f(\alpha) = 0$.
+\end{definition}
+
+\noindent\textbf{Замечание.} Если остаток от деления $f(x)$ на $g(x)$
+равен нулю, то говорят, что $f(x)$ \textbf{делится} на $g(x)$.
+
+\begin{theorem}{Следствие из теоремы Безу}{bezout_cor}
+  Если $x = \alpha$ — корень многочлена $f(x)$, то $f(x)$ делится на
+  $x - \alpha$ (нацело, без остатка).
+\end{theorem}
+
+\noindent Действительно, по теореме Безу остаток от деления равен
+$f(\alpha) = 0$, поэтому $f(x) = (x - \alpha)\, q(x)$.
+
+\subsubsection*{Кратность корня}
+
+\begin{definition}{Кратность корня}{mult_def}
+  Корень $x = \alpha$ называется \textbf{корнем кратности $k$}
+  многочлена $f(x)$, если $f(x)$ делится на $(x - \alpha)^k$, но не
+  делится на $(x - \alpha)^{k+1}$.
+\end{definition}
+
+\begin{theorem}{Критерий кратности}{mult_thm}
+  $x = \alpha$ — корень кратности $k$ многочлена $f(x)$ тогда и только
+  тогда, когда
+  \[
+    f(x) = (x - \alpha)^k \cdot g(x), \qquad \text{где } g(\alpha) \neq 0.
+  \]
+\end{theorem}
+
+\subsubsection*{Основная теорема алгебры}
+
+\begin{theorem}{Основная теорема алгебры}{fta_thm}
+  Всякий многочлен, степень которого не меньше единицы, имеет хотя бы
+  один корень (в общем случае комплексный).
+\end{theorem}
+
+\begin{theorem}{Разложение на линейные множители}{factor_thm}
+  Всякий многочлен степени $n \ge 1$ имеет ровно $n$ корней (с учётом
+  кратности), при этом
+  \begin{equation}
+    P_n(x) = a_0 x^n + a_1 x^{n-1} + \dots + a_{n-1} x + a_n
+    = a_0 (x - \alpha_1)(x - \alpha_2)\cdots(x - \alpha_n),
+    \label{eq:linear_factor}
+  \end{equation}
+  где $\alpha_1, \dots, \alpha_n$ — корни многочлена $P_n(x)$.
+\end{theorem}
+
+\begin{myproof}
+  По основной теореме алгебры существует $\alpha_1 \in \mathbb{C}$
+  такое, что $P_n(\alpha_1) = 0$. Тогда по следствию из теоремы Безу
+  $P_n(x) = (x - \alpha_1) P_{n-1}(x)$, где $\deg P_{n-1} = n - 1$.
+
+  Если $n - 1 \ge 1$, то снова существует $\alpha_2 \in \mathbb{C}$:
+  $P_{n-1}(\alpha_2) = 0$, откуда
+  $P_n(x) = (x - \alpha_1)(x - \alpha_2) P_{n-2}(x)$, и так далее.
+  Продолжая процесс $n$ раз, получим разложение~\eqref{eq:linear_factor}.
+\end{myproof}
+
+\noindent\textbf{Замечание (каноническое разложение над
+$\mathbb{C}$).} Сгруппировав в~\eqref{eq:linear_factor} множители с
+одинаковыми корнями, получим
+\begin{equation}
+  P_n(x) = a_0 (x - \alpha_1)^{k_1}(x - \alpha_2)^{k_2}
+  \cdots (x - \alpha_r)^{k_r},
+  \label{eq:canonical_C}
+\end{equation}
+где $\alpha_i \neq \alpha_j$ при $i \neq j$;
+$k_1 + k_2 + \dots + k_r = n$; $k_i$ — кратность корня $\alpha_i$.
+Это \textbf{каноническое разложение многочлена на множестве
+комплексных чисел}.
+
+\subsubsection*{Теорема Виета}
+
+\begin{theorem}{Теорема Виета}{vieta_thm}
+  Если $\alpha_1, \alpha_2, \dots, \alpha_n$ — корни многочлена
+  $P_n(x) = a_0 x^n + a_1 x^{n-1} + \dots + a_{n-1} x + a_n$, то
+  справедливы соотношения
+  \[
+    \begin{cases}
+      \alpha_1 + \alpha_2 + \dots + \alpha_n
+        = -\dfrac{a_1}{a_0}; \\[2mm]
+      \alpha_1\alpha_2 + \alpha_1\alpha_3 + \dots + \alpha_{n-1}\alpha_n
+        = \dfrac{a_2}{a_0}; \\[2mm]
+      \quad\dots \\[1mm]
+      \displaystyle\sum \alpha_{i_1}\alpha_{i_2}\cdots\alpha_{i_k}
+        = (-1)^k \dfrac{a_k}{a_0}; \\[2mm]
+      \quad\dots \\[1mm]
+      \alpha_1\alpha_2 \cdots \alpha_n
+        = (-1)^n \dfrac{a_n}{a_0}.
+    \end{cases}
+  \]
+\end{theorem}
+
+\noindent Эти формулы получаются раскрытием скобок в
+разложении~\eqref{eq:linear_factor} и приравниванием коэффициентов при
+одинаковых степенях $x$. Они позволяют связывать симметрические
+функции корней с коэффициентами, не находя самих корней.
+
+\subsection{Многочлены с действительными коэффициентами}
+
+Пусть теперь $P_n(x) = a_0 x^n + a_1 x^{n-1} + \dots + a_{n-1} x + a_n$,
+причём все $a_i \in \mathbb{R}$, $i = 0, 1, \dots, n$. У таких
+многочленов комплексные корни обладают замечательной симметрией.
+
+\begin{theorem}{О сопряжённых корнях}{conjugate_thm}
+  Если $x = \alpha \in \mathbb{C}$ — корень многочлена $P_n(x)$ с
+  действительными коэффициентами, то сопряжённое число
+  $x = \bar{\alpha}$ — тоже корень этого многочлена.
+\end{theorem}
+
+\begin{myproof}
+  Пусть $\alpha$ — корень $P_n(x)$, то есть
+  $a_0 \alpha^n + a_1 \alpha^{n-1} + \dots + a_{n-1}\alpha + a_n
+  = P_n(\alpha) = 0$.
+  Возьмём комплексное сопряжение от обеих частей. Используя свойства
+  $\overline{z + w} = \bar{z} + \bar{w}$ и
+  $\overline{zw} = \bar{z}\,\bar{w}$, а также то, что коэффициенты
+  действительны ($\bar{a}_i = a_i$), получаем
+  \[
+    \overline{P_n(\alpha)} = \bar{0} = 0
+    \ \Longrightarrow\
+    \bar a_0 \bar\alpha^{n} + \bar a_1 \bar\alpha^{n-1} + \dots
+    + \bar a_{n-1}\bar\alpha + \bar a_n = 0,
+  \]
+  \[
+    a_0 \bar\alpha^{n} + a_1 \bar\alpha^{n-1} + \dots
+    + a_{n-1}\bar\alpha + a_n = 0
+    \ \Longrightarrow\
+    P_n(\bar\alpha) = 0.
+  \]
+  Следовательно, $\bar\alpha$ — корень $P_n(x)$.
+\end{myproof}
+
+\noindent\textbf{Замечание.} Если $\alpha$ — корень $P_n(x)$, то
+$P_n(x)$ делится на $(x - \alpha)$; а так как $\bar\alpha$ — тоже
+корень, то $P_n(x)$ делится и на $(x - \bar\alpha)$. Значит, $P_n(x)$
+делится на произведение
+\[
+  (x - \alpha)(x - \bar\alpha)
+  = x^2 - (\alpha + \bar\alpha) x + |\alpha|^2
+  = x^2 + p x + q
+\]
+— это \emph{квадратный трёхчлен с действительными коэффициентами}
+(так как $\alpha + \bar\alpha = 2\operatorname{Re}\alpha$ и
+$|\alpha|^2$ действительны), причём с отрицательным дискриминантом.
+
+\noindent\textbf{Замечание (каноническое разложение над
+$\mathbb{R}$).} Если $P_n(x)$ — многочлен с действительными
+коэффициентами, то комплексные корни идут сопряжёнными парами, и его
+можно разложить на действительные множители:
+\begin{equation}
+  P_n(x) = a_0 (x - \alpha_1)^{k_1} \cdots (x - \alpha_s)^{k_s}
+  \cdot (x^2 + p_1 x + q_1)^{r_1} \cdots (x^2 + p_l x + q_l)^{r_l},
+  \label{eq:canonical_R}
+\end{equation}
+где $\alpha_i \in \mathbb{R}$, $k_i \in \mathbb{N}$, $i = 1, \dots, s$;
+$p_j, q_j \in \mathbb{R}$, $r_j \in \mathbb{N}$, $j = 1, \dots, l$, и
+каждый квадратный трёхчлен неприводим (его дискриминант отрицателен).
+Это \textbf{каноническое разложение многочлена на множестве
+действительных чисел}.
+
+\begin{remarkIT}{Почему это важно для цифровой обработки сигналов}{dsp}
+  Передаточная функция цифрового фильтра — отношение двух многочленов
+  с действительными коэффициентами. Разложение~\eqref{eq:canonical_R}
+  на квадратичные блоки (biquad sections) — стандартный приём
+  реализации фильтров: сопряжённые комплексные корни (полюса и нули)
+  объединяются в действительные звенья второго порядка, что
+  обеспечивает численную устойчивость фильтра.
+\end{remarkIT}
+
+\subsubsection*{Разбор задач}
+
+\begin{definition}{Решение уравнения с рациональными корнями}{ex_rational}
+  Решить уравнение $6x^4 + 5x^3 - 9x^2 + 8x - 4 = 0$.
+
+  \medskip
+  \textbf{Поиск целых корней.} Если уравнение имеет целые корни, то
+  они содержатся среди делителей свободного члена $-4$, то есть среди
+  $\pm 1, \pm 2, \pm 4$. Проверкой убеждаемся, что $x_1 = -2$:
+  \[
+    6\cdot 16 + 5\cdot(-8) - 9\cdot 4 + 8\cdot(-2) - 4
+    = 96 - 40 - 36 - 16 - 4 = 0. \quad \checkmark
+  \]
+
+  \textbf{Деление по схеме Горнера на $x + 2$:}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c|ccccc}
+    & $6$ & $5$ & $-9$ & $8$ & $-4$ \\
+    \hline
+    $-2$ & $6$ & $-7$ & $5$ & $-2$ & $0$ \\
+  \end{tabular}
+  \end{center}
+  (каждое число: предыдущее $\times(-2)$ плюс верхний коэффициент:
+  $5 + (-2)\cdot 6 = -7$; $-9 + (-2)\cdot(-7) = 5$;
+  $8 + (-2)\cdot 5 = -2$; $-4 + (-2)\cdot(-2) = 0$.) Итак,
+  \[
+    P(x) = 6x^4 + 5x^3 - 9x^2 + 8x - 4 = (x + 2)(6x^3 - 7x^2 + 5x - 2).
+  \]
+
+  \textbf{Поиск рациональных корней кубического множителя.}
+  Уравнение $6x^3 - 7x^2 + 5x - 2 = 0$ целых корней не имеет, но
+  может иметь рациональные, содержащиеся среди дробей
+  $\pm\frac{1}{2}, \pm\frac{1}{3}, \pm\frac{1}{6}, \pm\frac{2}{3}$
+  (отношения делителей свободного члена к делителям старшего
+  коэффициента). Проверкой находим $x_2 = \frac{2}{3}$:
+  \[
+    6\cdot\tfrac{8}{27} - 7\cdot\tfrac{4}{9} + 5\cdot\tfrac{2}{3} - 2
+    = \tfrac{16}{9} - \tfrac{28}{9} + \tfrac{30}{9} - \tfrac{18}{9}
+    = 0. \quad \checkmark
+  \]
+
+  \textbf{Деление $Q(x) = 6x^3 - 7x^2 + 5x - 2$ на $3x - 2$ уголком:}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{r@{\;}l|l}
+    & $6x^3 - 7x^2 + 5x - 2$ & \;$3x - 2$ \\
+    \cline{3-3}
+    $-$ & $6x^3 - 4x^2$ & \;$2x^2 - x + 1$ \\
+    \cline{2-2}
+    & $\phantom{6x^3+}-3x^2 + 5x - 2$ & \\
+    $-$ & $\phantom{6x^3+}-3x^2 + 2x$ & \\
+    \cline{2-2}
+    & $\phantom{6x^3-3x^2+}3x - 2$ & \\
+    $-$ & $\phantom{6x^3-3x^2+}3x - 2$ & \\
+    \cline{2-2}
+    & $\phantom{6x^3-3x^2+3x-}0$ & \\
+  \end{tabular}
+  \end{center}
+  Следовательно, $6x^3 - 7x^2 + 5x - 2 = (3x - 2)(2x^2 - x + 1)$.
+
+  \textbf{Оставшийся квадратный трёхчлен.} Решаем
+  $2x^2 - x + 1 = 0$:
+  \[
+    x_{3,4} = \frac{1 \pm \sqrt{1 - 8}}{4} = \frac{1 \pm i\sqrt{7}}{4}.
+  \]
+  \textbf{Ответ:} $\ x = \dfrac{2}{3};\quad x = -2;\quad
+  x = \dfrac{1 \pm i\sqrt{7}}{4}.$
+\end{definition}
+
+\begin{definition}{Корни, кратность и разложение над $\mathbb{R}$ и
+  $\mathbb{C}$}{ex_factor}
+  Найти корни многочлена
+  $p(z) = 2z^4 + 11z^3 + 20z^2 + 7z - 10$ и определить их кратность.
+  Разложить $p(z)$ на множители над $\mathbb{R}$ и над $\mathbb{C}$.
+
+  \medskip
+  \textbf{Корень $z_1 = -2$} (по схеме Горнера):
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c|ccccc}
+    & $2$ & $11$ & $20$ & $7$ & $-10$ \\
+    \hline
+    $-2$ & $2$ & $7$ & $6$ & $-5$ & $0$ \\
+  \end{tabular}
+  \end{center}
+  ($11 - 4 = 7$; $20 - 14 = 6$; $7 - 12 = -5$; $-10 + 10 = 0$.)
+  Значит, $p(z) = (z + 2)(2z^3 + 7z^2 + 6z - 5)$.
+
+  \textbf{Корень $z_2 = \frac{1}{2}$} (по схеме Горнера для
+  $2z^3 + 7z^2 + 6z - 5$):
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c|cccc}
+    & $2$ & $7$ & $6$ & $-5$ \\
+    \hline
+    $1/2$ & $2$ & $8$ & $10$ & $0$ \\
+  \end{tabular}
+  \end{center}
+  ($7 + 1 = 8$; $6 + 4 = 10$; $-5 + 5 = 0$.) Значит,
+  \[
+    p(z) = (z + 2)\left(z - \tfrac{1}{2}\right)(2z^2 + 8z + 10)
+         = (z + 2)(2z - 1)(z^2 + 4z + 5)
+  \]
+  — \textbf{разложение на множители над $\mathbb{R}$} (трёхчлен
+  $z^2 + 4z + 5$ имеет дискриминант $16 - 20 = -4 < 0$, то есть
+  неприводим над $\mathbb{R}$).
+
+  \textbf{Комплексные корни.} Решаем $z^2 + 4z + 5 = 0$:
+  \[
+    z = -2 \pm \sqrt{4 - 5} = -2 \pm i.
+  \]
+  Тогда
+  \[
+    p(z) = (z + 2)(2z - 1)(z + 2 - i)(z + 2 + i)
+  \]
+  — \textbf{разложение над $\mathbb{C}$}.
+
+  \textbf{Ответ:} $z_1 = -2$, $z_2 = \tfrac{1}{2}$,
+  $z_{3,4} = -2 \pm i$ — все корни кратности $1$.
+\end{definition}
+
+\begin{definition}{Восстановление многочлена по комплексному
+  корню}{ex_complex_root}
+  Пусть $z_1 = \dfrac{-1 + i\sqrt{11}}{6}$ — корень многочлена
+  $p(z) = 6z^4 - z^3 + 10z^2 + 2z + 3$. Найти остальные корни и их
+  кратность; разложить $p(z)$ на множители над $\mathbb{R}$.
+
+  \medskip
+  \textbf{1) Сопряжённый корень и действительный трёхчлен.} Так как
+  коэффициенты $p(z)$ действительны, сопряжённое число
+  $z_2 = \dfrac{-1 - i\sqrt{11}}{6}$ — тоже корень. Перемножим
+  соответствующие двучлены:
+  \begin{align*}
+    (z - z_1)(z - z_2)
+    &= \left(z + \tfrac{1}{6} - i\tfrac{\sqrt{11}}{6}\right)
+       \left(z + \tfrac{1}{6} + i\tfrac{\sqrt{11}}{6}\right)
+     = \left(z + \tfrac{1}{6}\right)^2 + \tfrac{11}{36} \\
+    &= z^2 + \tfrac{z}{3} + \tfrac{1}{36} + \tfrac{11}{36}
+     = z^2 + \tfrac{z}{3} + \tfrac{12}{36}
+     = z^2 + \tfrac{z}{3} + \tfrac{1}{3}.
+  \end{align*}
+  Чтобы получить множитель с целыми коэффициентами, умножим на $3$:
+  $3z^2 + z + 1$.
+
+  \textbf{2) Деление $p(z)$ на $3z^2 + z + 1$ уголком:}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{r@{\;}l|l}
+    & $6z^4 - z^3 + 10z^2 + 2z + 3$ & \;$3z^2 + z + 1$ \\
+    \cline{3-3}
+    $-$ & $6z^4 + 2z^3 + 2z^2$ & \;$2z^2 - z + 3$ \\
+    \cline{2-2}
+    & $\phantom{6z^4+}-3z^3 + 8z^2 + 2z$ & \\
+    $-$ & $\phantom{6z^4+}-3z^3 - z^2 - z$ & \\
+    \cline{2-2}
+    & $\phantom{6z^4-3z^3+}9z^2 + 3z + 3$ & \\
+    $-$ & $\phantom{6z^4-3z^3+}9z^2 + 3z + 3$ & \\
+    \cline{2-2}
+    & $\phantom{6z^4-3z^3+9z^2+3z+}0$ & \\
+  \end{tabular}
+  \end{center}
+  Итак, $p(z) = (3z^2 + z + 1)(2z^2 - z + 3)$.
+
+  \textbf{3) Корни второго множителя.} Решаем $2z^2 - z + 3 = 0$:
+  \[
+    z_{3,4} = \frac{1 \pm \sqrt{1 - 24}}{4} = \frac{1 \pm i\sqrt{23}}{4}.
+  \]
+  Кратность у всех корней равна $1$.
+
+  \textbf{Разложение над $\mathbb{R}$:}
+  \[
+    p(z) = (3z^2 + z + 1)(2z^2 - z + 3).
+  \]
+  \textbf{Разложение над $\mathbb{C}$:}
+  \[
+    p(z) = 6\left(z - \tfrac{-1 - i\sqrt{11}}{6}\right)
+            \left(z - \tfrac{-1 + i\sqrt{11}}{6}\right)
+            \left(z - \tfrac{1 - i\sqrt{23}}{4}\right)
+            \left(z - \tfrac{1 + i\sqrt{23}}{4}\right).
+  \]
+\end{definition}
+
+\begin{definition}{Кратные корни многочлена высокой степени}{ex_high_degree}
+  Найти корни многочлена
+  \[
+    p(z) = z^8 - 2z^7 + z^6 - 2z^5 + 4z^4 - 2z^3 + z^2 - 2z + 1
+  \]
+  и их кратность. Разложить $p(z)$ на множители над $\mathbb{R}$ и над
+  $\mathbb{C}$.
+
+  \medskip
+  \textbf{Корень $z_1 = 1$} (схема Горнера):
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c|ccccccccc}
+    & $1$ & $-2$ & $1$ & $-2$ & $4$ & $-2$ & $1$ & $-2$ & $1$ \\
+    \hline
+    $1$ & $1$ & $-1$ & $0$ & $-2$ & $2$ & $0$ & $1$ & $-1$ & $0$ \\
+  \end{tabular}
+  \end{center}
+  Значит, $p(z) = (z - 1)(z^7 - z^6 - 2z^4 + 2z^3 + z - 1)$.
+
+  \textbf{Ещё раз корень $z = 1$} (для частного $z^7 - z^6 - 2z^4 +
+  2z^3 + z - 1$):
+  \begin{center}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{c|cccccccc}
+    & $1$ & $-1$ & $0$ & $-2$ & $2$ & $0$ & $1$ & $-1$ \\
+    \hline
+    $1$ & $1$ & $0$ & $0$ & $-2$ & $0$ & $0$ & $1$ & $0$ \\
+  \end{tabular}
+  \end{center}
+  Получаем $z^6 - 2z^3 + 1$, и тогда
+  \[
+    p(z) = (z - 1)^2 (z^6 - 2z^3 + 1).
+  \]
+  Заметим, что $z^6 - 2z^3 + 1 = (z^3 - 1)^2$, а
+  $z^3 - 1 = (z - 1)(z^2 + z + 1)$. Поэтому
+  \begin{align*}
+    p(z) &= (z - 1)^2 (z^3 - 1)^2
+          = (z - 1)^2 (z - 1)^2 (z^2 + z + 1)^2 \\
+         &= (z - 1)^4 (z^2 + z + 1)^2
+  \end{align*}
+  — \textbf{разложение на множители над $\mathbb{R}$} (трёхчлен
+  $z^2 + z + 1$ имеет дискриминант $1 - 4 = -3 < 0$, неприводим).
+
+  \textbf{Комплексные корни.} Решаем $z^2 + z + 1 = 0$:
+  \[
+    z = \frac{-1 \pm \sqrt{1 - 4}}{2} = \frac{-1 \pm i\sqrt{3}}{2}.
+  \]
+  Тогда
+  \[
+    p(z) = (z - 1)^4
+    \left(z - \tfrac{-1 + i\sqrt{3}}{2}\right)^2
+    \left(z - \tfrac{-1 - i\sqrt{3}}{2}\right)^2
+  \]
+  — \textbf{разложение на множители над $\mathbb{C}$}.
+
+  \textbf{Ответ:} $z = 1$ — корень кратности $4$;
+  $z = \dfrac{-1 \pm i\sqrt{3}}{2}$ — корни кратности $2$.
+  (Проверка: суммарная кратность $4 + 2 + 2 = 8 = \deg p$.)
+\end{definition}
+
+\begin{remarkIT}{Кратные корни и численная устойчивость}{stability}
+  Кратные корни (как $z = 1$ выше) — головная боль численных
+  алгоритмов: рядом с кратным корнем многочлен «прижимается» к оси, и
+  даже малое возмущение коэффициентов резко смещает корни. Поэтому в
+  робастных решателях кратность сначала выявляют через наибольший
+  общий делитель $p(z)$ и его производной $p'(z)$ (алгоритм
+  square-free factorization), а уже затем ищут простые корни. Это
+  прямое практическое следствие изученной нами связи кратности с
+  делимостью.
+\end{remarkIT}
+
+\end{document}

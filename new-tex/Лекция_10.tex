@@ -1,0 +1,655 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[number within=section]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+\title{Лекция 10: Уравнения поверхности и линии в пространстве}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\setcounter{section}{10}
+
+\section*{Введение: Геометрия пространства как язык 3D-вычислений}
+
+В предыдущих лекциях мы изучили векторную алгебру и линейные операторы.
+Сегодня мы применяем этот аппарат для аналитического описания
+\textbf{поверхностей} и \textbf{линий} в трёхмерном пространстве:
+плоскостей и прямых, углов и расстояний между ними, задач проектирования
+точек.
+
+Для студента IT-направления это не отвлечённая геометрия. Вся современная
+работа с трёхмерными данными --- от рендеринга игр до автономного
+вождения --- строится на уравнениях плоскостей и прямых.
+
+\begin{remarkIT}{Компьютерная графика и геймдев}{gr}
+  Сцена в 3D-движке (Unity, Unreal, Blender) --- это набор треугольников,
+  каждый из которых лежит в своей \textbf{плоскости}.
+  \begin{itemize}
+    \item \textbf{Нормаль плоскости} $\vec{n}(A,B,C)$ используется для
+      расчёта освещения (модель Ламберта: яркость $\propto
+      \cos$ угла между нормалью и направлением на источник света) и
+      для отсечения нелицевых граней (back-face culling): если нормаль
+      смотрит от камеры, треугольник не рисуется.
+    \item \textbf{Расстояние от точки до плоскости} лежит в основе
+      теста столкновений и работы с frustum'ом камеры (отсечение
+      объектов вне поля зрения по шести плоскостям).
+    \item \textbf{Прямая (луч)} --- основной объект трассировки лучей
+      (Ray Tracing): луч из камеры пересекается с плоскостями граней,
+      и ищется ближайшая точка пересечения.
+  \end{itemize}
+\end{remarkIT}
+
+\begin{remarkIT}{Робототехника и компьютерное зрение}{robo}
+  \begin{itemize}
+    \item \textbf{Проекция точки на плоскость/прямую} применяется при
+      калибровке камер, в SLAM (одновременная локализация и
+      картографирование) и при выделении опорной плоскости (пол,
+      дорога) из облака точек лидара.
+    \item \textbf{Параметрическое уравнение прямой} $\vec{r}(t) =
+      \vec{r}_0 + t\,\vec{q}$ задаёт траекторию движения схвата
+      манипулятора или дрона; параметр $t$ играет роль времени.
+    \item \textbf{Угол между прямыми и плоскостями} нужен для
+      ориентации сенсоров и планирования траекторий обхода
+      препятствий.
+  \end{itemize}
+\end{remarkIT}
+
+\begin{remarkIT}{Data Science и машинное обучение}{ds}
+  Уравнение $Ax + By + Cz + D = 0$ --- это \textbf{линейный
+  классификатор} (разделяющая гиперплоскость). В методе опорных
+  векторов (SVM) обучение сводится к поиску плоскости, максимально
+  удалённой от обучающих точек; здесь напрямую работает формула
+  расстояния от точки до плоскости
+  $d = \dfrac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2+B^2+C^2}}$.
+  В $n$-мерном пространстве признаков всё обобщается на гиперплоскости.
+\end{remarkIT}
+
+Таким образом, плоскость и прямая --- это базовые «кирпичики», из
+которых строятся геометрические алгоритмы во всех IT-областях. Перейдём
+к их аналитическому описанию.
+
+\subsection{Уравнения плоскости в пространстве}
+
+Начнём с общего понятия поверхности, заданной уравнением, а затем
+получим все формы уравнения плоскости.
+
+\begin{definition}{Уравнение поверхности}{surface_def}
+  Уравнение
+  \[
+    \Phi(x, y, z) = 0
+  \]
+  называется \textbf{уравнением поверхности} $S$, если этому уравнению
+  удовлетворяют координаты любой точки этой поверхности и не
+  удовлетворяют координаты точек, не принадлежащих поверхности $S$.
+\end{definition}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.0]
+    \draw[->, gray] (-1.2,-0.6) -- (3,1.5) node[right] {$y$};
+    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
+    \draw[->, gray] (0.6,0.3) -- (-1.8,-1.2) node[below left] {$x$};
+    \draw[blue, thick] plot[smooth cycle] coordinates
+      {(1.2,1.6) (2.2,1.9) (2.6,1.1) (2.1,0.4) (1.3,0.5) (0.9,1.0)};
+    \fill (1.9,1.3) circle (1.3pt) node[above right] {$M(x,y,z)$};
+    \node[blue] at (2.4,0.5) {$S$};
+  \end{tikzpicture}
+  \caption{Поверхность $S$, заданная уравнением $\Phi(x,y,z)=0$.}
+  \label{fig:surface}
+\end{figure}
+
+\begin{theorem}{Общее уравнение плоскости}{plane_general_thm}
+  Любая плоскость в пространстве задаётся уравнением вида
+  \begin{equation}
+    Ax + By + Cz + D = 0, \qquad A^2+B^2+C^2 \neq 0.
+    \label{eq:general}
+  \end{equation}
+  И обратно: всякое уравнение вида \eqref{eq:general} определяет в
+  пространстве плоскость.
+\end{theorem}
+
+\begin{myproof}
+  Пусть $Q$ --- плоскость, $\vec{n}(A,B,C)$ --- её \textbf{нормальный
+  вектор} ($\vec{n} \perp Q$). Возьмём фиксированную точку
+  $M_0(x_0,y_0,z_0) \in Q$ и произвольную точку $M(x,y,z) \in Q$. Тогда
+  вектор $\overrightarrow{M_0M} = (x-x_0,\, y-y_0,\, z-z_0)$ лежит в
+  плоскости, а значит, перпендикулярен нормали:
+  \[
+    M(x,y,z) \in Q \iff \vec{n} \perp \overrightarrow{M_0M} \iff
+    (\vec{n}, \overrightarrow{M_0M}) = 0.
+  \]
+  Расписывая скалярное произведение, получаем уравнение плоскости,
+  проходящей через точку $M_0$ перпендикулярно $\vec{n}$:
+  \begin{equation}
+    A(x - x_0) + B(y - y_0) + C(z - z_0) = 0.
+    \label{eq:point_normal}
+  \end{equation}
+  Раскроем скобки:
+  \[
+    Ax + By + Cz \underbrace{- Ax_0 - By_0 - Cz_0}_{= D} = 0
+    \implies Ax + By + Cz + D = 0.
+  \]
+  Проводя обратные рассуждения (для произвольного уравнения
+  \eqref{eq:general} строим точку $M_0$ и нормаль $\vec{n}$), получаем,
+  что уравнение вида \eqref{eq:general} определяет в пространстве
+  плоскость.
+\end{myproof}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.0]
+    \draw[->, gray] (-1.5,-0.8) -- (3.2,1.6) node[right] {$y$};
+    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
+    \draw[->, gray] (0.7,0.35) -- (-2,-1) node[below left] {$x$};
+    % plane parallelogram
+    \fill[blue!10] (0.2,0.2) -- (2.6,0.7) -- (3.4,1.7) -- (1.0,1.2) -- cycle;
+    \draw[blue] (0.2,0.2) -- (2.6,0.7) -- (3.4,1.7) -- (1.0,1.2) -- cycle;
+    \node[blue] at (0.4,0.0) {$Q$};
+    \coordinate (M0) at (1.4,0.7);
+    \coordinate (M) at (2.4,1.2);
+    \fill (M0) circle (1.2pt) node[below] {$M_0$};
+    \fill (M) circle (1.2pt) node[right] {$M$};
+    \draw[->, thick] (M0) -- (M);
+    \draw[->, red, thick] (M0) -- ($(M0)+(0,1.4)$) node[above] {$\vec{n}(A,B,C)$};
+  \end{tikzpicture}
+  \caption{Вывод уравнения плоскости: $\vec{n}\perp\overrightarrow{M_0M}$.}
+  \label{fig:plane_proof}
+\end{figure}
+
+\noindent Уравнение \eqref{eq:general} называется \textbf{общим
+уравнением плоскости}, а \eqref{eq:point_normal} --- уравнением
+плоскости, проходящей через точку $M_0(x_0,y_0,z_0)$ перпендикулярно
+вектору $\vec{n}(A,B,C)$.
+
+\begin{definition}{Уравнение плоскости в отрезках}{intercept_def}
+  Если в общем уравнении $D \neq 0$ и $A,B,C \neq 0$, разделим его на
+  $-D$:
+  \[
+    \frac{x}{-D/A} + \frac{y}{-D/B} + \frac{z}{-D/C} = 1.
+  \]
+  Обозначив $a = -\dfrac{D}{A},\; b = -\dfrac{D}{B},\; c = -\dfrac{D}{C}$,
+  получим \textbf{уравнение плоскости в отрезках}:
+  \begin{equation}
+    \frac{x}{a} + \frac{y}{b} + \frac{z}{c} = 1.
+    \label{eq:intercept}
+  \end{equation}
+  Числа $a, b, c$ --- это длины (с учётом знака) отрезков, отсекаемых
+  плоскостью на координатных осях.
+\end{definition}
+
+\begin{remarkIT}{Удобство уравнения в отрезках}{intercept_it}
+  Форма \eqref{eq:intercept} мгновенно даёт точки пересечения плоскости
+  с осями: $(a,0,0)$, $(0,b,0)$, $(0,0,c)$. В 3D-редакторах это
+  используется для быстрого построения и визуализации опорных
+  плоскостей по заданным «следам» на осях.
+\end{remarkIT}
+
+\begin{definition}{Уравнение плоскости, проходящей через три точки}{three_points_def}
+  Плоскость, проходящая через три точки $A(x_1,y_1,z_1)$,
+  $B(x_2,y_2,z_2)$, $C(x_3,y_3,z_3)$ (не лежащие на одной прямой),
+  задаётся условием компланарности векторов
+  $\overrightarrow{AM}$, $\overrightarrow{AB}$, $\overrightarrow{AC}$
+  (их смешанное произведение равно нулю):
+  \begin{equation}
+    \begin{vmatrix}
+      x - x_1 & y - y_1 & z - z_1 \\
+      x_2 - x_1 & y_2 - y_1 & z_2 - z_1 \\
+      x_3 - x_1 & y_3 - y_1 & z_3 - z_1
+    \end{vmatrix} = 0.
+    \label{eq:three_points}
+  \end{equation}
+\end{definition}
+
+\begin{definition}{Нормальное уравнение плоскости}{normal_eq_def}
+  \textbf{Нормальным уравнением плоскости} называется
+  \begin{equation}
+    x\cos\alpha + y\cos\beta + z\cos\gamma - p = 0,
+    \label{eq:normal_form}
+  \end{equation}
+  где $\cos\alpha, \cos\beta, \cos\gamma$ --- направляющие косинусы
+  нормального вектора, направленного из начала координат в сторону
+  плоскости, а $p \ge 0$ --- расстояние от начала координат до
+  плоскости.
+\end{definition}
+
+\begin{theorem}{Расстояние от точки до плоскости}{dist_thm}
+  Расстояние от точки $M_0(x_0,y_0,z_0)$ до плоскости
+  $Q\colon Ax + By + Cz + D = 0$ равно
+  \begin{equation}
+    d = \frac{|Ax_0 + By_0 + Cz_0 + D|}{\sqrt{A^2 + B^2 + C^2}}.
+    \label{eq:dist}
+  \end{equation}
+\end{theorem}
+
+\begin{myproof}
+  Возьмём произвольную точку $M_1(x_1,y_1,z_1) \in Q$, тогда
+  $Ax_1 + By_1 + Cz_1 + D = 0$. Расстояние от $M_0$ до плоскости равно
+  модулю проекции вектора $\overrightarrow{M_1M_0}$ на единичную
+  нормаль $\vec{n}/|\vec{n}|$:
+  \[
+    d = \frac{|(\vec{n}, \overrightarrow{M_1M_0})|}{|\vec{n}|}
+      = \frac{|A(x_0-x_1) + B(y_0-y_1) + C(z_0-z_1)|}{\sqrt{A^2+B^2+C^2}}.
+  \]
+  Так как $-(Ax_1+By_1+Cz_1) = D$, числитель равен $|Ax_0+By_0+Cz_0+D|$,
+  что и даёт \eqref{eq:dist}.
+\end{myproof}
+
+\begin{remarkIT}{Линейный классификатор и SVM}{svm_it}
+  В машинном обучении гиперплоскость $Ax+By+Cz+D=0$ разделяет два
+  класса объектов: знак выражения $Ax_0+By_0+Cz_0+D$ определяет, по
+  какую сторону лежит объект $M_0$, а модуль (нормированный на
+  $\sqrt{A^2+B^2+C^2}$) --- «уверенность» классификатора, то есть
+  расстояние до границы. Метод опорных векторов максимизирует именно
+  это расстояние для ближайших точек (зазор, margin).
+\end{remarkIT}
+
+\begin{theorem}{Угол между плоскостями}{angle_planes_thm}
+  Угол $\alpha$ между плоскостями
+  $Q_1\colon A_1x + B_1y + C_1z + D_1 = 0$ и
+  $Q_2\colon A_2x + B_2y + C_2z + D_2 = 0$ равен углу между их
+  нормалями и находится по формуле
+  \[
+    \cos\alpha = \frac{|A_1A_2 + B_1B_2 + C_1C_2|}
+      {\sqrt{A_1^2+B_1^2+C_1^2}\,\cdot\,\sqrt{A_2^2+B_2^2+C_2^2}}.
+  \]
+  При этом:
+  \begin{itemize}
+    \item условие перпендикулярности:
+      $A_1A_2 + B_1B_2 + C_1C_2 = 0$;
+    \item условие параллельности:
+      $\dfrac{A_1}{A_2} = \dfrac{B_1}{B_2} = \dfrac{C_1}{C_2}$.
+  \end{itemize}
+\end{theorem}
+
+\subsubsection*{Примеры: плоскости}
+
+\begin{definition}{Плоскость через три точки}{ex_three_points}
+  Составить уравнение плоскости $ABC$, если $A(1,1,-1)$, $B(2,0,1)$,
+  $C(-1,2,3)$.
+
+  \textbf{Решение.} Находим направляющие векторы:
+  $\overrightarrow{AB} = (1,-1,2)$, $\overrightarrow{AC} = (-2,1,4)$.
+  Нормаль --- их векторное произведение:
+  \[
+    [\overrightarrow{AB}, \overrightarrow{AC}] =
+    \begin{vmatrix}
+      \vec{i} & \vec{j} & \vec{k} \\ 1 & -1 & 2 \\ -2 & 1 & 4
+    \end{vmatrix}
+    = \vec{i}\begin{vmatrix} -1 & 2 \\ 1 & 4 \end{vmatrix}
+    - \vec{j}\begin{vmatrix} 1 & 2 \\ -2 & 4 \end{vmatrix}
+    + \vec{k}\begin{vmatrix} 1 & -1 \\ -2 & 1 \end{vmatrix}.
+  \]
+  Вычислим миноры:
+  $\vec{i}(-4 - 2) - \vec{j}(4 + 4) + \vec{k}(1 - 2)
+  = -6\vec{i} - 8\vec{j} - \vec{k}$.
+  Возьмём нормаль $\vec{n}(6, 8, 1)$ (противоположного направления).
+  Уравнение плоскости через точку $A(1,1,-1)$:
+  \[
+    6(x-1) + 8(y-1) + 1\cdot(z+1) = 0 \implies
+    6x + 8y + z - 13 = 0.
+  \]
+  \textbf{Проверка} (точка $B(2,0,1)$):
+  $6\cdot 2 + 8\cdot 0 + 1 - 13 = 12 + 1 - 13 = 0$. Верно.
+\end{definition}
+
+\begin{definition}{Угол между плоскостями}{ex_angle}
+  Найти угол между плоскостями $x - y + 2z - 11 = 0$ и
+  $2x + y + 1 = 0$.
+
+  \textbf{Решение.} Нормали: $\vec{n}_1(1,-1,2)$, $\vec{n}_2(2,1,0)$.
+  \[
+    \cos\alpha = \frac{|(\vec{n}_1, \vec{n}_2)|}{|\vec{n}_1|\,|\vec{n}_2|}
+    = \frac{|1\cdot 2 + (-1)\cdot 1 + 2\cdot 0|}
+      {\sqrt{1+1+4}\,\cdot\,\sqrt{4+1+0}}
+    = \frac{1}{\sqrt{6}\cdot\sqrt{5}} = \frac{1}{\sqrt{30}}.
+  \]
+  Следовательно, $\alpha = \arccos\dfrac{1}{\sqrt{30}}$.
+\end{definition}
+
+\begin{definition}{Расстояние между параллельными плоскостями}{ex_dist}
+  Найти расстояние между плоскостями $Q_1\colon 3x - y + 2z - 5 = 0$ и
+  $Q_2\colon -6x + 2y - 4z + 7 = 0$.
+
+  \textbf{Решение.} Плоскости параллельны
+  ($\tfrac{3}{-6} = \tfrac{-1}{2} = \tfrac{2}{-4}$). Возьмём точку
+  $M(1,0,1) \in Q_1$ (проверка: $3 - 0 + 2 - 5 = 0$). Расстояние от
+  $M$ до $Q_2$:
+  \[
+    d = \frac{|-6\cdot 1 + 2\cdot 0 - 4\cdot 1 + 7|}{\sqrt{36+4+16}}
+    = \frac{|-3|}{\sqrt{56}} = \frac{3}{2\sqrt{14}}.
+  \]
+\end{definition}
+
+\subsection{Уравнения прямой в пространстве}
+
+Прежде чем перейти к прямой, опишем линию в пространстве в общем виде.
+
+\begin{definition}{Параметрическое и векторное уравнение линии}{line_param_def}
+  \textbf{Линия} $L$ в пространстве может быть задана
+  \textbf{параметрически}:
+  \begin{equation}
+    \begin{cases}
+      x = x(t), \\ y = y(t), \\ z = z(t),
+    \end{cases} \qquad t \in [\alpha, \beta].
+    \label{eq:line_param}
+  \end{equation}
+  Эквивалентная \textbf{векторная} форма:
+  \begin{equation}
+    \vec{r}(t) = x(t)\vec{i} + y(t)\vec{j} + z(t)\vec{k}, \quad
+    \text{или} \quad \vec{r}(t) = (x(t), y(t), z(t)).
+    \label{eq:line_vec}
+  \end{equation}
+  Функция $\vec{r}(t)$ называется \textbf{вектор-функцией скалярного
+  аргумента} $t$.
+\end{definition}
+
+\begin{remarkIT}{Вектор-функция как траектория}{traj_it}
+  Запись \eqref{eq:line_vec} --- это в точности то, как в анимации и
+  робототехнике задают движение объекта: параметр $t$ --- время, а
+  $\vec{r}(t)$ --- положение в каждый момент. Сплайны Безье и
+  Catmull--Rom, описывающие плавные траектории камеры, --- частный
+  случай вектор-функции.
+\end{remarkIT}
+
+\begin{definition}{Каноническое уравнение прямой}{canonical_def}
+  Прямая $L$, проходящая через точку $M_0(x_0,y_0,z_0)$ параллельно
+  \textbf{направляющему вектору} $\vec{q}(l,m,n)$, задаётся
+  \textbf{каноническим уравнением}:
+  \begin{equation}
+    \frac{x - x_0}{l} = \frac{y - y_0}{m} = \frac{z - z_0}{n}.
+    \label{eq:canonical}
+  \end{equation}
+\end{definition}
+
+\begin{definition}{Параметрическое уравнение прямой}{line_param_eq_def}
+  Приравнивая каждое отношение в \eqref{eq:canonical} к параметру $t$,
+  получаем \textbf{параметрическое уравнение прямой}:
+  \begin{equation}
+    \begin{cases}
+      x = x_0 + l\,t, \\ y = y_0 + m\,t, \\ z = z_0 + n\,t.
+    \end{cases}
+    \label{eq:line_param_eq}
+  \end{equation}
+\end{definition}
+
+\begin{definition}{Прямая как пересечение плоскостей}{line_intersection_def}
+  Прямую можно задать как линию пересечения двух непараллельных
+  плоскостей:
+  \begin{equation}
+    \begin{cases}
+      A_1x + B_1y + C_1z + D_1 = 0, \\
+      A_2x + B_2y + C_2z + D_2 = 0.
+    \end{cases}
+    \label{eq:line_planes}
+  \end{equation}
+  В этом случае направляющий вектор прямой находится как векторное
+  произведение нормалей: $\vec{q} = [\vec{n}_1, \vec{n}_2]$.
+\end{definition}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.0]
+    \draw[->, gray] (-1.5,-0.8) -- (3.2,1.6) node[right] {$y$};
+    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
+    \draw[->, gray] (0.7,0.35) -- (-2,-1) node[below left] {$x$};
+    \draw[blue, thick] (-1,-0.5) -- (2.8,1.4) node[right] {$L$};
+    \coordinate (M0) at (0.9,0.45);
+    \fill (M0) circle (1.2pt) node[above left] {$M_0(x_0,y_0,z_0)$};
+    \draw[->, red, thick] (M0) -- ($(M0)+(1.2,0.6)$) node[below right] {$\vec{q}(l,m,n)$};
+  \end{tikzpicture}
+  \caption{Прямая через точку $M_0$ с направляющим вектором $\vec{q}$.}
+  \label{fig:line}
+\end{figure}
+
+\begin{theorem}{Взаимное расположение двух прямых}{two_lines_thm}
+  Пусть даны прямые
+  $L_1\colon \dfrac{x-x_1}{l_1} = \dfrac{y-y_1}{m_1} = \dfrac{z-z_1}{n_1}$
+  и
+  $L_2\colon \dfrac{x-x_2}{l_2} = \dfrac{y-y_2}{m_2} = \dfrac{z-z_2}{n_2}$.
+  Тогда:
+  \begin{enumerate}
+    \item $L_1 \parallel L_2 \iff
+      \dfrac{l_1}{l_2} = \dfrac{m_1}{m_2} = \dfrac{n_1}{n_2}$;
+    \item $L_1 \perp L_2 \iff l_1l_2 + m_1m_2 + n_1n_2 = 0$;
+    \item угол между прямыми:
+      $\cos\alpha = \dfrac{|l_1l_2 + m_1m_2 + n_1n_2|}
+        {\sqrt{l_1^2+m_1^2+n_1^2}\,\cdot\,\sqrt{l_2^2+m_2^2+n_2^2}}$;
+    \item прямые \textbf{пересекаются} (лежат в одной плоскости и не
+      параллельны) тогда и только тогда, когда
+      \[
+        \Delta = \begin{vmatrix}
+          x_2 - x_1 & y_2 - y_1 & z_2 - z_1 \\
+          l_1 & m_1 & n_1 \\
+          l_2 & m_2 & n_2
+        \end{vmatrix} = 0;
+      \]
+    \item прямые \textbf{скрещиваются} $\iff \Delta \neq 0$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{theorem}{Прямая и плоскость}{line_plane_thm}
+  Пусть $Q\colon Ax + By + Cz + D = 0$ с нормалью $\vec{n}(A,B,C)$ и
+  $L\colon \dfrac{x-x_0}{l} = \dfrac{y-y_0}{m} = \dfrac{z-z_0}{n}$ с
+  направляющим вектором $\vec{q}(l,m,n)$. Тогда:
+  \begin{itemize}
+    \item $L \parallel Q \iff Al + Bm + Cn = 0$
+      (то есть $\vec{q} \perp \vec{n}$);
+    \item $L \perp Q \iff \dfrac{A}{l} = \dfrac{B}{m} = \dfrac{C}{n}$
+      (то есть $\vec{q} \parallel \vec{n}$);
+    \item угол $\alpha$ между прямой и плоскостью находится из
+      $\cos\varphi = \dfrac{|(\vec{n}, \vec{q})|}{|\vec{n}|\,|\vec{q}|}
+      = \cos\!\left(\tfrac{\pi}{2} - \alpha\right) = \sin\alpha$,
+      откуда
+      \[
+        \alpha = \arcsin\frac{|Al + Bm + Cn|}
+          {\sqrt{A^2+B^2+C^2}\,\cdot\,\sqrt{l^2+m^2+n^2}}.
+      \]
+  \end{itemize}
+\end{theorem}
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.0]
+    \fill[blue!10] (-2,0) -- (2,0) -- (3,0.8) -- (-1,0.8) -- cycle;
+    \draw[blue] (-2,0) -- (2,0) -- (3,0.8) -- (-1,0.8) -- cycle;
+    \node[blue] at (-1.7,0.1) {$Q$};
+    \coordinate (P) at (0.5,0.4);
+    \draw[red, thick, ->] (-0.8,-0.9) -- (1.9,1.9) node[right] {$L$};
+    \draw[->, thick] (P) -- ($(P)+(0,1.6)$) node[above] {$\vec{n}$};
+    \draw[->, red, thick] (P) -- ($(P)+(0.9,0.92)$) node[right] {$\vec{q}$};
+    \node at (0.85,0.55) {$\varphi$};
+    \node at (1.2,0.3) {$\alpha$};
+  \end{tikzpicture}
+  \caption{Угол $\alpha=\widehat{(L,Q)}$ дополняет угол
+  $\varphi=\widehat{(\vec{n},\vec{q})}$ до $\pi/2$.}
+  \label{fig:line_plane}
+\end{figure}
+
+\subsubsection*{Примеры: прямые, углы, проекции}
+
+\begin{definition}{Каноническое и параметрическое уравнения прямой по двум точкам}{ex_line_AB}
+  Найти канонические и параметрические уравнения прямой $AB$, если
+  $A(3,2,1)$ и $B(1,-1,2)$.
+
+  \textbf{Решение.} Направляющий вектор
+  $\overrightarrow{AB} = (1-3,\, -1-2,\, 2-1) = (-2,-3,1)$;
+  возьмём $\vec{q}(2,3,-1)$ (умножили на $-1$).
+  Каноническое уравнение (через точку $A$):
+  \[
+    \frac{x-3}{2} = \frac{y-2}{3} = \frac{z-1}{-1}.
+  \]
+  Приравняв к $t$, получим параметрическое уравнение:
+  \[
+    \begin{cases}
+      x = 3 + 2t, \\ y = 2 + 3t, \\ z = 1 - t.
+    \end{cases}
+  \]
+  (В PDF за точку взята $B(1,-1,2)$, что даёт эквивалентную прямую
+  $x=1+2t,\ y=-1+3t,\ z=2-t$ --- то же множество точек.)
+\end{definition}
+
+\begin{definition}{Прямая как пересечение двух плоскостей}{ex_line_planes}
+  Найти каноническое и параметрическое уравнения прямой
+  \[
+    \begin{cases}
+      x + 2y - 3z - 2 = 0, \\ x + y - 2z - 6 = 0.
+    \end{cases}
+  \]
+
+  \textbf{Решение.} Нормали $\vec{n}_1(1,2,-3)$, $\vec{n}_2(1,1,-2)$.
+  Направляющий вектор:
+  \[
+    [\vec{n}_1, \vec{n}_2] =
+    \begin{vmatrix}
+      \vec{i} & \vec{j} & \vec{k} \\ 1 & 2 & -3 \\ 1 & 1 & -2
+    \end{vmatrix}
+    = \vec{i}(2\cdot(-2) - (-3)\cdot 1) - \vec{j}(1\cdot(-2) - (-3)\cdot 1)
+      + \vec{k}(1\cdot 1 - 2\cdot 1).
+  \]
+  Считаем: $\vec{i}(-4+3) - \vec{j}(-2+3) + \vec{k}(1-2)
+  = -\vec{i} - \vec{j} - \vec{k}$, то есть $\vec{q}(1,1,1)$.
+
+  Найдём точку $M$ на прямой. Положим $y = 0$:
+  \[
+    \begin{cases}
+      x - 3z - 2 = 0, \\ x - 2z - 6 = 0.
+    \end{cases}
+  \]
+  Вычтем первое из второго: $z - 4 = 0 \implies z = 4$, тогда
+  $x = 3\cdot 4 + 2 = 14$. Получаем $M(14, 0, 4)$.
+
+  Каноническое уравнение:
+  $\dfrac{x-14}{1} = \dfrac{y}{1} = \dfrac{z-4}{1}$.
+  Параметрическое: $x = 14 + t,\; y = t,\; z = 4 + t$.
+\end{definition}
+
+\begin{definition}{Проекция точки на плоскость}{ex_proj_plane}
+  Найти проекцию точки $A(6,-9,8)$ на плоскость
+  $Q\colon x - 2y + z - 2 = 0$.
+
+  \textbf{Решение.} Пусть $B$ --- искомая проекция, тогда $AB \perp Q$,
+  значит направляющий вектор прямой $AB$ равен нормали
+  $\vec{n}(1,-2,1)$. Параметрическое уравнение прямой $AB$:
+  \[
+    \begin{cases}
+      x = 6 + t, \\ y = -9 - 2t, \\ z = 8 + t.
+    \end{cases}
+  \]
+  Подставим в уравнение $Q$:
+  \[
+    (6 + t) - 2(-9 - 2t) + (8 + t) - 2 = 0
+    \implies 6 + t + 18 + 4t + 8 + t - 2 = 0
+    \implies 6t + 30 = 0.
+  \]
+  Отсюда $t = -5$, и
+  $B(6-5,\; -9+10,\; 8-5) = B(1, 1, 3)$.
+\end{definition}
+
+\begin{remarkIT}{Проекция в графике и зрении}{proj_it}
+  Проекция точки на плоскость --- базовая операция: «прибивание»
+  объекта к полу в физическом движке, расчёт падающей тени (точка
+  проецируется на плоскость пола вдоль направления на источник
+  света), привязка точек облака лидара к найденной опорной плоскости в
+  алгоритмах сегментации сцены.
+\end{remarkIT}
+
+\begin{definition}{Угол между прямой и плоскостью}{ex_angle_line_plane}
+  Найти угол между прямой
+  $L\colon \dfrac{x+2}{2} = \dfrac{y-2}{-1} = \dfrac{z}{3}$ и
+  плоскостью $Q\colon 3x + y - 2z - 12 = 0$.
+
+  \textbf{Решение.} $\vec{q}(2,-1,3)$, $\vec{n}(3,1,-2)$.
+  \[
+    \sin\alpha = \frac{|(\vec{n}, \vec{q})|}{|\vec{n}|\,|\vec{q}|}
+    = \frac{|3\cdot 2 + 1\cdot(-1) + (-2)\cdot 3|}
+      {\sqrt{9+1+4}\,\cdot\,\sqrt{4+1+9}}
+    = \frac{|6 - 1 - 6|}{\sqrt{14}\cdot\sqrt{14}} = \frac{1}{14}.
+  \]
+  Следовательно, $\alpha = \arcsin\dfrac{1}{14}$.
+\end{definition}
+
+\begin{definition}{Проекция точки на прямую}{ex_proj_line}
+  Найти проекцию точки $A(-5,-1,3)$ на прямую
+  $L\colon \dfrac{x}{3} = \dfrac{y+1}{2} = \dfrac{z-2}{1}$.
+
+  \textbf{Решение.} Направляющий вектор прямой $\vec{q}(3,2,1)$.
+  Построим плоскость $Q$, проходящую через $A$ перпендикулярно $L$
+  (нормаль $\vec{n} = \vec{q}$):
+  \[
+    3(x+5) + 2(y+1) + 1\cdot(z-3) = 0 \implies 3x + 2y + z + 14 = 0.
+  \]
+  Параметрическое уравнение прямой $L$:
+  $x = 3t,\; y = -1 + 2t,\; z = 2 + t$. Подставим в уравнение $Q$:
+  \[
+    3\cdot 3t + 2(-1 + 2t) + (2 + t) + 14 = 0
+    \implies 9t - 2 + 4t + 2 + t + 14 = 0
+    \implies 14t + 14 = 0.
+  \]
+  Отсюда $t = -1$, и
+  $B(3\cdot(-1),\; -1 + 2\cdot(-1),\; 2 + (-1)) = B(-3, -3, 1)$.
+  Точка $B(-3,-3,1)$ --- проекция точки $A$ на прямую $L$.
+\end{definition}
+
+\begin{remarkIT}{Расстояние и проекция в алгоритмах}{dist_alg_it}
+  Связка «построить перпендикулярную плоскость $\to$ найти точку
+  пересечения с прямой» даёт не только проекцию, но и расстояние от
+  точки до прямой ($|AB|$). Это применяется при выделении линейных
+  объектов (дорожной разметки, рёбер зданий) из облаков точек и в
+  алгоритме упрощения полилиний Рамера--Дугласа--Пекера, где точки
+  отбрасываются по расстоянию до текущего отрезка.
+\end{remarkIT}
+
+\end{document}

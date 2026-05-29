@@ -1,0 +1,733 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ-3}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[number within=section]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[number within=section]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[number within=section]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newtcbtheorem[number within=section]{exampleBox}{Пример}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=gray!5, colframe=proofcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=proofcolor}
+}{ex}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+\title{Лекция 9: Линии на плоскости. Уравнения прямой на плоскости.
+Кривые 2-го порядка}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\setcounter{section}{9}
+
+\section*{Введение: От уравнений линий к компьютерной графике}
+
+В этой лекции мы переходим от абстрактной алгебры операторов к
+\textbf{аналитической геометрии на плоскости}. Центральная идея проста и
+мощна: любую геометрическую фигуру (прямую, окружность, эллипс) можно
+описать алгебраическим \emph{уравнением}, связывающим координаты её точек.
+Это переводит геометрию на язык вычислений, понятный компьютеру.
+
+Для студента IT-направления материал этой лекции является фундаментом
+целого ряда практических областей.
+
+\begin{remarkIT}{Компьютерная графика и геометрическое моделирование}{cg}
+  \begin{itemize}
+    \item \textbf{Прямые и отрезки:} Растеризация линий (алгоритм
+      Брезенхэма), отсечение по границам окна (clipping), построение
+      каркасных моделей — всё это работа с уравнениями прямых
+      $Ax + By + C = 0$.
+    \item \textbf{Кривые второго порядка:} Окружности и эллипсы — базовые
+      примитивы в SVG, CSS и графических движках. Параболы описывают
+      траектории снарядов в физических движках игр, а параболические и
+      эллиптические зеркала используются в рендеринге отражений.
+    \item \textbf{Расстояние от точки до прямой:} Лежит в основе
+      определения столкновений (collision detection) и алгоритмов
+      упрощения полилиний (Дуглас–Пекер).
+  \end{itemize}
+\end{remarkIT}
+
+\begin{remarkIT}{Машинное обучение и наука о данных}{ds}
+  \begin{itemize}
+    \item \textbf{Линейный классификатор:} Уравнение прямой (а в общем
+      случае — гиперплоскости) $Ax + By + C = 0$ задаёт разделяющую
+      границу в методах логистической регрессии и SVM. Знак выражения
+      $Ax + By + C$ определяет класс точки.
+    \item \textbf{Расстояние до границы:} Зазор (margin) в методе опорных
+      векторов — это в точности расстояние от точки до разделяющей прямой
+      $d = |Ax_0 + By_0 + C| / \sqrt{A^2 + B^2}$.
+    \item \textbf{Эллипсы доверия:} Доверительные области многомерного
+      нормального распределения имеют форму эллипсов, а эксцентриситет
+      связан с корреляцией признаков.
+  \end{itemize}
+\end{remarkIT}
+
+\begin{remarkIT}{Робототехника, навигация и GIS}{robo}
+  Полярные координаты — естественный язык лидаров и сонаров: датчик
+  возвращает пару «расстояние $r$ и угол $\varphi$». Переход к декартовым
+  координатам $x = r\cos\varphi$, $y = r\sin\varphi$ необходим для
+  построения карты. Уравнения прямых используются для аппроксимации стен
+  помещения по облаку точек.
+\end{remarkIT}
+
+\section{Уравнения прямой на плоскости}
+
+Пусть на плоскости задана декартова система координат и некоторая линия $L$.
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.2, >=Stealth]
+    \draw[->, gray] (-0.5,0) -- (4,0) node[right] {$x$};
+    \draw[->, gray] (0,-0.5) -- (0,3) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    \draw[thick, domain=1:3.4, smooth, variable=\t]
+    plot ({\t}, {1 + 0.6*sin(180*\t)});
+    \node[right] at (3.4, 1.1) {$L$};
+    \filldraw (2,1) circle (1pt) node[above left] {$M(x,y)$};
+  \end{tikzpicture}
+
+  \textit{Рисунок 9.1}
+\end{figure}
+
+\begin{definition}{Уравнение линии}{line_eq_def}
+  Уравнение $\varPhi(x, y) = 0$ называется \textbf{уравнением линии} $L$,
+  если этому уравнению удовлетворяют координаты любой точки этой линии и не
+  удовлетворяют координаты точек, не принадлежащих линии $L$.
+\end{definition}
+
+\subsection{Общее уравнение прямой}
+
+\begin{theorem}{Общее уравнение прямой}{line_general_thm}
+  Любая прямая на плоскости задаётся уравнением вида
+  \begin{equation}
+    Ax + By + C = 0. \tag{9.1}
+  \end{equation}
+  И обратно: всякое уравнение вида (9.1) определяет на плоскости прямую.
+\end{theorem}
+
+\begin{myproof}
+  Пусть $\vec{n} = (A, B)$ — \textbf{нормальный вектор} прямой $L$, то есть
+  $\vec{n} \perp L$. Зафиксируем точку $M_0(x_0, y_0) \in L$ и возьмём
+  произвольную точку $M(x, y)$.
+
+  Точка $M$ лежит на прямой тогда и только тогда, когда вектор
+  $\overline{M_0 M}$ перпендикулярен нормали:
+  \[
+    M(x,y) \in L \iff \vec{n} \perp \overline{M_0 M}
+    \iff (\vec{n}, \overline{M_0 M}) = 0
+    \iff A(x - x_0) + B(y - y_0) = 0. \tag{9.2}
+  \]
+  Раскроем скобки:
+  \[
+    Ax - Ax_0 + By - By_0 = 0.
+  \]
+  Обозначив $C = -Ax_0 - By_0$, получим $Ax + By + C = 0$.
+  Проводя обратные рассуждения, убеждаемся, что всякое уравнение вида (9.1)
+  определяет на плоскости прямую.
+\end{myproof}
+
+\noindent
+Уравнение (9.1) называется \textbf{общим уравнением прямой}.
+
+\noindent
+Уравнение (9.2) — это \textbf{уравнение прямой, проходящей через точку}
+$M_0(x_0, y_0)$ \textbf{перпендикулярно нормальному вектору}
+$\vec{n} = (A, B)$.
+
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[scale=1.0, >=Stealth]
+    \draw[->, gray] (-1.5,0) -- (4,0) node[right] {$x$};
+    \draw[->, gray] (0,-1) -- (0,3) node[above] {$y$};
+    \node[below left] at (0,0) {$0$};
+    \draw[thick] (-1.2,-0.6) -- (3.6,1.8) node[right] {$L$};
+    \filldraw (0.8,0.4) circle (1pt) node[below right] {$M_0(x_0,y_0)$};
+    \filldraw (2.2,1.1) circle (1pt) node[above left] {$M(x,y)$};
+    \draw[->, thick, blue] (1.5,0.75) -- (1.0,1.75)
+    node[above] {$\vec{n}=(A,B)$};
+  \end{tikzpicture}
+
+  \textit{Рисунок 9.2}
+\end{figure}
+
+\begin{remarkIT}{Линейный классификатор}{linear_clf}
+  В машинном обучении прямая $Ax + By + C = 0$ — это \emph{разделяющая
+  граница} простейшего линейного классификатора. Вектор $\vec{n} = (A, B)$
+  задаёт «направление роста» уверенности модели: знак выражения
+  $Ax_0 + By_0 + C$ определяет, по какую сторону границы лежит объект
+  $(x_0, y_0)$, а значит, к какому из двух классов он отнесён.
+\end{remarkIT}
+
+\subsection{Частные виды уравнения прямой}
+
+\subsubsection*{Уравнение с угловым коэффициентом}
+
+Пусть в (9.1) $B \neq 0$. Тогда
+\[
+  By = -Ax - C \implies y = -\frac{A}{B}x - \frac{C}{B}.
+\]
+Обозначив $k = -\dfrac{A}{B}$, $b = -\dfrac{C}{B}$, получим
+\begin{equation}
+  y = kx + b. \tag{9.3}
+\end{equation}
+Это \textbf{уравнение прямой с угловым коэффициентом}. Нетрудно показать,
+что $k = \operatorname{tg}\alpha$ (где $\alpha$ — угол наклона прямой к оси
+$Ox$), а $b = OB$ — ордината точки пересечения прямой с осью $Oy$.
+
+\subsubsection*{Уравнение вертикальной прямой}
+
+Пусть в (9.1) $B = 0$. Тогда $Ax + C = 0 \implies x = -\dfrac{C}{A}$.
+Обозначив $a = -\dfrac{C}{A}$, получим
+\begin{equation}
+  x = a. \tag{9.4}
+\end{equation}
+Это \textbf{уравнение вертикальной прямой}.
+
+\subsubsection*{Уравнение прямой в отрезках}
+
+Уравнение (9.1) (при $A, B, C \neq 0$) можно записать в виде
+\[
+  \frac{x}{-C/A} + \frac{y}{-C/B} = 1.
+\]
+Обозначив $a = -\dfrac{C}{A}$, $b = -\dfrac{C}{B}$, получим
+\begin{equation}
+  \frac{x}{a} + \frac{y}{b} = 1. \tag{9.5}
+\end{equation}
+Это \textbf{уравнение прямой в отрезках}; здесь $a$ и $b$ — величины
+отрезков, отсекаемых прямой на осях координат (прямая проходит через точки
+$(a, 0)$ и $(0, b)$).
+
+\subsubsection*{Параметрическое и каноническое уравнения}
+
+Пусть $\vec{q} = (l, m)$ — \textbf{направляющий вектор} прямой,
+$\vec{q} \parallel L$, а $M_0(x_0, y_0)$ — фиксированная точка прямой. Для
+произвольной точки $M(x, y) \in L$ вектор $\overline{M_0 M}$ коллинеарен
+$\vec{q}$, то есть $\overline{M_0 M} = t \cdot \vec{q}$, $t \in \mathbb{R}$,
+где $t$ — параметр. В векторной форме (через радиус-векторы
+$\vec{r} = \overline{OM}$, $\vec{r}_0 = \overline{OM_0}$):
+\begin{equation}
+  \vec{r} = \vec{r}_0 + t \cdot \vec{q}, \tag{9.6}
+\end{equation}
+или в координатной форме
+\begin{equation}
+  \begin{cases}
+    x = x_0 + t \cdot l, \\
+    y = y_0 + t \cdot m.
+  \end{cases} \tag{9.7}
+\end{equation}
+Уравнения (9.6) и (9.7) — \textbf{параметрические уравнения прямой}.
+Исключая из (9.7) параметр $t$, получаем
+\begin{equation}
+  \frac{x - x_0}{l} = \frac{y - y_0}{m}. \tag{9.8}
+\end{equation}
+Это \textbf{каноническое уравнение прямой}, проходящей через точку
+$M_0(x_0, y_0)$ с направляющим вектором $\vec{q} = (l, m)$.
+
+\begin{remarkIT}{Параметрические прямые в компьютерной графике}{param_cg}
+  Запись $\vec{r} = \vec{r}_0 + t\,\vec{q}$ — это стандартное представление
+  \emph{луча} (ray) в трассировке лучей. Точка $\vec{r}_0$ — начало луча
+  (камера), $\vec{q}$ — направление, а параметр $t \geq 0$ «пробегает»
+  вдоль луча. Нахождение пересечения луча с объектами сцены сводится к
+  решению уравнения относительно $t$.
+\end{remarkIT}
+
+\subsection{Расстояние от точки до прямой}
+
+Пусть прямая задана уравнением $Ax + By + C = 0$ с нормалью
+$\vec{n} = (A, B)$, и дана точка $M_0(x_0, y_0)$. Возьмём произвольную точку
+$M(x, y)$ на прямой. Расстояние $d$ равно модулю проекции вектора
+$\overline{M M_0}$ на нормаль:
+\[
+  \overline{M M_0} = (x_0 - x,\; y_0 - y),
+\]
+\[
+  d = \left| \operatorname{пр}_{\vec{n}} \overline{M M_0} \right|
+  = \left| \frac{(\vec{n}, \overline{M M_0})}{|\vec{n}|} \right|
+  = \left| \frac{A(x_0 - x) + B(y_0 - y)}{|\vec{n}|} \right|
+  = \left| \frac{Ax_0 + By_0 + (-Ax - By)}{|\vec{n}|} \right|.
+\]
+Так как точка $M(x,y)$ лежит на прямой, то $-Ax - By = C$, поэтому
+\begin{equation}
+  d = \left| \frac{Ax_0 + By_0 + C}{\sqrt{A^2 + B^2}} \right|. \tag{9.9}
+\end{equation}
+
+\begin{remarkIT}{Margin в SVM и упрощение траекторий}{svm_margin}
+  Формула (9.9) — рабочая лошадка многих алгоритмов. В методе опорных
+  векторов ширина разделяющей полосы определяется минимальным расстоянием
+  объектов до границы. В алгоритме упрощения полилиний Дугласа–Пекера
+  точка удаляется, если её расстояние до хорды (прямой) меньше порога.
+\end{remarkIT}
+
+\subsection{Направляющие косинусы}
+
+Рассмотрим вектор $\vec{r} = (x, y, z)$. Обозначим углы, образуемые
+вектором с осями координат:
+\[
+  \alpha = \widehat{(\vec{r}, \vec{i})}, \quad
+  \beta = \widehat{(\vec{r}, \vec{j})}, \quad
+  \gamma = \widehat{(\vec{r}, \vec{k})}.
+\]
+Косинусы $\cos\alpha$, $\cos\beta$, $\cos\gamma$ называются
+\textbf{направляющими косинусами} вектора $\vec{r}$. Так как
+$x = \operatorname{пр}_{\vec{i}} \vec{r}$,
+$y = \operatorname{пр}_{\vec{j}} \vec{r}$,
+$z = \operatorname{пр}_{\vec{k}} \vec{r}$, то
+\[
+  x = |\vec{r}|\cos\alpha, \quad y = |\vec{r}|\cos\beta, \quad
+  z = |\vec{r}|\cos\gamma,
+\]
+и потому
+\[
+  \vec{r} = x\vec{i} + y\vec{j} + z\vec{k}
+  = |\vec{r}|\,(\cos\alpha\,\vec{i} + \cos\beta\,\vec{j}
+  + \cos\gamma\,\vec{k}).
+\]
+Для единичного вектора $\vec{e} = \dfrac{\vec{r}}{|\vec{r}|}$ получаем
+\begin{equation}
+  \vec{e} = (\cos\alpha,\, \cos\beta,\, \cos\gamma). \tag{9.10}
+\end{equation}
+Из (9.10) следует основное тождество для направляющих косинусов:
+\[
+  \cos^2\alpha + \cos^2\beta + \cos^2\gamma = 1.
+\]
+
+\subsection{Нормальное уравнение прямой}
+
+Пусть $\vec{n} \perp L$, $\vec{e} = \dfrac{\vec{n}}{|\vec{n}|}
+= (\cos\alpha, \cos\beta)$ — единичный нормальный вектор. Обозначим
+$p = |\vec{n}|$ — расстояние от начала координат до прямой, а
+$\overline{OM} = (x, y)$. Тогда
+\[
+  p = \operatorname{пр}_{\vec{e}} \overline{OM}
+  = \frac{(\overline{OM}, \vec{e})}{|\vec{e}|}
+  = x\cos\alpha + y\cos\beta,
+\]
+откуда
+\begin{equation}
+  x\cos\alpha + y\cos\beta - p = 0. \tag{9.11}
+\end{equation}
+Это \textbf{нормальное уравнение прямой}, где $\cos\alpha$ и $\cos\beta$ —
+направляющие косинусы нормального вектора, направленного из начала
+координат в сторону прямой, а $p$ — расстояние от начала координат до
+прямой.
+
+\subsection{Угол между прямыми}
+
+Пусть даны прямые
+\[
+  L_1: A_1 x + B_1 y + C_1 = 0, \qquad L_2: A_2 x + B_2 y + C_2 = 0.
+\]
+Угол $\alpha = \widehat{(L_1, L_2)}$ между ними равен углу между их
+нормальными векторами $\vec{n}_1 = (A_1, B_1)$, $\vec{n}_2 = (A_2, B_2)$:
+\[
+  \cos\alpha = \left| \frac{A_1 A_2 + B_1 B_2}
+  {\sqrt{A_1^2 + B_1^2}\,\cdot\,\sqrt{A_2^2 + B_2^2}} \right|.
+\]
+Отсюда вытекают важные частные случаи:
+\begin{equation}
+  \frac{A_1}{A_2} = \frac{B_1}{B_2} \tag{9.12}
+\end{equation}
+— \textbf{условие параллельности} прямых $L_1$ и $L_2$;
+\begin{equation}
+  A_1 \cdot A_2 + B_1 \cdot B_2 = 0 \tag{9.13}
+\end{equation}
+— \textbf{условие перпендикулярности} прямых $L_1$ и $L_2$.
+
+\section{Кривые второго порядка}
+
+\begin{definition}{Окружность}{circle_def}
+  \textbf{Окружность} — это геометрическое место точек на плоскости,
+  равноудалённых от данной точки, называемой \emph{центром}.
+\end{definition}
+
+Если центр находится в точке $M_0(x_0, y_0)$, а радиус равен $R$, то для
+любой точки $M(x, y)$ окружности
+\[
+  R = |\overline{M_0 M}| = \sqrt{(x - x_0)^2 + (y - y_0)^2}
+  \implies (x - x_0)^2 + (y - y_0)^2 = R^2. \tag{9.14}
+\]
+Уравнение (9.14) — \textbf{уравнение окружности} с центром в точке
+$M_0(x_0, y_0)$ и радиусом $R$. В частности,
+\[
+  x^2 + y^2 = R^2
+\]
+— уравнение окружности с центром в начале координат (каноническое
+уравнение).
+
+\begin{definition}{Эллипс}{ellipse_def}
+  \textbf{Эллипсом} называется геометрическое место точек на плоскости,
+  сумма расстояний от которых до двух данных точек, называемых
+  \emph{фокусами}, есть величина постоянная.
+\end{definition}
+
+Пусть фокусы расположены в точках $F_1(-c, 0)$ и $F_2(c, 0)$, а сумма
+фокальных радиусов равна $2a$:
+\[
+  |\overline{F_1 M}| + |\overline{F_2 M}| = 2a,
+\]
+\begin{equation}
+  \sqrt{(x + c)^2 + y^2} + \sqrt{(x - c)^2 + y^2} = 2a. \tag{9.15}
+\end{equation}
+Полагая $b^2 = a^2 - c^2$, из (9.15) после преобразований получаем
+\begin{equation}
+  \frac{x^2}{a^2} + \frac{y^2}{b^2} = 1. \tag{9.16}
+\end{equation}
+Уравнение (9.16) — \textbf{каноническое уравнение эллипса}; здесь
+$|\overline{F_1 F_2}| = 2c$ — фокусное расстояние, $a$ и $b$ — большая и
+малая полуоси эллипса. Величина
+\[
+  \varepsilon = \frac{c}{a}, \qquad 0 < \varepsilon < 1,
+\]
+называется \textbf{эксцентриситетом} — мерой «сплюснутости» эллипса; при
+$\varepsilon = 0$ эллипс превращается в окружность.
+
+\begin{definition}{Гипербола}{hyperbola_def}
+  \textbf{Гипербола} — это геометрическое место точек на плоскости, модуль
+  разности расстояний от которых до двух данных точек, называемых
+  \emph{фокусами}, есть величина постоянная.
+\end{definition}
+
+При $F_1(-c, 0)$, $F_2(c, 0)$:
+\[
+  \bigl| |\overline{F_1 M}| - |\overline{F_2 M}| \bigr| = 2a,
+\]
+\begin{equation}
+  \left| \sqrt{(x + c)^2 + y^2} - \sqrt{(x - c)^2 + y^2} \right| = 2a.
+  \tag{9.17}
+\end{equation}
+Путём эквивалентных преобразований получаем
+\begin{equation}
+  \frac{x^2}{a^2} - \frac{y^2}{b^2} = 1, \tag{9.18}
+\end{equation}
+где $b^2 = c^2 - a^2$. Уравнение (9.18) — \textbf{каноническое уравнение
+гиперболы}; $a$ и $b$ — действительная и мнимая полуоси. Эксцентриситет
+$\varepsilon = \dfrac{c}{a} > 1$; прямые $x = \pm\dfrac{a}{\varepsilon}$ —
+директрисы (гиперболы и эллипса); прямые
+\[
+  y = \pm\frac{b}{a}x
+\]
+— асимптоты гиперболы.
+
+\begin{definition}{Парабола}{parabola_def}
+  \textbf{Парабола} — это геометрическое место точек на плоскости, для
+  которых расстояние до данной точки, называемой \emph{фокусом}, равно
+  расстоянию до некоторой прямой, называемой \emph{директрисой}.
+\end{definition}
+
+Пусть $p > 0$ — параметр параболы (расстояние от фокуса до директрисы),
+фокус $F\left(\dfrac{p}{2}, 0\right)$, директриса $x = -\dfrac{p}{2}$. Из
+условия $KM = FM$:
+\[
+  x + \frac{p}{2} = \sqrt{\left(x - \frac{p}{2}\right)^2 + y^2}.
+\]
+Путём эквивалентных преобразований получаем
+\begin{equation}
+  y^2 = 2px. \tag{9.19}
+\end{equation}
+Уравнение (9.19) — \textbf{каноническое уравнение параболы}.
+
+\begin{remarkIT}{Кривые 2-го порядка в IT}{conics_it}
+  \begin{itemize}
+    \item \textbf{Параболы} описывают траектории снарядов в физических
+      движках игр (баллистика) и форму отражающих антенн/прожекторов:
+      оптическое свойство параболы — лучи, идущие из фокуса, после
+      отражения становятся параллельными.
+    \item \textbf{Эллипсы} применяются в орбитальной механике (законы
+      Кеплера), а в науке о данных — как доверительные области
+      двумерного нормального распределения.
+    \item \textbf{Окружности и эллипсы} — базовые примитивы векторной
+      графики (SVG, canvas) и геометрии столкновений (bounding circles).
+  \end{itemize}
+\end{remarkIT}
+
+\subsection{Полярные координаты}
+
+В \textbf{полярной системе координат} положение точки $M$ задаётся парой
+$(r, \varphi)$, где $r$ — расстояние до полюса, а $\varphi$ — полярный угол,
+$\varphi \in [0, 2\pi]$ или $\varphi \in [-\pi, \pi]$. Связь декартовых
+координат с полярными:
+\[
+  \begin{cases}
+    x = r\cos\varphi, \\
+    y = r\sin\varphi.
+  \end{cases}
+\]
+Для окружности $x^2 + y^2 = R^2$ радиуса $R = a$ получаем
+$r^2(\cos^2\varphi + \sin^2\varphi) = a^2 \implies r = a$, откуда
+параметрические уравнения:
+\begin{equation}
+  \begin{cases}
+    x = a\cos\varphi, \\
+    y = a\sin\varphi
+  \end{cases} \tag{9.20}
+\end{equation}
+— \textbf{параметрическое уравнение окружности};
+\begin{equation}
+  \begin{cases}
+    x = a\cos\varphi, \\
+    y = b\sin\varphi
+  \end{cases} \tag{9.21}
+\end{equation}
+— \textbf{параметрическое уравнение эллипса}.
+
+\begin{remarkIT}{Полярные координаты в робототехнике}{polar_robo}
+  Лидары и сонары измеряют именно полярные координаты: «препятствие на
+  расстоянии $r$ под углом $\varphi$». Формулы (9.20)--(9.21) и переход
+  $x = r\cos\varphi$, $y = r\sin\varphi$ — основа построения карты
+  занятости (occupancy grid) и алгоритмов SLAM.
+\end{remarkIT}
+
+\section{Примеры решения задач}
+
+\begin{exampleBox}{Параллель и перпендикуляр к прямой}{ex1}
+  Составить уравнение прямой, параллельной, и прямой, перпендикулярной
+  прямой $L: 2x - y + 3 = 0$, проходящих через точку $M(1; 2)$.
+
+  \textbf{Решение.} Проверим: $2\cdot 1 - 2 + 3 = 3 \neq 0$, значит
+  $M \notin L$. Нормальный вектор прямой $L$ есть $\vec{n} = (2, -1)$.
+
+  \emph{Параллельная прямая $L_1$.} У параллельной прямой тот же нормальный
+  вектор $\vec{n} = (2, -1)$. Используя уравнение (9.2) прямой через точку
+  $M(1; 2)$:
+  \[
+    2(x - 1) - 1(y - 2) = 0 \implies 2x - 2 - y + 2 = 0
+    \implies 2x - y = 0.
+  \]
+  Это уравнение прямой $L_1$.
+
+  \emph{Перпендикулярная прямая $L_2$.} У перпендикулярной прямой
+  нормальным вектором служит направляющий вектор прямой $L$, то есть
+  $(1, 2)$. Тогда
+  \[
+    1\cdot(x - 1) + 2\cdot(y - 2) = 0 \implies x + 2y - 5 = 0.
+  \]
+  Это уравнение прямой $L_2$.
+\end{exampleBox}
+
+\begin{exampleBox}{Уравнение биссектрисы угла треугольника}{ex2}
+  В $\triangle ABC$ найти уравнение биссектрисы угла $B$, если
+  $A(3; -5)$, $B(1; -3)$, $C(2; -2)$.
+
+  \textbf{Решение.} Биссектриса угла $B$ пересекает сторону $AC$ в точке
+  $H$, которая делит отрезок $AC$ в отношении
+  $\dfrac{AH}{HC} = \dfrac{AB}{BC}$. Вычислим длины сторон:
+  \[
+    AB = \sqrt{(1 - 3)^2 + (-3 + 5)^2} = \sqrt{4 + 4} = 2\sqrt{2},
+  \]
+  \[
+    BC = \sqrt{(2 - 1)^2 + (-2 + 3)^2} = \sqrt{1 + 1} = \sqrt{2}.
+  \]
+  Отсюда
+  \[
+    \lambda = \frac{AH}{HC} = \frac{AB}{BC}
+    = \frac{2\sqrt{2}}{\sqrt{2}} = 2.
+  \]
+  По формуле деления отрезка в отношении $\lambda$
+  (где $A$ — первая точка, $C$ — вторая):
+  \[
+    x = \frac{x_1 + \lambda x_2}{1 + \lambda}
+    = \frac{3 + 2\cdot 2}{1 + 2} = \frac{7}{3}, \qquad
+    y = \frac{y_1 + \lambda y_2}{1 + \lambda}
+    = \frac{-5 + 2\cdot(-2)}{1 + 2} = \frac{-9}{3} = -3.
+  \]
+  Итак, $H\left(\dfrac{7}{3}; -3\right)$. Найдём направляющий вектор прямой
+  $BH$:
+  \[
+    \overline{BH} = \left(\frac{7}{3} - 1;\; -3 - (-3)\right)
+    = \left(\frac{4}{3};\; 0\right) \parallel \vec{q} = (1, 0).
+  \]
+  Каноническое уравнение прямой $BH$ через точку $B(1; -3)$:
+  \[
+    \frac{x - 1}{1} = \frac{y + 3}{0} \implies 0\cdot(x - 1) = 1\cdot(y + 3)
+    \implies y + 3 = 0.
+  \]
+  Таким образом, $y = -3$ — уравнение биссектрисы $BH$.
+\end{exampleBox}
+
+\begin{exampleBox}{Расстояние от точки до прямой}{ex3}
+  Найти расстояние от точки $M(3; 4)$ до прямой $L: x - 2y + 1 = 0$.
+
+  \textbf{Решение.} Здесь $A = 1$, $B = -2$, $C = 1$, $x_0 = 3$,
+  $y_0 = 4$. По формуле (9.9):
+  \[
+    d = \left| \frac{Ax_0 + By_0 + C}{\sqrt{A^2 + B^2}} \right|
+    = \left| \frac{1\cdot 3 - 2\cdot 4 + 1}{\sqrt{1^2 + (-2)^2}} \right|
+    = \left| \frac{3 - 8 + 1}{\sqrt{5}} \right|
+    = \frac{4}{\sqrt{5}}.
+  \]
+\end{exampleBox}
+
+\begin{exampleBox}{Угол между прямыми}{ex4}
+  Найти угол между прямыми $L_1: 2x - y + 3 = 0$ и
+  $L_2: 2x + 3y + 5 = 0$.
+
+  \textbf{Решение.} Нормальные векторы: $\vec{n}_1 = (2, -1)$,
+  $\vec{n}_2 = (2, 3)$. Тогда
+  \[
+    \cos\alpha = \left| \frac{(\vec{n}_1, \vec{n}_2)}
+    {|\vec{n}_1|\,|\vec{n}_2|} \right|
+    = \left| \frac{2\cdot 2 - 1\cdot 3}{\sqrt{4 + 1}\,\sqrt{4 + 9}}
+    \right|
+    = \left| \frac{4 - 3}{\sqrt{5}\,\sqrt{13}} \right|
+    = \frac{1}{\sqrt{65}}.
+  \]
+  Следовательно, $\alpha = \arccos\dfrac{1}{\sqrt{65}}$.
+\end{exampleBox}
+
+\begin{exampleBox}{Распознавание кривой: гипербола}{ex5}
+  Установить, какую кривую определяет уравнение $y^2 + 4 = x^2$. Сделать
+  чертёж.
+
+  \textbf{Решение.} Перепишем уравнение:
+  \[
+    x^2 - y^2 = 4 \implies \frac{x^2}{4} - \frac{y^2}{4} = 1.
+  \]
+  Это \textbf{гипербола} с полуосями $a = 2$, $b = 2$. Так как
+  $b^2 = c^2 - a^2$, то
+  \[
+    c^2 = a^2 + b^2 = 4 + 4 = 8 \implies c = 2\sqrt{2}.
+  \]
+  Асимптоты: $y = \pm\dfrac{b}{a}x = \pm x$. Фокусы:
+  $F_1(-2\sqrt{2};\, 0)$, $F_2(2\sqrt{2};\, 0)$. Вершины гиперболы:
+  $A_1(-2, 0)$, $A_2(2, 0)$; мнимые вершины: $B_1(0, -2)$, $B_2(0, 2)$.
+
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8, >=Stealth]
+      \draw[->, gray] (-4,0) -- (4,0) node[right] {$x$};
+      \draw[->, gray] (0,-3.5) -- (0,3.5) node[above] {$y$};
+      \node[below left] at (0,0) {$0$};
+      % asymptotes y = +-x
+      \draw[dashed] (-3,-3) -- (3,3);
+      \draw[dashed] (-3,3) -- (3,-3);
+      % hyperbola branches x^2/4 - y^2/4 = 1 -> x = +-2 cosh t, y = 2 sinh t
+      \draw[thick, domain=-1.2:1.2, smooth, variable=\t]
+      plot ({2*cosh(\t)}, {2*sinh(\t)});
+      \draw[thick, domain=-1.2:1.2, smooth, variable=\t]
+      plot ({-2*cosh(\t)}, {2*sinh(\t)});
+      \filldraw (2,0) circle (1.5pt) node[below right] {$A_2$};
+      \filldraw (-2,0) circle (1.5pt) node[below left] {$A_1$};
+      \filldraw (2.83,0) circle (1.5pt) node[above right] {$F_2$};
+      \filldraw (-2.83,0) circle (1.5pt) node[above left] {$F_1$};
+      \filldraw (0,2) circle (1.5pt) node[above right] {$B_2$};
+      \filldraw (0,-2) circle (1.5pt) node[below right] {$B_1$};
+    \end{tikzpicture}
+
+    \textit{Рисунок 9.18}
+  \end{center}
+\end{exampleBox}
+
+\begin{exampleBox}{Распознавание кривой: эллипс (выделение
+  полного квадрата)}{ex6}
+  Установить, какую кривую определяет уравнение
+  \[
+    4x^2 + 9y^2 + 16x - 18y - 11 = 0.
+  \]
+  Сделать чертёж.
+
+  \textbf{Решение.} Сгруппируем слагаемые и выделим полные квадраты:
+  \[
+    4(x^2 + 4x) + 9(y^2 - 2y) - 11 = 0,
+  \]
+  \[
+    4(x^2 + 4x + 4 - 4) + 9(y^2 - 2y + 1 - 1) - 11 = 0,
+  \]
+  \[
+    4(x + 2)^2 - 16 + 9(y - 1)^2 - 9 - 11 = 0
+    \implies 4(x + 2)^2 + 9(y - 1)^2 = 36.
+  \]
+  Разделив на $36$:
+  \[
+    \frac{(x + 2)^2}{9} + \frac{(y - 1)^2}{4} = 1.
+  \]
+  Это \textbf{эллипс} с центром в точке $O_1(-2;\, 1)$ и полуосями
+  $a = 3$, $b = 2$. Так как $b^2 = a^2 - c^2$, то
+  \[
+    c^2 = a^2 - b^2 = 9 - 4 = 5 \implies c = \sqrt{5}.
+  \]
+  Фокусы лежат на горизонтальной оси эллипса (на прямой $y = 1$):
+  \[
+    F_1(-2 - \sqrt{5};\, 1), \qquad F_2(-2 + \sqrt{5};\, 1).
+  \]
+
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8, >=Stealth]
+      \draw[->, gray] (-6,0) -- (2.5,0) node[right] {$x$};
+      \draw[->, gray] (0,-2.5) -- (0,4) node[above] {$y$};
+      \node[below right] at (0,0) {$0$};
+      % shifted axes
+      \draw[dashed, gray] (-2,-2.2) -- (-2,3.6) node[above] {$y'$};
+      \draw[dashed, gray] (-5.2,1) -- (1.5,1) node[right] {$x'$};
+      % ellipse center (-2,1), a=3, b=2
+      \draw[thick] (-2,1) ellipse (3 and 2);
+      \filldraw (-2,1) circle (1.5pt) node[below right] {$O_1$};
+      \filldraw (-4.24,1) circle (1.5pt) node[below left] {$F_1$};
+      \filldraw (0.24,1) circle (1.5pt) node[below right] {$F_2$};
+      \node at (-1.6,2.0) {$a$};
+      \node at (-2.9,1.6) {$b$};
+    \end{tikzpicture}
+
+    \textit{Рисунок 9.19}
+  \end{center}
+\end{exampleBox}
+
+\begin{remarkIT}{Выделение полного квадрата и нормализация
+  данных}{complete_square}
+  Приём выделения полного квадрата, использованный в примере 9.6, —
+  это, по сути, перенос начала координат (сдвиг признаков). В машинном
+  обучении аналогичная операция — \emph{центрирование} данных (вычитание
+  среднего), которая упрощает геометрию задачи и приводит её к
+  каноническому виду, ускоряя сходимость алгоритмов оптимизации.
+\end{remarkIT}
+
+\end{document}
