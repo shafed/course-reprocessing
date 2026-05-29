@@ -19,4 +19,4 @@ build:
 
 # Удалить промежуточные артефакты, оставив PDF
 clean:
-	rm -f build/*.aux build/*.log build/*.out build/*.toc build/*.fls build/*.fdb_latexmk
+	rm -f build/*.aux build/*.log build/*.out build/*.toc build/*.fls build/*.fdb_latexmk build/*.synctex.gz

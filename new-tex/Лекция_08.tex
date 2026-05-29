@@ -425,6 +425,9 @@ $(\vi,\vj)=(\vi,\vk)=(\vj,\vk)=0$.
       \draw[->, thick] (1.0,-0.33) arc[start angle=-20, end angle=27,
       radius=1.05];
     \end{tikzpicture}
+
+    \smallskip
+    \textit{Рисунок 8.2}
   \end{minipage}
   \hfill
   \begin{minipage}{0.45\textwidth}
@@ -432,9 +435,6 @@ $(\vi,\vj)=(\vi,\vk)=(\vj,\vk)=0$.
 
     $(\vb, \va, \vc)$ --- левая тройка
   \end{minipage}
-
-  \smallskip
-  \centering\textit{Рисунок 8.2}
 \end{figure}
 
 \begin{remarkIT}{Ориентация в компьютерной графике}{orientation_cg}
@@ -543,22 +543,34 @@ $(\vi,\vj)=(\vi,\vk)=(\vj,\vk)=0$.
   противоположные направления вращения.
 \end{remarkIT}
 
-\begin{figure}[ht]
+\begin{figure}[h]
   \centering
-  \begin{tikzpicture}[scale=1.1, >=Stealth]
+  \begin{tikzpicture}[>=Stealth]
+    % parallelogram: base a, side b
     \coordinate (O) at (0,0);
-    \coordinate (A) at (2.5,0);
-    \coordinate (B) at (3.3,1.2);
-    \coordinate (C) at (0.8,1.2);
-    \fill[pattern=north east lines, pattern color=gray!60]
-    (O)--(A)--(B)--(C)--cycle;
-    \draw (O)--(A)--(B)--(C)--cycle;
-    \draw[->] (O) -- (A) node[midway, below] {$\bar{a}$};
-    \draw[->] (O) -- (C) node[midway, left] {$\bar{b}$};
-    \draw[->] (A) -- (B);
-    \node at (3.6, 0.6) {$S$};
-    \draw[->] (1.6,0.4) -- (2.4,0.8);
-    \draw[->] (1.5,1.2) -- (1.5,2.5) node[above] {$\bar{c}=[\bar{a},\bar{b}]$};
+    \coordinate (A) at (3,0);
+    \coordinate (B) at (1,1.5);
+    \coordinate (C) at (4,1.5);
+
+    % fill hatching manually with lines
+    \foreach \x in {0.15,0.4,...,2.9}{
+      \draw[gray, thin] (\x,0) -- ++(1,1.5);
+    }
+
+    % white area around S
+    \fill[white] (2.2,0.75) circle (0.25);
+
+    % parallelogram outline
+    \draw[->] (O) -- (A) node[below] {$\va$};
+    \draw[->] (O) -- (B) node[left] {$\vb$};
+    \draw (A) -- (C);
+    \draw (B) -- (C);
+
+    % area label
+    \node at (2.2,0.75) {$S$};
+
+    % vector c perpendicular, from origin upward
+    \draw[->] (O) -- (0,3) node[left] {$\vc$};
   \end{tikzpicture}
 
   \smallskip
@@ -745,13 +757,16 @@ $(\vi,\vj)=(\vi,\vk)=(\vj,\vk)=0$.
       \draw (AB)--(AB2); \draw[dashed] (B)--(B2);
       \draw (O2)--(A2)--(AB2)--(B2)--cycle;
       \draw[dashed] (O)--(B); \draw[dashed] (B)--(AB);
+      % высота h: вертикаль от основания до верхней грани
+      \draw[dashed] (O) -- (0,2.0);
       \draw[<->] (-0.4,0) -- (-0.4,2.0) node[midway,left] {$h$};
-      \draw (O2) -- +(0.3,-0.7);
-      \node at (0.75,1.55) {$\varphi$};
+      % угол phi между вектором c и высотой (вертикалью) в точке O
+      \draw (0,0.85) arc[start angle=90, end angle=76, radius=0.85];
+      \node at (0.42,0.95) {$\varphi$};
       \draw[->] (O) -- (A)  node[midway,below] {$\bar{a}$};
-      \draw[->] (O) -- (B)  node[midway,below right] {$\bar{b}$};
-      \draw[->] (O) -- (O2) node[midway,left] {$\bar{c}$};
-      \node at (1.8,0.15) {$S_{\text{осн}}$};
+      \draw[->] (O) -- (B)  node[pos=0.9,below right] {$\bar{b}$};
+      \draw[->] (O) -- (O2) node[pos=0.85,left] {$\bar{c}$};
+      \node at (1.9,0.4) {$S_{\text{осн}}$};
     \end{tikzpicture}
   \end{minipage}
   \hfill

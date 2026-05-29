@@ -5,6 +5,7 @@ build/*.out
 build/*.toc
 build/*.fls
 build/*.fdb_latexmk
+build/*.synctex.gz
 
 # Артефакты в корне (компиляция должна идти в build/)
 *.aux
