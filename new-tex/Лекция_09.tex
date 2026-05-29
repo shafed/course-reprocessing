@@ -188,15 +188,24 @@ $\vec{n} = (A, B)$.
 
 \begin{figure}[h!]
   \centering
-  \begin{tikzpicture}[scale=1.0, >=Stealth]
-    \draw[->, gray] (-1.5,0) -- (4,0) node[right] {$x$};
+  \begin{tikzpicture}[scale=1.2, >=Stealth]
+    \draw[->, gray] (-1.8,0) -- (4,0) node[right] {$x$};
     \draw[->, gray] (0,-1) -- (0,3) node[above] {$y$};
     \node[below left] at (0,0) {$0$};
-    \draw[thick] (-1.2,-0.6) -- (3.6,1.8) node[right] {$L$};
-    \filldraw (0.8,0.4) circle (1pt) node[below right] {$M_0(x_0,y_0)$};
-    \filldraw (2.2,1.1) circle (1pt) node[above left] {$M(x,y)$};
-    \draw[->, thick, blue] (1.5,0.75) -- (1.0,1.75)
-    node[above] {$\vec{n}=(A,B)$};
+    % прямая L: направление (2,1), точки M_0 и M на ней
+    \draw[thick] (-1.4,-0.7) -- (3.8,1.9) node[right] {$L$};
+    % точки на прямой
+    \filldraw (0.8,0.4) circle (1.2pt);
+    \node[below right] at (0.8,0.4) {$M_0(x_0,y_0)$};
+    \filldraw (2.4,1.2) circle (1.2pt);
+    \node[below right] at (2.4,1.2) {$M(x,y)$};
+    % нормальный вектор из M_0, перпендикулярно L (направление (-1,2))
+    \draw[->, thick, blue] (0.8,0.4) -- (0.8-0.62,0.4+1.24);
+    \node[left, blue] at (0.8-0.62,0.4+1.24) {$\vec{n}=(A,B)$};
+    % отметка прямого угла в M_0 между n и L
+    \draw[blue!60] ($(0.8,0.4)+(0.179,0.0894)$)
+    -- ($(0.8,0.4)+(0.179,0.0894)+(-0.0894,0.179)$)
+    -- ($(0.8,0.4)+(-0.0894,0.179)$);
   \end{tikzpicture}
 
   \textit{Рисунок 9.2}
