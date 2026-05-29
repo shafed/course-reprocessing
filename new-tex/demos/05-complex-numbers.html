@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Лекция 12 — Комплексные числа и корни n-й степени</title>
+
+  <!-- MathJax для рендеринга формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+
+  <style>
+    /* ─── сброс и базовые переменные ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2e40;
+      --accent:   #6c8ef5;
+      --accent2:  #f5a623;
+      --accent3:  #50e3c2;
+      --accent4:  #e35050;
+      --text:     #e8eaf0;
+      --muted:    #7a7f96;
+      --radius:   10px;
+      --shadow:   0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+      gap: 20px;
+    }
+
+    /* ─── заголовок ─── */
+    header {
+      text-align: center;
+      max-width: 820px;
+    }
+    header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: .01em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    header p {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* ─── основной макет ─── */
+    .layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1060px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── canvas-обёртка ─── */
+    .canvas-wrap {
+      position: relative;
+      flex: 0 0 auto;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      background: #13162080;
+      cursor: crosshair;
+    }
+    #plane {
+      display: block;
+    }
+
+    /* ─── боковая панель ─── */
+    .panel {
+      flex: 1 1 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 240px;
+    }
+
+    /* ─── карточка ─── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    /* ─── строки с формулами ─── */
+    .formula-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .formula-row:last-child { border-bottom: none; }
+    .formula-label {
+      color: var(--muted);
+      font-size: .82rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .formula-value {
+      font-size: .88rem;
+      color: var(--text);
+      text-align: right;
+      word-break: break-all;
+    }
+    .formula-value.accent  { color: var(--accent); }
+    .formula-value.accent2 { color: var(--accent2); }
+    .formula-value.accent3 { color: var(--accent3); }
+
+    /* ─── ползунок степени ─── */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-row label {
+      font-size: .85rem;
+      white-space: nowrap;
+    }
+    input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform .1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .slider-val {
+      min-width: 22px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* ─── кнопки режимов ─── */
+    .mode-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: .82rem;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn.active:hover { filter: brightness(1.1); }
+
+    /* ─── блок с формулами MathJax ─── */
+    .formulas-block {
+      font-size: .86rem;
+      line-height: 1.9;
+    }
+
+    /* ─── легенда цветов ─── */
+    .legend { display: flex; flex-direction: column; gap: 6px; }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px; font-size: .82rem;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ─── подсказка ─── */
+    .hint {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: -6px;
+    }
+
+    /* ─── адаптив ─── */
+    @media (max-width: 700px) {
+      .layout { flex-direction: column; align-items: center; }
+      .panel   { width: 100%; max-width: 500px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Комплексные числа и корни <i>n</i>-й степени</h1>
+  <p>Лекция 12 · тригонометрическая и показательная формы, формула Муавра, корни как вершины правильного многоугольника</p>
+</header>
+
+<div class="layout">
+
+  <!-- ── ХОЛСТ ── -->
+  <div class="canvas-wrap">
+    <canvas id="plane" width="500" height="500"></canvas>
+  </div>
+
+  <!-- ── БОКОВАЯ ПАНЕЛЬ ── -->
+  <div class="panel">
+
+    <!-- Режимы -->
+    <div class="card">
+      <div class="card-title">Режим отображения</div>
+      <div class="mode-btns">
+        <button class="btn active" id="btn-power">Степень z<sup>n</sup></button>
+        <button class="btn"        id="btn-roots">Корни ⁿ√z</button>
+      </div>
+    </div>
+
+    <!-- Степень n -->
+    <div class="card">
+      <div class="card-title">Степень / порядок корня</div>
+      <div class="slider-row">
+        <label>n =</label>
+        <input type="range" id="slider-n" min="1" max="12" value="3" />
+        <span class="slider-val" id="val-n">3</span>
+      </div>
+    </div>
+
+    <!-- Координаты z -->
+    <div class="card">
+      <div class="card-title">Комплексное число z</div>
+      <div class="formula-row">
+        <span class="formula-label">Алгебраическая:</span>
+        <span class="formula-value accent" id="out-alg">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Модуль |z|:</span>
+        <span class="formula-value" id="out-mod">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Аргумент φ (рад):</span>
+        <span class="formula-value" id="out-arg-rad">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Аргумент φ (°):</span>
+        <span class="formula-value" id="out-arg-deg">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Тригоном.:</span>
+        <span class="formula-value accent2" id="out-trig">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Показат.:</span>
+        <span class="formula-value accent3" id="out-exp">—</span>
+      </div>
+    </div>
+
+    <!-- Результат -->
+    <div class="card" id="card-result">
+      <div class="card-title" id="result-title">z<sup>n</sup></div>
+      <div class="formula-row">
+        <span class="formula-label">Значение:</span>
+        <span class="formula-value accent" id="out-result">—</span>
+      </div>
+      <div class="formula-row">
+        <span class="formula-label">Формула Муавра:</span>
+        <span class="formula-value" id="out-moivre">—</span>
+      </div>
+    </div>
+
+    <!-- Формулы MathJax -->
+    <div class="card">
+      <div class="card-title">Ключевые формулы</div>
+      <div class="formulas-block" id="mathjax-formulas">
+        $$z = r(\cos\varphi + i\sin\varphi) = r e^{i\varphi}$$
+        $$z^n = r^n(\cos n\varphi + i\sin n\varphi)$$
+        $$\sqrt[n]{z}_k = r^{1/n}\!\left(\cos\frac{\varphi+2\pi k}{n} + i\sin\frac{\varphi+2\pi k}{n}\right)$$
+        $$k = 0,1,\ldots,n{-}1$$
+      </div>
+    </div>
+
+    <!-- Легенда -->
+    <div class="card">
+      <div class="card-title">Легенда</div>
+      <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:#6c8ef5"></div>z — исходная точка</div>
+        <div class="legend-item"><div class="dot" style="background:#f5a623"></div>z<sup>n</sup> — степень (режим «Степень»)</div>
+        <div class="legend-item"><div class="dot" style="background:#50e3c2"></div>Корни n-й степени (режим «Корни»)</div>
+        <div class="legend-item"><div class="dot" style="background:rgba(108,142,245,0.35)"></div>Единичная окружность</div>
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+</div>
+
+<p class="hint">Перетащите точку <b>z</b> по комплексной плоскости мышью или касанием</p>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   Глобальное состояние
+════════════════════════════════════════════════════════ */
+const state = {
+  // Текущая точка z в математических координатах
+  re: 1.2,
+  im: 0.8,
+  // Степень/порядок корня
+  n: 3,
+  // Режим: 'power' или 'roots'
+  mode: 'power',
+  // Идёт ли перетаскивание
+  dragging: false,
+};
+
+/* ════════════════════════════════════════════════════════
+   Настройка canvas
+════════════════════════════════════════════════════════ */
+const canvas  = document.getElementById('plane');
+const ctx     = canvas.getContext('2d');
+
+// Диапазон видимой области (в единицах комплексной плоскости)
+const RANGE   = 3.2;  // от -RANGE до +RANGE по обеим осям
+const W       = canvas.width;
+const H       = canvas.height;
+
+/** Перевод математических координат в пиксели холста */
+function toPixel(re, im) {
+  const x = (re / RANGE + 1) * (W / 2);
+  const y = (1 - im / RANGE) * (H / 2);
+  return { x, y };
+}
+
+/** Перевод пикселей холста в математические координаты */
+function toMath(px, py) {
+  const re = (px / (W / 2) - 1) * RANGE;
+  const im = (1 - py / (H / 2)) * RANGE;
+  return { re, im };
+}
+
+/* ════════════════════════════════════════════════════════
+   Отрисовка
+════════════════════════════════════════════════════════ */
+
+/** Нарисовать сетку */
+function drawGrid() {
+  ctx.strokeStyle = '#1f2335';
+  ctx.lineWidth   = 1;
+  const step = 1; // шаг сетки = 1 единица
+  for (let v = -Math.floor(RANGE); v <= Math.floor(RANGE); v++) {
+    if (v === 0) continue;
+    // Вертикальные линии
+    const px = toPixel(v, 0).x;
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    // Горизонтальные линии
+    const py = toPixel(0, v).y;
+    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+  }
+}
+
+/** Нарисовать оси Re/Im */
+function drawAxes() {
+  const O = toPixel(0, 0);
+  ctx.strokeStyle = '#3a3f58';
+  ctx.lineWidth   = 1.5;
+
+  // Ось Re (горизонталь)
+  ctx.beginPath(); ctx.moveTo(0, O.y); ctx.lineTo(W, O.y); ctx.stroke();
+  // Ось Im (вертикаль)
+  ctx.beginPath(); ctx.moveTo(O.x, 0); ctx.lineTo(O.x, H); ctx.stroke();
+
+  // Стрелки
+  drawArrow(W - 8, O.y, 'right');
+  drawArrow(O.x,   8,   'up');
+
+  // Подписи осей
+  ctx.fillStyle  = '#7a7f96';
+  ctx.font       = 'bold 13px "Segoe UI", sans-serif';
+  ctx.textAlign  = 'left';
+  ctx.fillText('Re', W - 22, O.y - 6);
+  ctx.textAlign  = 'center';
+  ctx.fillText('Im', O.x + 12, 18);
+
+  // Деления и числа
+  ctx.font      = '11px "Segoe UI", sans-serif';
+  ctx.fillStyle = '#555a70';
+  for (let v = -Math.floor(RANGE); v <= Math.floor(RANGE); v++) {
+    if (v === 0) continue;
+    const px = toPixel(v, 0);
+    const py = toPixel(0, v);
+    // деление на оси Re
+    ctx.beginPath();
+    ctx.moveTo(px.x, O.y - 3); ctx.lineTo(px.x, O.y + 3); ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.fillText(v, px.x, O.y + 14);
+    // деление на оси Im
+    ctx.beginPath();
+    ctx.moveTo(O.x - 3, py.y); ctx.lineTo(O.x + 3, py.y); ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText(v + 'i', O.x - 6, py.y + 4);
+  }
+}
+
+/** Вспомогательная стрелка */
+function drawArrow(x, y, dir) {
+  ctx.beginPath();
+  if (dir === 'right') {
+    ctx.moveTo(x, y - 4); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 4);
+  } else {
+    ctx.moveTo(x - 4, y); ctx.lineTo(x, y - 8); ctx.lineTo(x + 4, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#3a3f58';
+  ctx.fill();
+}
+
+/** Нарисовать единичную окружность */
+function drawUnitCircle() {
+  const O  = toPixel(0, 0);
+  const r1 = toPixel(1, 0).x - O.x; // радиус в пикселях
+  ctx.beginPath();
+  ctx.arc(O.x, O.y, r1, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(108,142,245,0.25)';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/** Нарисовать точку с меткой */
+function drawPoint(re, im, color, label, radius = 7) {
+  const p = toPixel(re, im);
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle   = color;
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth   = 1.5;
+  ctx.stroke();
+
+  if (label) {
+    ctx.font      = 'bold 12px "Segoe UI", sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'left';
+    ctx.fillText(label, p.x + 10, p.y - 8);
+  }
+}
+
+/** Нарисовать вектор от начала координат */
+function drawVector(re, im, color) {
+  const O = toPixel(0, 0);
+  const P = toPixel(re, im);
+  ctx.beginPath();
+  ctx.moveTo(O.x, O.y);
+  ctx.lineTo(P.x, P.y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+
+  // Стрелка на конце
+  const angle = Math.atan2(O.y - P.y, P.x - O.x);
+  const aLen  = 10;
+  const aDelta = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(P.x, P.y);
+  ctx.lineTo(
+    P.x - aLen * Math.cos(angle - aDelta),
+    P.y + aLen * Math.sin(angle - aDelta)
+  );
+  ctx.moveTo(P.x, P.y);
+  ctx.lineTo(
+    P.x - aLen * Math.cos(angle + aDelta),
+    P.y + aLen * Math.sin(angle + aDelta)
+  );
+  ctx.stroke();
+}
+
+/** Дуга аргумента φ */
+function drawArgArc(phi) {
+  const O  = toPixel(0, 0);
+  const px = toPixel(1, 0);
+  const r  = (px.x - O.x) * 0.38;
+  ctx.beginPath();
+  ctx.arc(O.x, O.y, r, -phi, 0, phi < 0); // canvas угол = -math угол
+  ctx.strokeStyle = '#f5a62380';
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([3, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/** Нарисовать окружность заданного радиуса (для корней) */
+function drawRootsCircle(r) {
+  const O    = toPixel(0, 0);
+  const rPx  = (toPixel(r, 0).x - O.x);
+  ctx.beginPath();
+  ctx.arc(O.x, O.y, rPx, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(80,227,194,0.25)';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/** Нарисовать n корней n-й степени из z, соединённых многоугольником */
+function drawRoots(re, im, n) {
+  const r   = Math.hypot(re, im);
+  if (r < 1e-9) return;
+  const phi = Math.atan2(im, re);
+  const rn  = Math.pow(r, 1 / n); // модуль корней
+
+  drawRootsCircle(rn);
+
+  // Координаты всех корней
+  const pts = [];
+  for (let k = 0; k < n; k++) {
+    const angle = (phi + 2 * Math.PI * k) / n;
+    pts.push({ re: rn * Math.cos(angle), im: rn * Math.sin(angle) });
+  }
+
+  // Соединяем в многоугольник
+  if (pts.length > 1) {
+    const p0 = toPixel(pts[0].re, pts[0].im);
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    for (let k = 1; k < pts.length; k++) {
+      const p = toPixel(pts[k].re, pts[k].im);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(80,227,194,0.55)';
+    ctx.lineWidth   = 1.5;
+    ctx.fillStyle   = 'rgba(80,227,194,0.06)';
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Рисуем точки корней
+  pts.forEach((p, k) => {
+    drawPoint(p.re, p.im, '#50e3c2', `z${subscript(k)}`, 6);
+  });
+}
+
+/** Подстрочный индекс через unicode */
+function subscript(k) {
+  const subs = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉','₁₀','₁₁','₁₂'];
+  return subs[k] ?? String(k);
+}
+
+/* ════════════════════════════════════════════════════════
+   Главная функция отрисовки
+════════════════════════════════════════════════════════ */
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  drawGrid();
+  drawAxes();
+  drawUnitCircle();
+
+  const { re, im, n, mode } = state;
+  const r   = Math.hypot(re, im);
+  const phi = Math.atan2(im, re);
+
+  // Вектор к z и аргумент
+  if (r > 1e-9) {
+    drawArgArc(phi);
+    drawVector(re, im, '#6c8ef580');
+  }
+
+  if (mode === 'power') {
+    // Режим «Степень»: рисуем z^n
+    const rn    = Math.pow(r, n);
+    const phiN  = phi * n;
+    const re_n  = rn * Math.cos(phiN);
+    const im_n  = rn * Math.sin(phiN);
+    drawVector(re_n, im_n, '#f5a62350');
+    drawPoint(re_n, im_n, '#f5a623', `z${superscript(n)}`, 6);
+  } else {
+    // Режим «Корни»
+    drawRoots(re, im, n);
+  }
+
+  // Основная точка z — поверх всего
+  drawPoint(re, im, '#6c8ef5', 'z', 8);
+
+  updateInfo(re, im, n, r, phi);
+}
+
+/** Надстрочный индекс через unicode */
+function superscript(n) {
+  const sup = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'];
+  return String(n).split('').map(d => sup[+d] ?? d).join('');
+}
+
+/* ════════════════════════════════════════════════════════
+   Обновление информационной панели
+════════════════════════════════════════════════════════ */
+function fmt(x, d = 3) {
+  // Красиво форматирует число: убирает лишние нули
+  return parseFloat(x.toFixed(d)).toString();
+}
+
+function fmtComplex(re, im) {
+  const r  = fmt(re);
+  const i  = fmt(Math.abs(im));
+  const sg = im < 0 ? ' − ' : ' + ';
+  return `${r}${sg}${i}i`;
+}
+
+function updateInfo(re, im, n, r, phi) {
+  const phiDeg = phi * 180 / Math.PI;
+  const rn     = Math.pow(r, n);
+  const phiN   = phi * n;
+  const re_n   = rn * Math.cos(phiN);
+  const im_n   = rn * Math.sin(phiN);
+
+  document.getElementById('out-alg').textContent     = fmtComplex(re, im);
+  document.getElementById('out-mod').textContent     = fmt(r);
+  document.getElementById('out-arg-rad').textContent = fmt(phi) + ' рад';
+  document.getElementById('out-arg-deg').textContent = fmt(phiDeg) + '°';
+  document.getElementById('out-trig').textContent    =
+    `${fmt(r)}(cos ${fmt(phi)} + i·sin ${fmt(phi)})`;
+  document.getElementById('out-exp').textContent     =
+    `${fmt(r)}·e^(i·${fmt(phi)})`;
+
+  if (state.mode === 'power') {
+    document.getElementById('result-title').innerHTML = `z<sup>${n}</sup>`;
+    document.getElementById('out-result').textContent = fmtComplex(re_n, im_n);
+    document.getElementById('out-moivre').textContent =
+      `${fmt(rn)}(cos ${fmt(phiN)} + i·sin ${fmt(phiN)})`;
+    document.getElementById('card-result').style.display = '';
+  } else {
+    // В режиме корней показываем формулу 0-го корня
+    const rn1   = Math.pow(r, 1 / n);
+    const phi0  = phi / n;
+    const re0   = rn1 * Math.cos(phi0);
+    const im0   = rn1 * Math.sin(phi0);
+    document.getElementById('result-title').innerHTML = `<sup>${n}</sup>√z, главный корень (k=0)`;
+    document.getElementById('out-result').textContent = fmtComplex(re0, im0);
+    document.getElementById('out-moivre').textContent =
+      `${fmt(rn1)}(cos ${fmt(phi0)} + i·sin ${fmt(phi0)})`;
+    document.getElementById('card-result').style.display = '';
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   Обработка событий мыши и касания
+════════════════════════════════════════════════════════ */
+
+/** Получить математические координаты из события мыши */
+function eventToMath(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const px = (e.clientX - rect.left) * scaleX;
+  const py = (e.clientY - rect.top)  * scaleY;
+  return toMath(px, py);
+}
+
+/** Получить математические координаты из события касания */
+function touchToMath(e) {
+  const touch = e.touches[0] || e.changedTouches[0];
+  const rect  = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const px = (touch.clientX - rect.left) * scaleX;
+  const py = (touch.clientY - rect.top)  * scaleY;
+  return toMath(px, py);
+}
+
+/** Проверить, находится ли cursor рядом с точкой z (в пикселях) */
+function nearZ(px, py, threshold = 18) {
+  const pz = toPixel(state.re, state.im);
+  return Math.hypot(px - pz.x, py - pz.y) < threshold;
+}
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const px = (e.clientX - rect.left) * scaleX;
+  const py = (e.clientY - rect.top)  * scaleY;
+  // Начинаем перетаскивание даже если кликнули не точно в точку
+  // (удобнее — работает как «поставить точку»)
+  const m = toMath(px, py);
+  state.re = m.re;
+  state.im = m.im;
+  state.dragging = true;
+  render();
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!state.dragging) return;
+  const m = eventToMath(e);
+  state.re = m.re;
+  state.im = m.im;
+  render();
+});
+
+window.addEventListener('mouseup', () => { state.dragging = false; });
+
+// Поддержка тач-устройств
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const m = touchToMath(e);
+  state.re = m.re;
+  state.im = m.im;
+  state.dragging = true;
+  render();
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!state.dragging) return;
+  const m = touchToMath(e);
+  state.re = m.re;
+  state.im = m.im;
+  render();
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => { state.dragging = false; });
+
+/* ════════════════════════════════════════════════════════
+   Ползунок n
+════════════════════════════════════════════════════════ */
+const sliderN  = document.getElementById('slider-n');
+const valNSpan = document.getElementById('val-n');
+
+sliderN.addEventListener('input', () => {
+  state.n = parseInt(sliderN.value, 10);
+  valNSpan.textContent = state.n;
+  render();
+});
+
+/* ════════════════════════════════════════════════════════
+   Кнопки режимов
+════════════════════════════════════════════════════════ */
+document.getElementById('btn-power').addEventListener('click', () => {
+  state.mode = 'power';
+  document.getElementById('btn-power').classList.add('active');
+  document.getElementById('btn-roots').classList.remove('active');
+  render();
+});
+
+document.getElementById('btn-roots').addEventListener('click', () => {
+  state.mode = 'roots';
+  document.getElementById('btn-roots').classList.add('active');
+  document.getElementById('btn-power').classList.remove('active');
+  render();
+});
+
+/* ════════════════════════════════════════════════════════
+   Адаптация размера canvas под экран
+════════════════════════════════════════════════════════ */
+function resizeCanvas() {
+  const maxW = Math.min(window.innerWidth - 32, 500);
+  canvas.style.width  = maxW + 'px';
+  canvas.style.height = maxW + 'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+/* ════════════════════════════════════════════════════════
+   Запуск
+════════════════════════════════════════════════════════ */
+render();
+
+// Запустить тайпсет MathJax после загрузки страницы
+window.addEventListener('load', () => {
+  if (window.MathJax?.typesetPromise) {
+    MathJax.typesetPromise([document.getElementById('mathjax-formulas')]);
+  }
+});
+</script>
+</body>
+</html>

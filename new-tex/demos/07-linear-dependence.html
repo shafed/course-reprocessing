@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Линейная зависимость векторов на плоскости</title>
+
+  <!-- MathJax для рендеринга формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    /* ───── Сброс и базовые стили ───── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+      gap: 20px;
+    }
+
+    /* ───── Заголовок ───── */
+    header {
+      text-align: center;
+      max-width: 780px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* ───── Формулы (блок с MathJax) ───── */
+    .formula-block {
+      background: #1e2130;
+      border: 1px solid #2d3450;
+      border-radius: 12px;
+      padding: 14px 22px;
+      max-width: 780px;
+      width: 100%;
+      font-size: 0.92rem;
+      line-height: 2;
+      color: #cbd5e1;
+    }
+
+    .formula-block .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 32px;
+      align-items: baseline;
+    }
+
+    /* ───── Основной макет ───── */
+    .main-layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 980px;
+    }
+
+    /* ───── Canvas-контейнер ───── */
+    .canvas-wrap {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #2d3450;
+      flex-shrink: 0;
+      background: #141622;
+    }
+
+    canvas {
+      display: block;
+      cursor: default;
+    }
+
+    /* ───── Панель данных справа ───── */
+    .panel {
+      background: #1e2130;
+      border: 1px solid #2d3450;
+      border-radius: 14px;
+      padding: 20px;
+      min-width: 280px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* ───── Карточки векторов ───── */
+    .vector-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .vcard {
+      border-radius: 10px;
+      padding: 10px 14px;
+      border: 1px solid transparent;
+    }
+
+    .vcard.e1 { background: #1a2340; border-color: #3b6bcc; }
+    .vcard.e2 { background: #1a3028; border-color: #2ea87a; }
+    .vcard.x  { background: #2d1f3a; border-color: #a855f7; }
+
+    .vcard-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 4px;
+    }
+
+    .vcard.e1 .vcard-title { color: #60a5fa; }
+    .vcard.e2 .vcard-title { color: #34d399; }
+    .vcard.x  .vcard-title { color: #c084fc; }
+
+    .vcard-coords {
+      font-size: 0.92rem;
+      font-family: 'Courier New', monospace;
+      color: #e2e8f0;
+    }
+
+    /* ───── Результаты разложения ───── */
+    .results {
+      background: #12141f;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #1e2130;
+      padding-bottom: 6px;
+    }
+
+    .result-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .result-label { color: #94a3b8; }
+
+    .result-value {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    /* ───── Статус базиса ───── */
+    .status-badge {
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .status-badge.ok {
+      background: #0f2d1e;
+      border: 1px solid #22c55e;
+      color: #4ade80;
+    }
+
+    .status-badge.degenerate {
+      background: #2d1a0e;
+      border: 1px solid #f97316;
+      color: #fb923c;
+    }
+
+    /* ───── Легенда ───── */
+    .legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .legend-dash {
+      width: 28px;
+      height: 0;
+      border-top: 2px dashed;
+      flex-shrink: 0;
+    }
+
+    /* ───── Подсказка ───── */
+    .hint {
+      font-size: 0.78rem;
+      color: #475569;
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Линейная зависимость векторов на плоскости</h1>
+  <p>Лекции 15–16 · Перетащите концы векторов мышью для изменения конфигурации</p>
+</header>
+
+<!-- Блок с математическими формулами -->
+<div class="formula-block">
+  <div class="row">
+    <span>\(\vec{x} = \alpha_1\vec{e}_1 + \alpha_2\vec{e}_2\)</span>
+    <span>\(\Delta = \det\!\begin{pmatrix}e_{1x}&e_{2x}\\e_{1y}&e_{2y}\end{pmatrix} \neq 0\)</span>
+    <span>\(\alpha_1 = \dfrac{1}{\Delta}\det\!\begin{pmatrix}x_x&e_{2x}\\x_y&e_{2y}\end{pmatrix}\)</span>
+    <span>\(\alpha_2 = \dfrac{1}{\Delta}\det\!\begin{pmatrix}e_{1x}&x_x\\e_{1y}&x_y\end{pmatrix}\)</span>
+  </div>
+  <div class="row" style="margin-top:4px;">
+    <span style="color:#fb923c;">Лин. зависимость: \(\exists(\lambda_i)\neq\mathbf{0}:\;\sum_i\lambda_i\vec{v}_i=\mathbf{0}\)</span>
+  </div>
+</div>
+
+<div class="main-layout">
+
+  <!-- Холст -->
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="540" height="540"></canvas>
+  </div>
+
+  <!-- Информационная панель -->
+  <div class="panel">
+
+    <div>
+      <h2>Векторы</h2>
+      <div class="vector-cards" id="vcards">
+        <div class="vcard e1">
+          <div class="vcard-title">e₁ — первый базисный</div>
+          <div class="vcard-coords" id="coords-e1">(3, 0)</div>
+        </div>
+        <div class="vcard e2">
+          <div class="vcard-title">e₂ — второй базисный</div>
+          <div class="vcard-coords" id="coords-e2">(0, 3)</div>
+        </div>
+        <div class="vcard x">
+          <div class="vcard-title">x — целевой вектор</div>
+          <div class="vcard-coords" id="coords-x">(2, 2)</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2>Разложение x по базису</h2>
+      <div class="results">
+        <div class="result-row">
+          <span class="result-label">Определитель Δ</span>
+          <span class="result-value" id="val-det">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Коэффициент α₁</span>
+          <span class="result-value" id="val-a1">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Коэффициент α₂</span>
+          <span class="result-value" id="val-a2">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Статус линейной (не)зависимости -->
+    <div class="status-badge ok" id="status-badge">
+      Базис линейно независим
+    </div>
+
+    <!-- Легенда -->
+    <div>
+      <h2>Обозначения</h2>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-line" style="background:#4d90fe;"></div>
+          <span>e₁ — первый базисный вектор</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#2ecc71;"></div>
+          <span>e₂ — второй базисный вектор</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#c084fc;"></div>
+          <span>x — целевой вектор</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dash" style="border-color:#4d90fe99;"></div>
+          <span>α₁·e₁ — компонента по e₁</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dash" style="border-color:#2ecc7199;"></div>
+          <span>α₂·e₂ — компонента по e₂</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#fbbf24; height:1px; border-top:1px dashed #fbbf24; background:none;"></div>
+          <span>Параллелограмм разложения</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">Перетаскивайте светящиеся точки на холсте</div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+// ───── Константы отображения ─────
+const CANVAS_SIZE   = 540;   // размер холста в пикселях
+const GRID_STEP_LOG = 1;     // логический шаг сетки (единица координат)
+const CELL_PX       = 46;    // пикселей на единицу координаты
+const ORIGIN_X      = CANVAS_SIZE / 2;  // пиксельный центр по X
+const ORIGIN_Y      = CANVAS_SIZE / 2;  // пиксельный центр по Y
+
+// Радиус захвата ручки вектора (пикселей)
+const HANDLE_RADIUS = 10;
+
+// Порог вырожденности базиса
+const DEGENERATE_EPS = 0.05;
+
+// ───── Состояние приложения ─────
+// Все координаты хранятся в логической системе (не в пикселях)
+const state = {
+  e1: { x: 3,  y: 0  },   // первый базисный вектор
+  e2: { x: 0,  y: 3  },   // второй базисный вектор
+  vx: { x: 2,  y: 2  },   // целевой вектор x
+  drag: null               // { key, offsetX, offsetY } — текущее перетаскивание
+};
+
+// ───── Вспомогательные функции: перевод координат ─────
+
+/** Логические координаты → пиксели на холсте */
+function toPixel(lx, ly) {
+  return {
+    px: ORIGIN_X + lx * CELL_PX,
+    py: ORIGIN_Y - ly * CELL_PX   // ось Y направлена вверх
+  };
+}
+
+/** Пиксели холста → логические координаты (с привязкой к сетке) */
+function toLogical(px, py) {
+  return {
+    x: (px - ORIGIN_X) / CELL_PX,
+    y: (ORIGIN_Y - py) / CELL_PX
+  };
+}
+
+/** Привязка к ближайшему шагу сетки */
+function snap(val, step) {
+  return Math.round(val / step) * step;
+}
+
+/** Расстояние от точки (px,py) до логической точки вектора */
+function distToHandle(px, py, logX, logY) {
+  const { px: hx, py: hy } = toPixel(logX, logY);
+  return Math.hypot(px - hx, py - hy);
+}
+
+// ───── Математика: правило Крамера ─────
+
+/**
+ * Вычисляет коэффициенты разложения x = α1·e1 + α2·e2.
+ * @returns {{ det: number, a1: number|null, a2: number|null, degenerate: boolean }}
+ */
+function cramer(e1, e2, vx) {
+  // Определитель матрицы базиса
+  const det = e1.x * e2.y - e2.x * e1.y;
+  const degenerate = Math.abs(det) < DEGENERATE_EPS;
+
+  if (degenerate) {
+    return { det, a1: null, a2: null, degenerate: true };
+  }
+
+  // Правило Крамера: числители
+  const det1 = vx.x * e2.y - e2.x * vx.y;  // заменяем первый столбец на x
+  const det2 = e1.x * vx.y - vx.x * e1.y;  // заменяем второй столбец на x
+
+  return {
+    det,
+    a1: det1 / det,
+    a2: det2 / det,
+    degenerate: false
+  };
+}
+
+// ───── Рисование ─────
+
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+
+/** Рисует стрелку от начала координат до точки (lx, ly) */
+function drawArrow(lx, ly, color, lineWidth = 2.5, dashed = false) {
+  const { px: ox, py: oy } = toPixel(0, 0);
+  const { px: ex, py: ey } = toPixel(lx, ly);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle   = color;
+  ctx.lineWidth   = lineWidth;
+
+  if (dashed) {
+    ctx.setLineDash([6, 4]);
+  } else {
+    ctx.setLineDash([]);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  // Наконечник стрелки (только для сплошных линий)
+  if (!dashed) {
+    const angle  = Math.atan2(ey - oy, ex - ox);
+    const hLen   = 12;
+    const hAngle = 0.42; // радиан
+
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(
+      ex - hLen * Math.cos(angle - hAngle),
+      ey - hLen * Math.sin(angle - hAngle)
+    );
+    ctx.lineTo(
+      ex - hLen * Math.cos(angle + hAngle),
+      ey - hLen * Math.sin(angle + hAngle)
+    );
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+/**
+ * Рисует пунктирную стрелку из точки (fx, fy) в точку (tx, ty) в логических координатах.
+ * Используется для компонент параллелограмма.
+ */
+function drawArrowFromTo(fx, fy, tx, ty, color) {
+  const { px: ox, py: oy } = toPixel(fx, fy);
+  const { px: ex, py: ey } = toPixel(tx, ty);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([5, 4]);
+
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/** Рисует светящуюся ручку (кружок) на конце вектора */
+function drawHandle(lx, ly, color, isActive = false) {
+  const { px, py } = toPixel(lx, ly);
+
+  ctx.save();
+
+  // Внешнее свечение
+  ctx.shadowColor = color;
+  ctx.shadowBlur  = isActive ? 18 : 10;
+
+  ctx.beginPath();
+  ctx.arc(px, py, isActive ? 7 : 5.5, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  // Белое кольцо
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/** Рисует координатную сетку и оси */
+function drawGrid() {
+  const W = CANVAS_SIZE;
+  const H = CANVAS_SIZE;
+
+  // Фон холста
+  ctx.fillStyle = '#141622';
+  ctx.fillRect(0, 0, W, H);
+
+  // Количество ячеек в каждую сторону
+  const cells = Math.ceil((W / 2) / CELL_PX) + 1;
+
+  ctx.save();
+
+  // Второстепенная сетка
+  ctx.strokeStyle = '#1e2540';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([]);
+
+  for (let i = -cells; i <= cells; i++) {
+    // Вертикальные линии
+    const px = ORIGIN_X + i * CELL_PX;
+    ctx.beginPath();
+    ctx.moveTo(px, 0);
+    ctx.lineTo(px, H);
+    ctx.stroke();
+
+    // Горизонтальные линии
+    const py = ORIGIN_Y + i * CELL_PX;
+    ctx.beginPath();
+    ctx.moveTo(0, py);
+    ctx.lineTo(W, py);
+    ctx.stroke();
+  }
+
+  // Оси
+  ctx.strokeStyle = '#3d4f70';
+  ctx.lineWidth   = 1.5;
+
+  // Ось X
+  ctx.beginPath();
+  ctx.moveTo(0, ORIGIN_Y);
+  ctx.lineTo(W, ORIGIN_Y);
+  ctx.stroke();
+
+  // Ось Y
+  ctx.beginPath();
+  ctx.moveTo(ORIGIN_X, 0);
+  ctx.lineTo(ORIGIN_X, H);
+  ctx.stroke();
+
+  // Засечки и подписи на осях
+  ctx.fillStyle   = '#4a5680';
+  ctx.font        = '10px "Courier New", monospace';
+  ctx.textAlign   = 'center';
+  ctx.textBaseline = 'top';
+
+  for (let i = -cells; i <= cells; i++) {
+    if (i === 0) continue;
+
+    // Метки по X
+    const px = ORIGIN_X + i * CELL_PX;
+    ctx.fillText(String(i), px, ORIGIN_Y + 4);
+
+    // Метки по Y
+    const py = ORIGIN_Y - i * CELL_PX;
+    ctx.textAlign    = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i), ORIGIN_X - 5, py);
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'top';
+  }
+
+  // Подписи осей
+  ctx.fillStyle = '#5a6a90';
+  ctx.font = '12px "Segoe UI", sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('x', W - 6, ORIGIN_Y - 4);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText('y', ORIGIN_X + 5, 6);
+
+  ctx.restore();
+}
+
+/**
+ * Рисует параллелограмм разложения:
+ * 0 → α1·e1 → α1·e1 + α2·e2 и 0 → α2·e2 → α1·e1 + α2·e2
+ */
+function drawParallelogram(e1, e2, a1, a2, degenerate) {
+  if (degenerate || a1 === null || a2 === null) return;
+
+  // Вершины параллелограмма (в логических координатах)
+  const p0 = { x: 0,                y: 0                };
+  const p1 = { x: a1 * e1.x,        y: a1 * e1.y        };
+  const p2 = { x: a1*e1.x + a2*e2.x, y: a1*e1.y + a2*e2.y };
+  const p3 = { x: a2 * e2.x,        y: a2 * e2.y        };
+
+  // Стрелки компонент
+  drawArrowFromTo(p0.x, p0.y, p1.x, p1.y, 'rgba(77,144,254,0.75)');   // α1·e1
+  drawArrowFromTo(p1.x, p1.y, p2.x, p2.y, 'rgba(46,204,113,0.75)');   // α2·e2 из конца первой
+  drawArrowFromTo(p0.x, p0.y, p3.x, p3.y, 'rgba(46,204,113,0.75)');   // α2·e2
+  drawArrowFromTo(p3.x, p3.y, p2.x, p2.y, 'rgba(77,144,254,0.75)');   // α1·e1 из конца второй
+
+  // Заливка параллелограмма
+  const pts = [p0, p1, p2, p3].map(p => toPixel(p.x, p.y));
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pts[0].px, pts[0].py);
+  ctx.lineTo(pts[1].px, pts[1].py);
+  ctx.lineTo(pts[2].px, pts[2].py);
+  ctx.lineTo(pts[3].px, pts[3].py);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(120, 100, 200, 0.07)';
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Рисует подпись вектора рядом с его концом */
+function drawLabel(lx, ly, text, color) {
+  const { px, py } = toPixel(lx, ly);
+
+  // Небольшое смещение, чтобы не перекрывать стрелку
+  const ox = lx >= 0 ? 12 : -12;
+  const oy = ly >= 0 ? -14 : 10;
+
+  ctx.save();
+  ctx.fillStyle   = color;
+  ctx.font        = 'bold 13px "Segoe UI", sans-serif';
+  ctx.textAlign   = lx >= 0 ? 'left' : 'right';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur  = 4;
+  ctx.fillText(text, px + ox, py + oy);
+  ctx.restore();
+}
+
+/** Рисует подпись α1·e1 и α2·e2 на компонентах */
+function drawComponentLabels(e1, e2, a1, a2, degenerate) {
+  if (degenerate || a1 === null || a2 === null) return;
+
+  // Середина компоненты α1·e1
+  const m1x = a1 * e1.x / 2;
+  const m1y = a1 * e1.y / 2;
+  drawLabel(m1x, m1y, `α₁·e₁`, 'rgba(100,160,255,0.9)');
+
+  // Середина компоненты α2·e2
+  const m2x = a2 * e2.x / 2;
+  const m2y = a2 * e2.y / 2;
+  drawLabel(m2x, m2y, `α₂·e₂`, 'rgba(80,220,140,0.9)');
+}
+
+/** Основная функция отрисовки всей сцены */
+function render() {
+  const { e1, e2, vx } = state;
+
+  // Вычисляем разложение
+  const { det, a1, a2, degenerate } = cramer(e1, e2, vx);
+
+  // Рисуем сетку
+  drawGrid();
+
+  // Рисуем параллелограмм (до векторов, чтобы он был под ними)
+  drawParallelogram(e1, e2, a1, a2, degenerate);
+
+  // Подписи компонент
+  drawComponentLabels(e1, e2, a1, a2, degenerate);
+
+  // Рисуем базисные векторы
+  const e1Color = degenerate ? '#cc6633' : '#4d90fe';
+  const e2Color = degenerate ? '#cc8833' : '#2ecc71';
+  drawArrow(e1.x, e1.y, e1Color, 2.5);
+  drawArrow(e2.x, e2.y, e2Color, 2.5);
+
+  // Целевой вектор
+  drawArrow(vx.x, vx.y, '#c084fc', 2.8);
+
+  // Ручки (кружки) на концах векторов
+  const activeKey = state.drag?.key;
+  drawHandle(e1.x, e1.y, e1Color, activeKey === 'e1');
+  drawHandle(e2.x, e2.y, e2Color, activeKey === 'e2');
+  drawHandle(vx.x, vx.y, '#c084fc', activeKey === 'vx');
+
+  // Подписи векторов
+  drawLabel(e1.x, e1.y, 'e₁', e1Color);
+  drawLabel(e2.x, e2.y, 'e₂', e2Color);
+  drawLabel(vx.x, vx.y, 'x', '#c084fc');
+
+  // Обновляем UI-панель
+  updatePanel(e1, e2, vx, det, a1, a2, degenerate);
+}
+
+// ───── Обновление панели данных ─────
+
+/** Форматирует число: округление до 3 знаков, убирает лишние нули */
+function fmt(n) {
+  if (n === null || !isFinite(n)) return '—';
+  const s = n.toFixed(3);
+  // Убираем хвостовые нули после запятой
+  return s.replace(/\.?0+$/, '') || '0';
+}
+
+function updatePanel(e1, e2, vx, det, a1, a2, degenerate) {
+  // Координаты векторов
+  document.getElementById('coords-e1').textContent =
+    `(${fmt(e1.x)}, ${fmt(e1.y)})`;
+  document.getElementById('coords-e2').textContent =
+    `(${fmt(e2.x)}, ${fmt(e2.y)})`;
+  document.getElementById('coords-x').textContent =
+    `(${fmt(vx.x)}, ${fmt(vx.y)})`;
+
+  // Числовые результаты
+  document.getElementById('val-det').textContent = fmt(det);
+  document.getElementById('val-a1').textContent  = degenerate ? '—' : fmt(a1);
+  document.getElementById('val-a2').textContent  = degenerate ? '—' : fmt(a2);
+
+  // Статус базиса
+  const badge = document.getElementById('status-badge');
+  if (degenerate) {
+    badge.textContent = 'Базис вырожден — линейно зависим!';
+    badge.className   = 'status-badge degenerate';
+  } else {
+    badge.textContent = 'Базис линейно независим';
+    badge.className   = 'status-badge ok';
+  }
+}
+
+// ───── Взаимодействие: перетаскивание ─────
+
+/**
+ * Определяет, какую ручку вектора захватывает клик.
+ * Возвращает ключ ('e1', 'e2', 'vx') или null.
+ */
+function hitTest(px, py) {
+  const { e1, e2, vx } = state;
+
+  const hits = [
+    { key: 'e1', lx: e1.x, ly: e1.y },
+    { key: 'e2', lx: e2.x, ly: e2.y },
+    { key: 'vx', lx: vx.x, ly: vx.y },
+  ];
+
+  // Сортируем по расстоянию и берём ближайшую в радиусе захвата
+  const sorted = hits
+    .map(h => ({ ...h, d: distToHandle(px, py, h.lx, h.ly) }))
+    .sort((a, b) => a.d - b.d);
+
+  return sorted[0].d <= HANDLE_RADIUS ? sorted[0].key : null;
+}
+
+/** Возвращает текущий вектор по ключу */
+function getVec(key) {
+  if (key === 'e1') return state.e1;
+  if (key === 'e2') return state.e2;
+  return state.vx;
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+
+  const key = hitTest(px, py);
+  if (key) {
+    // Запоминаем смещение курсора относительно конца вектора
+    const vec = getVec(key);
+    const { px: hx, py: hy } = toPixel(vec.x, vec.y);
+    state.drag = { key, offsetX: px - hx, offsetY: py - hy };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+
+  if (state.drag) {
+    // Переводим позицию курсора (с учётом смещения) в логические координаты
+    const { key, offsetX, offsetY } = state.drag;
+    const raw = toLogical(px - offsetX, py - offsetY);
+
+    // Привязка к шагу 0.5 для удобства
+    const vec = getVec(key);
+    vec.x = snap(raw.x, 0.5);
+    vec.y = snap(raw.y, 0.5);
+
+    // Ограничиваем область: не выпускаем за пределы видимой зоны
+    const limit = Math.floor((CANVAS_SIZE / 2) / CELL_PX) - 0.5;
+    vec.x = Math.max(-limit, Math.min(limit, vec.x));
+    vec.y = Math.max(-limit, Math.min(limit, vec.y));
+
+    render();
+  } else {
+    // Меняем курсор при наведении на ручку
+    const key = hitTest(px, py);
+    canvas.style.cursor = key ? 'grab' : 'default';
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  state.drag = null;
+  canvas.style.cursor = 'default';
+});
+
+canvas.addEventListener('mouseleave', () => {
+  state.drag = null;
+});
+
+// ───── Поддержка тач-событий (мобильные устройства) ─────
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const rect  = canvas.getBoundingClientRect();
+  const px    = touch.clientX - rect.left;
+  const py    = touch.clientY - rect.top;
+
+  const key = hitTest(px, py);
+  if (key) {
+    const vec = getVec(key);
+    const { px: hx, py: hy } = toPixel(vec.x, vec.y);
+    state.drag = { key, offsetX: px - hx, offsetY: py - hy };
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!state.drag) return;
+
+  const touch = e.touches[0];
+  const rect  = canvas.getBoundingClientRect();
+  const px    = touch.clientX - rect.left;
+  const py    = touch.clientY - rect.top;
+
+  const { key, offsetX, offsetY } = state.drag;
+  const raw = toLogical(px - offsetX, py - offsetY);
+  const vec = getVec(key);
+
+  vec.x = snap(raw.x, 0.5);
+  vec.y = snap(raw.y, 0.5);
+
+  const limit = Math.floor((CANVAS_SIZE / 2) / CELL_PX) - 0.5;
+  vec.x = Math.max(-limit, Math.min(limit, vec.x));
+  vec.y = Math.max(-limit, Math.min(limit, vec.y));
+
+  render();
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+  state.drag = null;
+});
+
+// ───── Первоначальная отрисовка ─────
+render();
+</script>
+</body>
+</html>

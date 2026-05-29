@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тройное произведение = объём | Лекция 8</title>
+
+  <!-- Three.js через importmap (ES-модули) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- MathJax для формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ============================================================
+       Общий сброс и переменные
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --panel-bg: #1a1d27;
+      --border:   #2e3348;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --accent:   #4f8ef7;
+      --col-a:    #ff6b6b;
+      --col-b:    #4ecdc4;
+      --col-c:    #ffe66d;
+      --col-bc:   #c77dff;
+      --panel-w:  340px;
+      --radius:   10px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       Макет: панель слева + сцена справа
+       ============================================================ */
+    #app {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* --- Боковая панель --- */
+    #panel {
+      width: var(--panel-w);
+      min-width: var(--panel-w);
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    #panel-header {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #1e2235, #252a3d);
+    }
+
+    #panel-header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.3px;
+      line-height: 1.3;
+    }
+
+    #panel-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* --- Секции --- */
+    .section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* --- Группа вектора --- */
+    .vec-group {
+      margin-bottom: 10px;
+    }
+
+    .vec-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vec-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 14px 1fr 38px;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .slider-row label {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    .slider-val {
+      font-size: 11px;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* --- Результаты --- */
+    #results {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      background: #12151f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 6px;
+    }
+
+    .result-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .result-value {
+      font-size: 15px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #det-value    { color: var(--accent); }
+    #vol-value    { color: #63e6be; }
+    #orient-value { font-size: 13px; }
+    #coplanar-badge {
+      display: none;
+      padding: 6px 10px;
+      background: linear-gradient(135deg, #3d1515, #5c1f1f);
+      border: 1px solid #ff6b6b66;
+      border-radius: var(--radius);
+      color: var(--col-a);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* --- Галочки --- */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-row span {
+      font-size: 13px;
+    }
+
+    /* --- Формулы --- */
+    #formulas {
+      padding: 14px 16px;
+      flex: 1;
+    }
+
+    .formula-block {
+      background: #12151f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .formula-title {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .formula-math {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* --- 3D-вид --- */
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #three-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #canvas-hint {
+      position: absolute;
+      bottom: 14px;
+      right: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      pointer-events: none;
+      text-align: right;
+      line-height: 1.7;
+    }
+
+    /* Адаптивность для узких экранов */
+    @media (max-width: 700px) {
+      #app { flex-direction: column; }
+      #panel { width: 100%; min-width: unset; max-height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
+      #canvas-container { height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== БОКОВАЯ ПАНЕЛЬ ===== -->
+  <aside id="panel">
+
+    <div id="panel-header">
+      <h1>Тройное произведение = Объём</h1>
+      <p>Лекция 8 · Смешанное произведение векторов</p>
+    </div>
+
+    <!-- Векторы a, b, c -->
+    <div class="section">
+      <div class="section-title">Компоненты векторов</div>
+
+      <!-- Вектор a -->
+      <div class="vec-group">
+        <div class="vec-label">
+          <span class="vec-dot" style="background:var(--col-a)"></span>
+          Вектор <strong>a</strong>
+        </div>
+        <div class="slider-row">
+          <label>x</label>
+          <input type="range" id="ax" min="-3" max="3" step="0.1" value="2">
+          <span class="slider-val" id="ax-val">2.0</span>
+        </div>
+        <div class="slider-row">
+          <label>y</label>
+          <input type="range" id="ay" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="ay-val">0.0</span>
+        </div>
+        <div class="slider-row">
+          <label>z</label>
+          <input type="range" id="az" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="az-val">0.0</span>
+        </div>
+      </div>
+
+      <!-- Вектор b -->
+      <div class="vec-group">
+        <div class="vec-label">
+          <span class="vec-dot" style="background:var(--col-b)"></span>
+          Вектор <strong>b</strong>
+        </div>
+        <div class="slider-row">
+          <label>x</label>
+          <input type="range" id="bx" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="bx-val">0.0</span>
+        </div>
+        <div class="slider-row">
+          <label>y</label>
+          <input type="range" id="by" min="-3" max="3" step="0.1" value="2">
+          <span class="slider-val" id="by-val">2.0</span>
+        </div>
+        <div class="slider-row">
+          <label>z</label>
+          <input type="range" id="bz" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="bz-val">0.0</span>
+        </div>
+      </div>
+
+      <!-- Вектор c -->
+      <div class="vec-group">
+        <div class="vec-label">
+          <span class="vec-dot" style="background:var(--col-c)"></span>
+          Вектор <strong>c</strong>
+        </div>
+        <div class="slider-row">
+          <label>x</label>
+          <input type="range" id="cx" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="cx-val">0.0</span>
+        </div>
+        <div class="slider-row">
+          <label>y</label>
+          <input type="range" id="cy" min="-3" max="3" step="0.1" value="0">
+          <span class="slider-val" id="cy-val">0.0</span>
+        </div>
+        <div class="slider-row">
+          <label>z</label>
+          <input type="range" id="cz" min="-3" max="3" step="0.1" value="2">
+          <span class="slider-val" id="cz-val">2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Результаты вычислений -->
+    <div id="results">
+      <div class="section-title">Результаты</div>
+
+      <div class="result-row">
+        <span class="result-label">(a, b, c) = det</span>
+        <span class="result-value" id="det-value">8.00</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Объём V = |(a,b,c)|</span>
+        <span class="result-value" id="vol-value">8.00</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">Ориентация</span>
+        <span class="result-value" id="orient-value">Правая</span>
+      </div>
+
+      <div id="coplanar-badge">
+        Векторы компланарны! Объём = 0
+      </div>
+    </div>
+
+    <!-- Опции отображения -->
+    <div class="section">
+      <div class="section-title">Отображение</div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="show-bc" checked>
+        <span>Показать [<strong>b</strong>, <strong>c</strong>]</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="show-labels" checked>
+        <span>Подписи векторов</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="show-axes" checked>
+        <span>Оси координат</span>
+      </label>
+    </div>
+
+    <!-- Математические формулы -->
+    <div id="formulas">
+      <div class="section-title">Формулы</div>
+
+      <div class="formula-block">
+        <div class="formula-title">Смешанное произведение (определитель):</div>
+        <div class="formula-math">
+          \[\left(\mathbf{a},\mathbf{b},\mathbf{c}\right) = \begin{vmatrix} a_x & a_y & a_z \\ b_x & b_y & b_z \\ c_x & c_y & c_z \end{vmatrix}\]
+        </div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-title">Объём параллелепипеда:</div>
+        <div class="formula-math">
+          \[V = \bigl|(\mathbf{a},\mathbf{b},\mathbf{c})\bigr|\]
+        </div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-title">Связь с векторным произведением:</div>
+        <div class="formula-math">
+          \[(\mathbf{a},\mathbf{b},\mathbf{c}) = \mathbf{a} \cdot [\mathbf{b},\mathbf{c}]\]
+        </div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-title">Векторное произведение:</div>
+        <div class="formula-math">
+          \[[\mathbf{b},\mathbf{c}] = \begin{vmatrix} \mathbf{i} & \mathbf{j} & \mathbf{k} \\ b_x & b_y & b_z \\ c_x & c_y & c_z \end{vmatrix}\]
+        </div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-title">Критерий компланарности:</div>
+        <div class="formula-math">
+          \[(\mathbf{a},\mathbf{b},\mathbf{c}) = 0 \;\Leftrightarrow\; \mathbf{a},\mathbf{b},\mathbf{c} \text{ — компланарны}\]
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ===== 3D СЦЕНА ===== -->
+  <div id="canvas-container">
+    <canvas id="three-canvas"></canvas>
+    <div id="canvas-hint">
+      Левая кнопка — вращение<br>
+      Колесо — масштаб<br>
+      Правая кнопка — перемещение
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== ОСНОВНАЯ ЛОГИКА (ES-модуль) ===== -->
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ============================================================
+// Вспомогательные математические функции
+// ============================================================
+
+/** Скалярное тройное произведение (определитель 3×3) */
+function tripleProduct(a, b, c) {
+  return (
+    a.x * (b.y * c.z - b.z * c.y) -
+    a.y * (b.x * c.z - b.z * c.x) +
+    a.z * (b.x * c.y - b.y * c.x)
+  );
+}
+
+/** Векторное произведение b × c */
+function crossProduct(b, c) {
+  return new THREE.Vector3(
+    b.y * c.z - b.z * c.y,
+    b.z * c.x - b.x * c.z,
+    b.x * c.y - b.y * c.x
+  );
+}
+
+// ============================================================
+// Инициализация Three.js
+// ============================================================
+
+const canvas    = document.getElementById('three-canvas');
+const container = document.getElementById('canvas-container');
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0x0f1117, 1);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 200);
+camera.position.set(6, 5, 7);
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor  = 0.08;
+controls.minDistance    = 1;
+controls.maxDistance    = 30;
+
+// Мягкое освещение
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(5, 10, 7);
+scene.add(dirLight);
+
+// ============================================================
+// Объекты сцены
+// ============================================================
+
+// --- Оси координат ---
+const axesGroup = new THREE.Group();
+scene.add(axesGroup);
+
+/** Создаёт стрелку-ось */
+function makeAxis(dir, color, label) {
+  const mat = new THREE.MeshBasicMaterial({ color });
+  // Стержень оси
+  const geo = new THREE.CylinderGeometry(0.02, 0.02, 3.5, 8);
+  const rod  = new THREE.Mesh(geo, mat);
+  rod.position.copy(dir.clone().multiplyScalar(1.75));
+  rod.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+  axesGroup.add(rod);
+  // Конусная стрелка
+  const coneGeo = new THREE.ConeGeometry(0.07, 0.25, 8);
+  const cone    = new THREE.Mesh(coneGeo, mat);
+  cone.position.copy(dir.clone().multiplyScalar(3.62));
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+  axesGroup.add(cone);
+}
+
+makeAxis(new THREE.Vector3(1, 0, 0), 0xff4444, 'X');
+makeAxis(new THREE.Vector3(0, 1, 0), 0x44ff44, 'Y');
+makeAxis(new THREE.Vector3(0, 0, 1), 0x4488ff, 'Z');
+
+// Метки осей через CSS2DRenderer можно добавить, но для простоты — спрайты
+// Оставляем цвет как код
+
+// --- Вспомогательная сетка ---
+const gridHelper = new THREE.GridHelper(8, 8, 0x2e3348, 0x1e2230);
+scene.add(gridHelper);
+
+// ============================================================
+// Стрелки-векторы
+// ============================================================
+
+/** Создаёт THREE.ArrowHelper и добавляет в сцену */
+function makeArrow(color) {
+  const arrow = new THREE.ArrowHelper(
+    new THREE.Vector3(1, 0, 0), // направление (перезаписывается)
+    new THREE.Vector3(0, 0, 0), // начало
+    1,                          // длина
+    color,
+    0.18,  // размер наконечника
+    0.07   // ширина наконечника
+  );
+  arrow.line.material.linewidth = 3;
+  scene.add(arrow);
+  return arrow;
+}
+
+const arrowA  = makeArrow(0xff6b6b); // a — красный
+const arrowB  = makeArrow(0x4ecdc4); // b — бирюзовый
+const arrowC  = makeArrow(0xffe66d); // c — жёлтый
+const arrowBC = makeArrow(0xc77dff); // [b,c] — фиолетовый
+
+// ============================================================
+// Параллелепипед (полупрозрачные грани)
+// ============================================================
+
+/** Строит геометрию параллелепипеда по рёбрам a, b, c из начала координат */
+function buildParallelepipedGeometry(a, b, c) {
+  // 8 вершин
+  const O  = new THREE.Vector3(0, 0, 0);
+  const A  = a.clone();
+  const B  = b.clone();
+  const C  = c.clone();
+  const AB = a.clone().add(b);
+  const AC = a.clone().add(c);
+  const BC = b.clone().add(c);
+  const ABC = a.clone().add(b).add(c);
+
+  // Порядок вершин для 6 граней (2 треугольника на грань)
+  const verts = [O, A, B, C, AB, AC, BC, ABC];
+  const faces = [
+    // нижняя (без c)
+    [0,1,4, 0,4,2],
+    // верхняя (сдвинута на c)
+    [3,6,7, 3,7,5],
+    // передняя (без b)
+    [0,1,5, 0,5,3],
+    // задняя (сдвинута на b)
+    [2,4,7, 2,7,6],
+    // левая (без a)
+    [0,2,6, 0,6,3],
+    // правая (сдвинута на a)
+    [1,4,7, 1,7,5],
+  ];
+
+  const positions = [];
+  for (const face of faces) {
+    for (const idx of face) {
+      const v = verts[idx];
+      positions.push(v.x, v.y, v.z);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// Материал граней
+const faceMaterial = new THREE.MeshLambertMaterial({
+  color: 0x4f8ef7,
+  transparent: true,
+  opacity: 0.18,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+});
+
+// Материал рёбер
+const edgeMaterial = new THREE.LineBasicMaterial({
+  color: 0x4f8ef7,
+  transparent: true,
+  opacity: 0.5,
+});
+
+let parallelFaces = null; // THREE.Mesh
+let parallelEdges = null; // THREE.LineSegments
+
+/** Пересоздаёт меши параллелепипеда */
+function rebuildParallelepiped(a, b, c) {
+  if (parallelFaces) { scene.remove(parallelFaces); parallelFaces.geometry.dispose(); }
+  if (parallelEdges) { scene.remove(parallelEdges); parallelEdges.geometry.dispose(); }
+
+  const geo = buildParallelepipedGeometry(a, b, c);
+  parallelFaces = new THREE.Mesh(geo, faceMaterial);
+  scene.add(parallelFaces);
+
+  // Рёбра через EdgesGeometry
+  const edgesGeo = new THREE.EdgesGeometry(geo);
+  parallelEdges = new THREE.LineSegments(edgesGeo, edgeMaterial);
+  scene.add(parallelEdges);
+}
+
+// ============================================================
+// Текстовые подписи (спрайты)
+// ============================================================
+
+/** Создаёт Canvas-спрайт с текстом */
+function makeTextSprite(text, color = '#ffffff') {
+  const canvas2d = document.createElement('canvas');
+  canvas2d.width  = 128;
+  canvas2d.height = 64;
+  const ctx = canvas2d.getContext('2d');
+  ctx.clearRect(0, 0, 128, 64);
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 64, 32);
+
+  const tex = new THREE.CanvasTexture(canvas2d);
+  const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(0.5, 0.25, 1);
+  scene.add(sprite);
+  return sprite;
+}
+
+const labelA  = makeTextSprite('a',     '#ff6b6b');
+const labelB  = makeTextSprite('b',     '#4ecdc4');
+const labelC  = makeTextSprite('c',     '#ffe66d');
+const labelBC = makeTextSprite('[b,c]', '#c77dff');
+
+// ============================================================
+// Считываем ползунки
+// ============================================================
+
+/** Возвращает текущее значение вектора по id-префиксу */
+function getVec(prefix) {
+  return new THREE.Vector3(
+    parseFloat(document.getElementById(prefix + 'x').value),
+    parseFloat(document.getElementById(prefix + 'y').value),
+    parseFloat(document.getElementById(prefix + 'z').value)
+  );
+}
+
+// ============================================================
+// Обновление сцены и UI
+// ============================================================
+
+const detValueEl     = document.getElementById('det-value');
+const volValueEl     = document.getElementById('vol-value');
+const orientValueEl  = document.getElementById('orient-value');
+const coplanarBadge  = document.getElementById('coplanar-badge');
+
+const COPLANAR_THRESHOLD = 0.05; // ниже этого — считаем компланарными
+
+function updateScene() {
+  const a = getVec('a');
+  const b = getVec('b');
+  const c = getVec('c');
+
+  // --- Вычисления ---
+  const det = tripleProduct(a, b, c);
+  const vol = Math.abs(det);
+  const bc  = crossProduct(b, c);
+
+  // --- Обновить стрелки ---
+  updateArrow(arrowA, a);
+  updateArrow(arrowB, b);
+  updateArrow(arrowC, c);
+  updateArrow(arrowBC, bc);
+
+  // --- Параллелепипед ---
+  // Масштабируем прозрачность граней в зависимости от объёма
+  const opacityScale = Math.min(1, vol / 0.5);
+  faceMaterial.opacity = 0.05 + 0.18 * opacityScale;
+  edgeMaterial.opacity = 0.3  + 0.5  * opacityScale;
+  rebuildParallelepiped(a, b, c);
+
+  // --- Подписи ---
+  const showLabels = document.getElementById('show-labels').checked;
+  const offset = 0.2;
+  labelA.position.copy(a.clone().multiplyScalar(1).addScaledVector(a.clone().normalize(), offset));
+  labelB.position.copy(b.clone().multiplyScalar(1).addScaledVector(b.clone().normalize(), offset));
+  labelC.position.copy(c.clone().multiplyScalar(1).addScaledVector(c.clone().normalize(), offset));
+  labelBC.position.copy(bc.clone().normalize().multiplyScalar(bc.length() + 0.3));
+  labelA.visible  = showLabels;
+  labelB.visible  = showLabels;
+  labelC.visible  = showLabels;
+  labelBC.visible = showLabels && document.getElementById('show-bc').checked;
+
+  // --- [b,c] стрелка ---
+  arrowBC.visible = document.getElementById('show-bc').checked;
+
+  // --- Оси ---
+  axesGroup.visible = document.getElementById('show-axes').checked;
+
+  // --- UI результаты ---
+  detValueEl.textContent = det.toFixed(3);
+  volValueEl.textContent = vol.toFixed(3);
+
+  if (vol < COPLANAR_THRESHOLD) {
+    orientValueEl.textContent = '—';
+    coplanarBadge.style.display = 'block';
+  } else {
+    coplanarBadge.style.display = 'none';
+    if (det > 0) {
+      orientValueEl.textContent = 'Правая';
+      orientValueEl.style.color = '#63e6be';
+    } else {
+      orientValueEl.textContent = 'Левая';
+      orientValueEl.style.color = '#ff6b6b';
+    }
+  }
+}
+
+/** Обновляет ArrowHelper по вектору. Обрабатывает нулевой вектор. */
+function updateArrow(arrow, v) {
+  const len = v.length();
+  if (len < 0.001) {
+    arrow.visible = false;
+    return;
+  }
+  arrow.visible = true;
+  arrow.setDirection(v.clone().normalize());
+  arrow.setLength(len, Math.min(0.25, len * 0.25), Math.min(0.1, len * 0.1));
+}
+
+// ============================================================
+// Привязка ползунков
+// ============================================================
+
+/** Настраивает ползунок: при изменении обновляет подпись и сцену */
+function bindSlider(id) {
+  const slider = document.getElementById(id);
+  const valEl  = document.getElementById(id + '-val');
+  slider.addEventListener('input', () => {
+    valEl.textContent = parseFloat(slider.value).toFixed(1);
+    updateScene();
+  });
+}
+
+['ax','ay','az','bx','by','bz','cx','cy','cz'].forEach(bindSlider);
+
+// Галочки тоже обновляют сцену
+['show-bc','show-labels','show-axes'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateScene);
+});
+
+// ============================================================
+// Resize observer
+// ============================================================
+
+const resizeObserver = new ResizeObserver(() => {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+});
+resizeObserver.observe(container);
+
+// ============================================================
+// Цикл рендеринга
+// ============================================================
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// ============================================================
+// Старт
+// ============================================================
+
+// Первичная инициализация размеров
+const initW = container.clientWidth;
+const initH = container.clientHeight;
+renderer.setSize(initW, initH);
+camera.aspect = initW / initH;
+camera.updateProjectionMatrix();
+
+// Отрендерить сцену с начальными значениями
+updateScene();
+
+// Запустить анимационный цикл
+animate();
+
+// Запустить MathJax после загрузки
+window.addEventListener('load', () => {
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise();
+  }
+});
+</script>
+</body>
+</html>

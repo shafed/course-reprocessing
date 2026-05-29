@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лекция 11 — Сечения поверхностей 2-го порядка</title>
+
+  <!-- MathJax для отображения формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls из того же CDN (распаковка через путь) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    /* ─── Общие стили ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Шапка ──────────────────────────────────────────────────────── */
+    header {
+      padding: 18px 28px 14px;
+      background: linear-gradient(135deg, #1a1f2e 0%, #1e2640 100%);
+      border-bottom: 1px solid #2d3748;
+    }
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #90cdf4;
+      letter-spacing: 0.02em;
+    }
+    header p {
+      font-size: 0.82rem;
+      color: #718096;
+      margin-top: 3px;
+    }
+
+    /* ─── Основной макет ─────────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      flex: 1;
+      gap: 0;
+    }
+
+    /* ─── Боковая панель управления ──────────────────────────────────── */
+    .sidebar {
+      width: 310px;
+      flex-shrink: 0;
+      background: #141824;
+      border-right: 1px solid #2d3748;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .panel {
+      background: #1a1f2e;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .panel-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #63b3ed;
+      margin-bottom: 12px;
+    }
+
+    /* ─── Элементы управления ────────────────────────────────────────── */
+    label.ctrl-label {
+      display: block;
+      font-size: 0.8rem;
+      color: #a0aec0;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    label.ctrl-label:first-of-type { margin-top: 0; }
+
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      background: #0f1117;
+      color: #e2e8f0;
+      border: 1px solid #4a5568;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+    }
+    select:focus { border-color: #63b3ed; }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+      appearance: none;
+      background: #2d3748;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #63b3ed;
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #63b3ed;
+      border: none;
+      cursor: pointer;
+    }
+    .val-badge {
+      min-width: 36px;
+      text-align: right;
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+      color: #90cdf4;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: #63b3ed;
+      cursor: pointer;
+    }
+    .checkbox-row span {
+      font-size: 0.82rem;
+      color: #a0aec0;
+    }
+
+    /* ─── Формулы ────────────────────────────────────────────────────── */
+    .formula-box {
+      background: #0f1117;
+      border: 1px solid #2d3748;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #cbd5e0;
+      min-height: 48px;
+    }
+    .formula-box .formula-surface {
+      color: #f6ad55;
+    }
+    .formula-box .formula-section {
+      color: #68d391;
+      margin-top: 4px;
+    }
+
+    /* ─── Тип сечения ────────────────────────────────────────────────── */
+    .section-type {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #1a2744;
+      border: 1px solid #3182ce;
+      color: #90cdf4;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── 2D-сечение ─────────────────────────────────────────────────── */
+    .canvas2d-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .canvas2d-wrap .caption {
+      font-size: 0.72rem;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    #canvas2d {
+      border: 1px solid #2d3748;
+      border-radius: 6px;
+      background: #0a0c12;
+      display: block;
+    }
+
+    /* ─── 3D-сцена ───────────────────────────────────────────────────── */
+    .scene-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #canvas3d {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .hint {
+      position: absolute;
+      bottom: 12px;
+      right: 14px;
+      font-size: 0.72rem;
+      color: #4a5568;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Лекция 11 — Сечения поверхностей 2-го порядка</h1>
+  <p>Эллипсоид, гиперболоиды, параболоиды и их плоские сечения плоскостью z = h</p>
+</header>
+
+<div class="layout">
+
+  <!-- ─── Боковая панель ──────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <!-- Выбор поверхности -->
+    <div class="panel">
+      <div class="panel-title">Поверхность</div>
+      <label class="ctrl-label">Тип поверхности</label>
+      <select id="surfaceSelect">
+        <option value="ellipsoid">Эллипсоид</option>
+        <option value="hyperboloid1">Однополостный гиперболоид</option>
+        <option value="hyperboloid2">Двуполостный гиперболоид</option>
+        <option value="paraboloid">Эллиптический параболоид</option>
+      </select>
+    </div>
+
+    <!-- Полуоси -->
+    <div class="panel">
+      <div class="panel-title">Параметры полуосей</div>
+
+      <label class="ctrl-label">a = <span id="valA">1.5</span></label>
+      <div class="slider-row">
+        <input type="range" id="sliderA" min="0.5" max="3" step="0.1" value="1.5">
+        <span class="val-badge" id="badgeA">1.5</span>
+      </div>
+
+      <label class="ctrl-label">b = <span id="valB">1.0</span></label>
+      <div class="slider-row">
+        <input type="range" id="sliderB" min="0.5" max="3" step="0.1" value="1.0">
+        <span class="val-badge" id="badgeB">1.0</span>
+      </div>
+
+      <label class="ctrl-label" id="labelC">c = <span id="valC">1.0</span></label>
+      <div class="slider-row" id="rowC">
+        <input type="range" id="sliderC" min="0.5" max="3" step="0.1" value="1.0">
+        <span class="val-badge" id="badgeC">1.0</span>
+      </div>
+    </div>
+
+    <!-- Секущая плоскость -->
+    <div class="panel">
+      <div class="panel-title">Секущая плоскость z = h</div>
+      <div class="slider-row">
+        <input type="range" id="sliderH" min="-4" max="4" step="0.05" value="0">
+        <span class="val-badge" id="badgeH">0.00</span>
+      </div>
+      <!-- Галочка для образующих (только для однополостного гиперболоида) -->
+      <div class="checkbox-row" id="rowGeneratrices" style="display:none">
+        <input type="checkbox" id="checkGeneratrices">
+        <span>Показать прямолинейные образующие</span>
+      </div>
+    </div>
+
+    <!-- Формулы -->
+    <div class="panel">
+      <div class="panel-title">Уравнения</div>
+      <div class="formula-box" id="formulaBox">
+        <div class="formula-surface" id="formulaSurface"></div>
+        <div class="formula-section" id="formulaSection"></div>
+      </div>
+    </div>
+
+    <!-- Тип сечения -->
+    <div class="panel">
+      <div class="panel-title">Тип кривой сечения</div>
+      <div class="section-type" id="sectionType">—</div>
+    </div>
+
+    <!-- 2D-вид сечения -->
+    <div class="panel">
+      <div class="panel-title">Вид сечения (плоскость XY)</div>
+      <div class="canvas2d-wrap">
+        <canvas id="canvas2d" width="270" height="220"></canvas>
+        <span class="caption">проекция на плоскость z = h</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ─── 3D-сцена ─────────────────────────────────────────────────── -->
+  <div class="scene-wrap">
+    <canvas id="canvas3d"></canvas>
+    <div class="hint">ЛКМ — вращение &nbsp;|&nbsp; колесо — масштаб &nbsp;|&nbsp; ПКМ — перемещение</div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   Главный модуль демонстрации «Сечения поверхностей 2-го порядка»
+   ═══════════════════════════════════════════════════════════════════════ */
+
+'use strict';
+
+/* ── Константы и вспомогательные функции ──────────────────────────────── */
+
+/** Количество сегментов сетки поверхности */
+const SEGS = 80;
+
+/** Количество образующих для однополостного гиперболоида */
+const N_GEN = 24;
+
+/** Цвета */
+const COLOR_SURFACE   = 0x4a90d9;
+const COLOR_PLANE     = 0x48bb78;
+const COLOR_AXES      = [0xe53e3e, 0x48bb78, 0x4299e1]; // X, Y, Z
+const COLOR_GEN       = 0xf6ad55;
+
+/* ── Глобальное состояние ─────────────────────────────────────────────── */
+const state = {
+  surface: 'ellipsoid',
+  a: 1.5,
+  b: 1.0,
+  c: 1.0,
+  h: 0.0,
+  showGeneratrices: false,
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Three.js — инициализация сцены
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const canvas3d = document.getElementById('canvas3d');
+const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: false });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0x0a0c12, 1);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 200);
+camera.position.set(5, 4, 6);
+camera.lookAt(0, 0, 0);
+
+const controls = new THREE.OrbitControls(camera, canvas3d);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+/* ── Освещение ────────────────────────────────────────────────────────── */
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+scene.add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(6, 8, 5);
+scene.add(dirLight);
+const backLight = new THREE.DirectionalLight(0x8888cc, 0.3);
+backLight.position.set(-4, -3, -3);
+scene.add(backLight);
+
+/* ── Оси координат ────────────────────────────────────────────────────── */
+function makeAxes(len) {
+  const group = new THREE.Group();
+  const dirs  = [
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, 0, 1),
+  ];
+  dirs.forEach((dir, i) => {
+    // Линия оси
+    const points = [new THREE.Vector3(0, 0, 0), dir.clone().multiplyScalar(len)];
+    const geo    = new THREE.BufferGeometry().setFromPoints(points);
+    const mat    = new THREE.LineBasicMaterial({ color: COLOR_AXES[i], linewidth: 2 });
+    group.add(new THREE.Line(geo, mat));
+
+    // Конус-стрелка
+    const coneGeo = new THREE.ConeGeometry(0.06, 0.22, 12);
+    const coneMat = new THREE.MeshBasicMaterial({ color: COLOR_AXES[i] });
+    const cone    = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.copy(dir.clone().multiplyScalar(len));
+    // Выровнять конус вдоль оси
+    if (i === 0) cone.rotation.z = -Math.PI / 2;
+    if (i === 2) cone.rotation.x =  Math.PI / 2;
+    group.add(cone);
+  });
+  return group;
+}
+scene.add(makeAxes(4.5));
+
+/* ── Контейнеры для изменяемых объектов ──────────────────────────────── */
+let surfaceMesh      = null;
+let cuttingPlane     = null;
+let generatricesGroup = null;
+
+/* ── Материалы ────────────────────────────────────────────────────────── */
+const surfaceMat = new THREE.MeshPhongMaterial({
+  color: COLOR_SURFACE,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.72,
+  shininess: 60,
+});
+
+const planeMat = new THREE.MeshBasicMaterial({
+  color: COLOR_PLANE,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.28,
+  depthWrite: false,
+});
+
+const genMat = new THREE.LineBasicMaterial({ color: COLOR_GEN, linewidth: 1.5 });
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Геометрия поверхностей — ручная сетка вершин
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Создаёт BufferGeometry поверхности через параметрическую сетку.
+ * @param {function(number,number):THREE.Vector3} fn  — отображение (u,v) → точка
+ * @param {number} uSegs  — число сегментов по u
+ * @param {number} vSegs  — число сегментов по v
+ * @returns {THREE.BufferGeometry}
+ */
+function buildParametricGeometry(fn, uSegs, vSegs) {
+  const positions = [];
+  const normals   = [];
+  const indices   = [];
+
+  // Заполняем сетку (uSegs+1) x (vSegs+1) вершин
+  for (let iv = 0; iv <= vSegs; iv++) {
+    const v = iv / vSegs;
+    for (let iu = 0; iu <= uSegs; iu++) {
+      const u = iu / uSegs;
+      const p = fn(u, v);
+      positions.push(p.x, p.y, p.z);
+
+      // Численный нормаль через конечные разности
+      const eps = 0.001;
+      const pu  = fn(Math.min(u + eps, 1), v);
+      const pv  = fn(u, Math.min(v + eps, 1));
+      const du  = new THREE.Vector3().subVectors(pu, p);
+      const dv  = new THREE.Vector3().subVectors(pv, p);
+      const n   = new THREE.Vector3().crossVectors(du, dv).normalize();
+      normals.push(n.x, n.y, n.z);
+    }
+  }
+
+  // Индексы треугольников
+  for (let iv = 0; iv < vSegs; iv++) {
+    for (let iu = 0; iu < uSegs; iu++) {
+      const a = iv * (uSegs + 1) + iu;
+      const b = a + 1;
+      const c = a + (uSegs + 1);
+      const d = c + 1;
+      indices.push(a, b, d, a, d, c);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('normal',   new THREE.Float32BufferAttribute(normals,   3));
+  geo.setIndex(indices);
+  return geo;
+}
+
+/* ── Параметрические функции для каждой поверхности ──────────────────── */
+
+/**
+ * Эллипсоид: x=a·cos(φ)·cos(θ), y=b·cos(φ)·sin(θ), z=c·sin(φ)
+ * u∈[0,1] → θ∈[0,2π], v∈[0,1] → φ∈[-π/2, π/2]
+ */
+function ellipsoidFn(a, b, c) {
+  return (u, v) => {
+    const theta = u * 2 * Math.PI;
+    const phi   = (v - 0.5) * Math.PI;
+    return new THREE.Vector3(
+      a * Math.cos(phi) * Math.cos(theta),
+      b * Math.cos(phi) * Math.sin(theta),
+      c * Math.sin(phi)
+    );
+  };
+}
+
+/**
+ * Однополостный гиперболоид: x=a·cosh(t)·cos(θ), y=b·cosh(t)·sin(θ), z=c·sinh(t)
+ * u → θ∈[0,2π], v → t∈[-2, 2]
+ */
+function hyperboloid1Fn(a, b, c) {
+  return (u, v) => {
+    const theta = u * 2 * Math.PI;
+    const t     = (v - 0.5) * 4;
+    return new THREE.Vector3(
+      a * Math.cosh(t) * Math.cos(theta),
+      b * Math.cosh(t) * Math.sin(theta),
+      c * Math.sinh(t)
+    );
+  };
+}
+
+/**
+ * Двуполостный гиперболоид: строим две полы отдельно.
+ * Верхняя: z=c·cosh(t), нижняя: z=−c·cosh(t)
+ * u → θ∈[0,2π], v∈[0,0.5) — нижняя, v∈[0.5,1] — верхняя
+ */
+function hyperboloid2Fn(a, b, c) {
+  return (u, v) => {
+    const theta = u * 2 * Math.PI;
+    let t, zSign;
+    if (v < 0.5) {
+      // Нижняя пола: v∈[0,0.5) → t∈[0,2]
+      t     = (0.5 - v) * 4;
+      zSign = -1;
+    } else {
+      // Верхняя пола: v∈[0.5,1] → t∈[0,2]
+      t     = (v - 0.5) * 4;
+      zSign = 1;
+    }
+    return new THREE.Vector3(
+      a * Math.sinh(t) * Math.cos(theta),
+      b * Math.sinh(t) * Math.sin(theta),
+      zSign * c * Math.cosh(t)
+    );
+  };
+}
+
+/**
+ * Эллиптический параболоид: z = x²/a² + y²/b²
+ * u → r∈[0, rMax], v → θ∈[0,2π]
+ * rMax выбирается так, чтобы z≤4
+ */
+function paraboloidFn(a, b) {
+  const rMax = Math.min(a, b) * 2;
+  return (u, v) => {
+    const r     = u * rMax;
+    const theta = v * 2 * Math.PI;
+    const x     = r * Math.cos(theta);
+    const y     = r * Math.sin(theta);
+    const z     = (x * x) / (a * a) + (y * y) / (b * b);
+    return new THREE.Vector3(x, y, z);
+  };
+}
+
+/* ── Построение секущей плоскости (прямоугольник z=h) ──────────────────── */
+function buildCuttingPlane(h) {
+  const size = 4.8;
+  const geo  = new THREE.PlaneGeometry(size * 2, size * 2);
+  const mesh = new THREE.Mesh(geo, planeMat);
+  mesh.rotation.x = Math.PI / 2;
+  mesh.position.y = 0;  // Three.js: ось Y вверх
+  // Поскольку у нас z-ось вертикальная в математике, но Three.js использует Y…
+  // Мы строим поверхности в пространстве XYZ, где Three.js Z = математический Z.
+  // Поэтому плоскость z=h — горизонтальная при rotation.x = π/2, позиция по Z = h.
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(0, 0, h);
+  // Рисуем контур плоскости
+  const edgeGeo = new THREE.EdgesGeometry(geo);
+  const edgeMat = new THREE.LineBasicMaterial({ color: COLOR_GREEN, linewidth: 1.5 });
+
+  const group = new THREE.Group();
+  group.add(mesh);
+
+  // Контурные линии секущей плоскости
+  const pts = [
+    new THREE.Vector3(-size, -size, h),
+    new THREE.Vector3( size, -size, h),
+    new THREE.Vector3( size,  size, h),
+    new THREE.Vector3(-size,  size, h),
+    new THREE.Vector3(-size, -size, h),
+  ];
+  const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x68d391, linewidth: 2 });
+  group.add(new THREE.Line(lineGeo, lineMat));
+
+  return group;
+}
+
+const COLOR_GREEN = 0x48bb78;
+
+/* ── Образующие однополостного гиперболоида ────────────────────────────── */
+/**
+ * Прямолинейные образующие однополостного гиперболоида x²/a²+y²/b²−z²/c²=1.
+ * Семейство I:  (cos θ₀·cos t − a/b·sin θ₀·sin t) · a,
+ *               (sin θ₀·cos t + b/a·cos θ₀·sin t) · b,
+ *               c·sin t / (что-то)...
+ * Используем классическое параметрическое представление:
+ * r(t, θ₀) = {a(cos θ₀ − t sin θ₀), b(sin θ₀ + t cos θ₀), ct}  — одно семейство.
+ * Нормировка: из уравнения гиперболоида x²/a²+y²/b²−z²/c²=1 при a=b=c=1:
+ * x=cosθ₀ - t sinθ₀, y=sinθ₀ + t cosθ₀, z=t  →
+ * x²+y²-z² = (cosθ₀−t sinθ₀)² + (sinθ₀+t cosθ₀)² - t²
+ *           = cos²θ₀ - 2t cosθ₀ sinθ₀ + t² sin²θ₀ + sin²θ₀ + 2t sinθ₀ cosθ₀ + t² cos²θ₀ - t²
+ *           = 1 + t² - t² = 1  ✓
+ */
+function buildGeneratrices(a, b, c) {
+  const group = new THREE.Group();
+  const tMin  = -3, tMax = 3;
+  const nPts  = 60;
+
+  for (let k = 0; k < N_GEN; k++) {
+    const theta0 = (k / N_GEN) * 2 * Math.PI;
+    const cosT   = Math.cos(theta0);
+    const sinT   = Math.sin(theta0);
+
+    // Семейство I
+    const pts1 = [];
+    for (let i = 0; i <= nPts; i++) {
+      const t = tMin + (tMax - tMin) * i / nPts;
+      pts1.push(new THREE.Vector3(
+        a * (cosT - t * sinT),
+        b * (sinT + t * cosT),
+        c * t
+      ));
+    }
+    const geo1 = new THREE.BufferGeometry().setFromPoints(pts1);
+    group.add(new THREE.Line(geo1, genMat.clone()));
+
+    // Семейство II
+    const pts2 = [];
+    for (let i = 0; i <= nPts; i++) {
+      const t = tMin + (tMax - tMin) * i / nPts;
+      pts2.push(new THREE.Vector3(
+        a * (cosT + t * sinT),
+        b * (sinT - t * cosT),
+        c * t
+      ));
+    }
+    const geo2 = new THREE.BufferGeometry().setFromPoints(pts2);
+    group.add(new THREE.Line(geo2, genMat.clone()));
+  }
+  return group;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Пересборка 3D-объектов при изменении параметров
+   ═══════════════════════════════════════════════════════════════════════ */
+function rebuildScene() {
+  const { surface, a, b, c, h, showGeneratrices } = state;
+
+  // Удаляем старые объекты
+  if (surfaceMesh)       { scene.remove(surfaceMesh);       surfaceMesh       = null; }
+  if (cuttingPlane)      { scene.remove(cuttingPlane);      cuttingPlane      = null; }
+  if (generatricesGroup) { scene.remove(generatricesGroup); generatricesGroup = null; }
+
+  // Строим нужную геометрию
+  let geo;
+  if (surface === 'ellipsoid') {
+    geo = buildParametricGeometry(ellipsoidFn(a, b, c), SEGS, SEGS);
+  } else if (surface === 'hyperboloid1') {
+    geo = buildParametricGeometry(hyperboloid1Fn(a, b, c), SEGS, SEGS);
+    if (showGeneratrices) {
+      generatricesGroup = buildGeneratrices(a, b, c);
+      scene.add(generatricesGroup);
+    }
+  } else if (surface === 'hyperboloid2') {
+    geo = buildParametricGeometry(hyperboloid2Fn(a, b, c), SEGS, SEGS);
+  } else {
+    geo = buildParametricGeometry(paraboloidFn(a, b), SEGS, SEGS);
+  }
+
+  surfaceMesh = new THREE.Mesh(geo, surfaceMat.clone());
+  scene.add(surfaceMesh);
+
+  // Секущая плоскость
+  cuttingPlane = buildCuttingPlane(h);
+  scene.add(cuttingPlane);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Вычисление и отрисовка 2D-сечения
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const canvas2d = document.getElementById('canvas2d');
+const ctx2d    = canvas2d.getContext('2d');
+const W2 = canvas2d.width;
+const H2 = canvas2d.height;
+
+/**
+ * Возвращает описание кривой сечения и функцию для её рисования.
+ * @returns {{ type: string, draw: function }}
+ */
+function computeSection() {
+  const { surface, a, b, c, h } = state;
+
+  if (surface === 'ellipsoid') {
+    // x²/a² + y²/b² = 1 - h²/c²
+    const rhs = 1 - (h * h) / (c * c);
+    if (rhs < -1e-9) return { type: 'Пусто (нет пересечения)', draw: drawEmpty };
+    if (Math.abs(rhs) < 1e-9) return { type: 'Точка (0, 0)', draw: (cx, cy) => drawPoint(cx, cy) };
+    const rx = a * Math.sqrt(rhs);
+    const ry = b * Math.sqrt(rhs);
+    return {
+      type: `Эллипс: rx ≈ ${rx.toFixed(2)}, ry ≈ ${ry.toFixed(2)}`,
+      draw: (cx, cy, sc) => drawEllipse(cx, cy, sc, rx, ry, '#63b3ed'),
+    };
+  }
+
+  if (surface === 'hyperboloid1') {
+    // x²/a² + y²/b² = 1 + h²/c²  (всегда > 0)
+    const rhs = 1 + (h * h) / (c * c);
+    const rx  = a * Math.sqrt(rhs);
+    const ry  = b * Math.sqrt(rhs);
+    return {
+      type: `Эллипс: rx ≈ ${rx.toFixed(2)}, ry ≈ ${ry.toFixed(2)}`,
+      draw: (cx, cy, sc) => drawEllipse(cx, cy, sc, rx, ry, '#63b3ed'),
+    };
+  }
+
+  if (surface === 'hyperboloid2') {
+    // x²/a² + y²/b² = h²/c² - 1
+    const rhs = (h * h) / (c * c) - 1;
+    if (rhs < -1e-9) return { type: 'Пусто (нет пересечения)', draw: drawEmpty };
+    if (Math.abs(rhs) < 1e-9) {
+      // Два конуса — вырожденное сечение: точка (вершина)
+      return { type: 'Точка (вершина конуса)', draw: (cx, cy) => drawPoint(cx, cy) };
+    }
+    const rx = a * Math.sqrt(rhs);
+    const ry = b * Math.sqrt(rhs);
+    return {
+      type: `Эллипс: rx ≈ ${rx.toFixed(2)}, ry ≈ ${ry.toFixed(2)}`,
+      draw: (cx, cy, sc) => drawEllipse(cx, cy, sc, rx, ry, '#63b3ed'),
+    };
+  }
+
+  // Эллиптический параболоид: z = x²/a² + y²/b², сечение z = h
+  // x²/a² + y²/b² = h
+  if (h < -1e-9) return { type: 'Пусто (h < 0)', draw: drawEmpty };
+  if (Math.abs(h) < 1e-9) return { type: 'Точка (вершина параболоида)', draw: (cx, cy) => drawPoint(cx, cy) };
+  const rx = a * Math.sqrt(h);
+  const ry = b * Math.sqrt(h);
+  return {
+    type: `Эллипс: rx ≈ ${rx.toFixed(2)}, ry ≈ ${ry.toFixed(2)}`,
+    draw: (cx, cy, sc) => drawEllipse(cx, cy, sc, rx, ry, '#63b3ed'),
+  };
+}
+
+/** Масштаб: столько пикселей на единицу длины */
+function getScale() {
+  return Math.min(W2, H2) / 10;
+}
+
+function drawEmpty() {
+  ctx2d.clearRect(0, 0, W2, H2);
+  drawGrid();
+  ctx2d.fillStyle = '#718096';
+  ctx2d.font = '14px Segoe UI, sans-serif';
+  ctx2d.textAlign = 'center';
+  ctx2d.fillText('нет пересечения', W2 / 2, H2 / 2);
+}
+
+function drawPoint(cx, cy) {
+  ctx2d.clearRect(0, 0, W2, H2);
+  drawGrid();
+  ctx2d.beginPath();
+  ctx2d.arc(cx, cy, 5, 0, Math.PI * 2);
+  ctx2d.fillStyle = '#f6e05e';
+  ctx2d.fill();
+}
+
+function drawEllipse(cx, cy, sc, rx, ry, color) {
+  ctx2d.clearRect(0, 0, W2, H2);
+  drawGrid();
+  ctx2d.beginPath();
+  ctx2d.ellipse(cx, cy, rx * sc, ry * sc, 0, 0, Math.PI * 2);
+  ctx2d.strokeStyle = color;
+  ctx2d.lineWidth   = 2.5;
+  ctx2d.stroke();
+  // Полупрозрачная заливка
+  ctx2d.fillStyle = color + '22';
+  ctx2d.fill();
+}
+
+/** Координатная сетка и оси для 2D-холста */
+function drawGrid() {
+  const cx = W2 / 2;
+  const cy = H2 / 2;
+  const sc = getScale();
+
+  ctx2d.clearRect(0, 0, W2, H2);
+
+  // Сетка
+  ctx2d.strokeStyle = '#1e2a3a';
+  ctx2d.lineWidth   = 1;
+  for (let x = cx % sc; x < W2; x += sc) {
+    ctx2d.beginPath(); ctx2d.moveTo(x, 0); ctx2d.lineTo(x, H2); ctx2d.stroke();
+  }
+  for (let y = cy % sc; y < H2; y += sc) {
+    ctx2d.beginPath(); ctx2d.moveTo(0, y); ctx2d.lineTo(W2, y); ctx2d.stroke();
+  }
+
+  // Оси
+  ctx2d.strokeStyle = '#4a5568';
+  ctx2d.lineWidth   = 1;
+  ctx2d.beginPath(); ctx2d.moveTo(0, cy); ctx2d.lineTo(W2, cy); ctx2d.stroke();
+  ctx2d.beginPath(); ctx2d.moveTo(cx, 0); ctx2d.lineTo(cx, H2); ctx2d.stroke();
+
+  // Подписи осей
+  ctx2d.fillStyle  = '#718096';
+  ctx2d.font       = '12px Segoe UI, sans-serif';
+  ctx2d.textAlign  = 'left';
+  ctx2d.fillText('x', W2 - 14, cy - 4);
+  ctx2d.textAlign  = 'center';
+  ctx2d.fillText('y', cx + 8, 12);
+}
+
+/** Перерисовка 2D-сечения */
+function redraw2D() {
+  const cx   = W2 / 2;
+  const cy   = H2 / 2;
+  const sc   = getScale();
+  const info = computeSection();
+
+  drawGrid();
+  info.draw(cx, cy, sc);
+
+  // Обновляем текст типа кривой
+  document.getElementById('sectionType').textContent = info.type;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Формулы MathJax
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/** Возвращает LaTeX-строку для уравнения поверхности */
+function getSurfaceFormula() {
+  const { surface, a, b, c } = state;
+  const av = a.toFixed(1), bv = b.toFixed(1), cv = c.toFixed(1);
+  const a2 = (a * a).toFixed(2), b2 = (b * b).toFixed(2), c2 = (c * c).toFixed(2);
+  if (surface === 'ellipsoid')
+    return `$$\\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} + \\frac{z^2}{${c2}} = 1$$`;
+  if (surface === 'hyperboloid1')
+    return `$$\\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} - \\frac{z^2}{${c2}} = 1$$`;
+  if (surface === 'hyperboloid2')
+    return `$$\\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} - \\frac{z^2}{${c2}} = -1$$`;
+  // параболоид
+  return `$$z = \\frac{x^2}{${a2}} + \\frac{y^2}{${b2}}$$`;
+}
+
+/** Возвращает LaTeX-строку для уравнения кривой сечения */
+function getSectionFormula() {
+  const { surface, a, b, c, h } = state;
+  const hv = h.toFixed(2);
+  const a2 = (a * a).toFixed(2), b2 = (b * b).toFixed(2), c2 = (c * c).toFixed(2);
+  const h2 = (h * h).toFixed(2);
+
+  if (surface === 'ellipsoid') {
+    const rhs = (1 - h * h / (c * c)).toFixed(4);
+    return `$$z = ${hv}: \\quad \\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} = 1 - \\frac{${h2}}{${c2}} = ${rhs}$$`;
+  }
+  if (surface === 'hyperboloid1') {
+    const rhs = (1 + h * h / (c * c)).toFixed(4);
+    return `$$z = ${hv}: \\quad \\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} = 1 + \\frac{${h2}}{${c2}} = ${rhs}$$`;
+  }
+  if (surface === 'hyperboloid2') {
+    const rhs = (h * h / (c * c) - 1).toFixed(4);
+    return `$$z = ${hv}: \\quad \\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} = \\frac{${h2}}{${c2}} - 1 = ${rhs}$$`;
+  }
+  return `$$z = ${hv}: \\quad \\frac{x^2}{${a2}} + \\frac{y^2}{${b2}} = ${hv}$$`;
+}
+
+/** Дебаунсированное обновление MathJax */
+let mathJaxTimer = null;
+function updateFormulas() {
+  clearTimeout(mathJaxTimer);
+  mathJaxTimer = setTimeout(() => {
+    const surfEl = document.getElementById('formulaSurface');
+    const sectEl = document.getElementById('formulaSection');
+    surfEl.textContent = getSurfaceFormula();
+    sectEl.textContent = getSectionFormula();
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([document.getElementById('formulaBox')]).catch(console.error);
+    }
+  }, 200);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Главное обновление — вызывается при любом изменении параметра
+   ═══════════════════════════════════════════════════════════════════════ */
+function updateAll() {
+  rebuildScene();
+  redraw2D();
+  updateFormulas();
+  toggleUIForSurface();
+}
+
+/** Управление видимостью элементов интерфейса в зависимости от поверхности */
+function toggleUIForSurface() {
+  const isH1 = state.surface === 'hyperboloid1';
+  document.getElementById('rowGeneratrices').style.display = isH1 ? 'flex' : 'none';
+
+  // Ось c не нужна параболоиду
+  const isParaboloid = state.surface === 'paraboloid';
+  document.getElementById('rowC').style.opacity    = isParaboloid ? '0.3' : '1';
+  document.getElementById('rowC').style.pointerEvents = isParaboloid ? 'none' : 'auto';
+  document.getElementById('labelC').style.opacity  = isParaboloid ? '0.3' : '1';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Подключение элементов управления
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/** Создаёт обработчик ползунка с отображением значения */
+function bindSlider(sliderId, badgeId, stateKey, decimals = 1, callback) {
+  const slider = document.getElementById(sliderId);
+  const badge  = document.getElementById(badgeId);
+  slider.addEventListener('input', () => {
+    const val = parseFloat(slider.value);
+    state[stateKey] = val;
+    badge.textContent = val.toFixed(decimals);
+    if (callback) callback(val);
+    updateAll();
+  });
+}
+
+bindSlider('sliderA', 'badgeA', 'a', 1);
+bindSlider('sliderB', 'badgeB', 'b', 1);
+bindSlider('sliderC', 'badgeC', 'c', 1);
+bindSlider('sliderH', 'badgeH', 'h', 2);
+
+document.getElementById('surfaceSelect').addEventListener('change', e => {
+  state.surface = e.target.value;
+  updateAll();
+});
+
+document.getElementById('checkGeneratrices').addEventListener('change', e => {
+  state.showGeneratrices = e.target.checked;
+  updateAll();
+});
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Resize — адаптация 3D-рендерера
+   ═══════════════════════════════════════════════════════════════════════ */
+function onResize() {
+  const wrap = canvas3d.parentElement;
+  const w    = wrap.clientWidth;
+  const h    = wrap.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onResize);
+// Небольшая задержка для корректного первоначального размера
+setTimeout(onResize, 0);
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Цикл рендеринга
+   ═══════════════════════════════════════════════════════════════════════ */
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* ── Старт ────────────────────────────────────────────────────────────── */
+updateAll();
+animate();
+
+</script>
+</body>
+</html>

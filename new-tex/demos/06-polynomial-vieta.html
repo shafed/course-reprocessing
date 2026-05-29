@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Корни многочлена и теорема Виета</title>
+
+  <!-- MathJax для отображения формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { ready() { MathJax.startup.defaultReady(); } }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    /* ===== Основные стили ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e8eaf6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #90caf9;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #78909c;
+      margin-bottom: 20px;
+    }
+
+    /* ===== Сетка компоновки ===== */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      grid-template-rows: auto auto;
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ===== Панели ===== */
+    .panel {
+      background: #1a1d27;
+      border: 1px solid #2a2d3e;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64b5f6;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #2a2d3e;
+    }
+
+    /* ===== Canvas комплексной плоскости ===== */
+    #complexCanvas {
+      display: block;
+      border-radius: 8px;
+      cursor: crosshair;
+      background: #12151f;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    /* ===== Canvas графика ===== */
+    #graphCanvas {
+      display: block;
+      border-radius: 8px;
+      background: #12151f;
+      width: 100%;
+    }
+
+    /* ===== Панель управления ===== */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label {
+      font-size: 0.75rem;
+      color: #90a4ae;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-add {
+      background: #1b5e20;
+      color: #a5d6a7;
+      border: 1px solid #2e7d32;
+    }
+    .btn-add:hover { background: #2e7d32; color: #c8e6c9; }
+
+    .btn-del {
+      background: #b71c1c;
+      color: #ef9a9a;
+      border: 1px solid #c62828;
+    }
+    .btn-del:hover { background: #c62828; color: #ffcdd2; }
+
+    .btn-neutral {
+      background: #1a237e;
+      color: #9fa8da;
+      border: 1px solid #283593;
+    }
+    .btn-neutral:hover { background: #283593; color: #c5cae9; }
+
+    /* ===== Слайдер ведущего коэффициента ===== */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: #64b5f6;
+      cursor: pointer;
+    }
+
+    .slider-val {
+      min-width: 36px;
+      text-align: right;
+      font-size: 0.9rem;
+      color: #e3f2fd;
+      font-weight: 600;
+    }
+
+    /* ===== Коэффициенты и теорема Виета ===== */
+    #polyDisplay {
+      font-size: 0.88rem;
+      line-height: 1.9;
+      color: #e8eaf6;
+      word-break: break-all;
+    }
+
+    #polyDisplay .poly-formula {
+      color: #fff9c4;
+      font-weight: 500;
+    }
+
+    .vieta-block {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #0d1b2a;
+      border-radius: 8px;
+      border-left: 3px solid #42a5f5;
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+
+    .vieta-ok { color: #a5d6a7; }
+    .vieta-err { color: #ef9a9a; }
+
+    /* ===== Легенда ===== */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #90a4ae;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    /* ===== Подсказки ===== */
+    .hint {
+      font-size: 0.75rem;
+      color: #546e7a;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ===== Адаптив ===== */
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Корни многочлена и теорема Виета</h1>
+<p class="subtitle">Лекция 13 · Перетаскивайте корни на комплексной плоскости мышью</p>
+
+<div class="layout">
+
+  <!-- ===== Левая колонка: комплексная плоскость + график ===== -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <div class="panel">
+      <div class="panel-title">Комплексная плоскость — корни многочлена</div>
+      <canvas id="complexCanvas" width="700" height="420"></canvas>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ef5350;"></div> Действительный корень
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ab47bc;"></div> Комплексный корень
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#7e57c2; opacity:0.6;"></div> Сопряжённый (авто)
+        </div>
+      </div>
+      <p class="hint">Комплексные корни перемещаются парами. Действительные корни можно «слить» для кратности.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">График P(x) на действительной оси</div>
+      <canvas id="graphCanvas" width="700" height="220"></canvas>
+      <p class="hint">Пересечения с осью x — действительные корни. Касание — кратный корень.</p>
+    </div>
+
+  </div>
+
+  <!-- ===== Правая колонка: управление + формулы ===== -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <div class="panel controls">
+      <div class="panel-title">Управление</div>
+
+      <div class="control-group">
+        <div class="control-label">Действительные корни</div>
+        <div class="btn-row">
+          <button class="btn-add" onclick="addRealRoot()">+ Добавить</button>
+          <button class="btn-del" onclick="removeRealRoot()">− Удалить</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Пара сопряжённых корней</div>
+        <div class="btn-row">
+          <button class="btn-add" onclick="addComplexPair()">+ Добавить пару</button>
+          <button class="btn-del" onclick="removeComplexPair()">− Удалить пару</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Ведущий коэффициент a<sub>n</sub></div>
+        <div class="slider-row">
+          <input type="range" id="anSlider" min="-4" max="4" step="0.25" value="1">
+          <span class="slider-val" id="anVal">1</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Масштаб плоскости</div>
+        <div class="slider-row">
+          <input type="range" id="scaleSlider" min="40" max="140" step="5" value="70">
+          <span class="slider-val" id="scaleVal">70</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-neutral" onclick="resetRoots()">Сброс</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Многочлен и коэффициенты</div>
+      <div id="polyDisplay">
+        <div class="poly-formula" id="polyFormula">Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Теорема Виета</div>
+      <div id="vietaBlock" class="vieta-block">—</div>
+      <div style="margin-top:12px; font-size:0.78rem; color:#546e7a; line-height:1.7;">
+        Для приведённого многочлена $(x^n + a_{n-1}x^{n-1}+\cdots+a_0)$:<br>
+        $\displaystyle\sum_{k} x_k = -a_{n-1}$,&ensp;
+        $\displaystyle\prod_{k} x_k = (-1)^n a_0$
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   Вспомогательная арифметика комплексных чисел
+   ===================================================================== */
+
+/** @typedef {{ re: number, im: number }} Complex */
+
+/** Создать комплексное число */
+const C = (re, im = 0) => ({ re, im });
+
+/** Сложение */
+const cAdd = (a, b) => C(a.re + b.re, a.im + b.im);
+
+/** Умножение */
+const cMul = (a, b) => C(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+
+/** Форматировать комплексное число кратко */
+const cFmt = (c, digits = 3) => {
+  const r = +c.re.toFixed(digits);
+  const i = +c.im.toFixed(digits);
+  if (Math.abs(i) < 1e-9) return String(r);
+  if (Math.abs(r) < 1e-9) return `${i}i`;
+  return `${r}${i >= 0 ? '+' : ''}${i}i`;
+};
+
+/** Раскрыть произведение (x − r_k) начиная с [1] */
+const buildPoly = (roots, an) => {
+  // Коэффициенты в порядке убывания степени: poly[0]·x^n + poly[1]·x^(n-1) + ...
+  let poly = [C(1)];
+  for (const r of roots) {
+    // Умножаем текущий poly на (x − r)
+    const next = new Array(poly.length + 1).fill(null).map(() => C(0));
+    for (let k = 0; k < poly.length; k++) {
+      next[k] = cAdd(next[k], poly[k]);                     // x · poly[k]
+      next[k + 1] = cAdd(next[k + 1], cMul(C(-r.re, -r.im), poly[k])); // −r · poly[k]
+    }
+    poly = next;
+  }
+  // Умножаем на ведущий коэффициент
+  return poly.map(c => cMul(C(an), c));
+};
+
+/** Вычислить P(x) для вещественного x */
+const evalPoly = (poly, x) => {
+  let val = C(0);
+  for (let k = 0; k < poly.length; k++) {
+    const deg = poly.length - 1 - k;
+    val = cAdd(val, cMul(poly[k], C(Math.pow(x, deg))));
+  }
+  return val;
+};
+
+/* =====================================================================
+   Состояние приложения
+   ===================================================================== */
+
+/**
+ * roots — массив объектов { re, im, isReal, paired }
+ * isReal  — действительный корень (im=0, лежит на оси)
+ * paired  — для комплексных: индекс «ведущего» корня пары (или null если это ведущий)
+ */
+let roots = [];
+let an = 1;         // ведущий коэффициент
+let scale = 70;     // пикселей на единицу
+
+// Начальная конфигурация: 2 действительных + 1 пара сопряжённых
+const initRoots = () => {
+  roots = [
+    { re: -2,  im: 0,    isReal: true,  paired: null },
+    { re:  1,  im: 0,    isReal: true,  paired: null },
+    { re:  0.5, im: 1.5, isReal: false, paired: null },  // ведущий
+    { re:  0.5, im: -1.5,isReal: false, paired: 2    },  // сопряжённый
+  ];
+};
+initRoots();
+
+/* =====================================================================
+   Canvas — комплексная плоскость
+   ===================================================================== */
+
+const complexCanvas = document.getElementById('complexCanvas');
+const complexCtx    = complexCanvas.getContext('2d');
+
+// Масштабировать canvas под реальный CSS-размер
+const resizeCanvas = (canvas) => {
+  const rect = canvas.getBoundingClientRect();
+  if (canvas.width !== rect.width || canvas.height !== rect.height) {
+    canvas.width  = rect.width;
+    canvas.height = rect.height;
+  }
+};
+
+/** Перевод из мировых координат в пиксели */
+const toPixel = (canvas, re, im) => ({
+  x: canvas.width  / 2 + re * scale,
+  y: canvas.height / 2 - im * scale,
+});
+
+/** Перевод из пикселей в мировые координаты */
+const fromPixel = (canvas, px, py) => ({
+  re: (px - canvas.width  / 2) / scale,
+  im: (canvas.height / 2 - py) / scale,
+});
+
+/** Нарисовать комплексную плоскость */
+const drawComplex = () => {
+  resizeCanvas(complexCanvas);
+  const ctx = complexCtx;
+  const W = complexCanvas.width;
+  const H = complexCanvas.height;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Фон
+  ctx.fillStyle = '#12151f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Сетка
+  ctx.strokeStyle = '#1e2235';
+  ctx.lineWidth = 1;
+  const step = scale;
+  for (let x = cx % step; x < W; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = cy % step; y < H; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Оси
+  ctx.strokeStyle = '#37474f';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+
+  // Стрелки осей
+  ctx.fillStyle = '#546e7a';
+  ctx.beginPath(); ctx.moveTo(W - 6, cy - 5); ctx.lineTo(W, cy); ctx.lineTo(W - 6, cy + 5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cx - 5, 6); ctx.lineTo(cx, 0); ctx.lineTo(cx + 5, 6); ctx.fill();
+
+  // Подписи осей
+  ctx.fillStyle = '#78909c';
+  ctx.font = '13px Segoe UI';
+  ctx.fillText('Re', W - 22, cy - 8);
+  ctx.fillText('Im', cx + 8, 14);
+
+  // Метки на осях
+  ctx.fillStyle = '#455a64';
+  ctx.font = '10px monospace';
+  const maxUnit = Math.ceil(W / (2 * scale)) + 1;
+  for (let u = -maxUnit; u <= maxUnit; u++) {
+    if (u === 0) continue;
+    const px = cx + u * scale;
+    ctx.fillText(u, px - 5, cy + 14);
+  }
+  const maxUnitY = Math.ceil(H / (2 * scale)) + 1;
+  for (let u = -maxUnitY; u <= maxUnitY; u++) {
+    if (u === 0) continue;
+    const py = cy - u * scale;
+    ctx.fillText(u + 'i', cx + 5, py + 4);
+  }
+
+  // Рисуем линии к сопряжённым парам
+  roots.forEach((r, i) => {
+    if (r.paired !== null) {
+      const lead = roots[r.paired];
+      const p1 = toPixel(complexCanvas, lead.re, lead.im);
+      const p2 = toPixel(complexCanvas, r.re, r.im);
+      ctx.strokeStyle = 'rgba(126, 87, 194, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+
+  // Рисуем корни
+  roots.forEach((r, i) => {
+    const p = toPixel(complexCanvas, r.re, r.im);
+    const isShadow = r.paired !== null;     // это ведомый (сопряжённый)
+    const radius = isShadow ? 7 : 9;
+
+    let color;
+    if (r.isReal)       color = '#ef5350';
+    else if (isShadow)  color = 'rgba(171,71,188,0.55)';
+    else                color = '#ab47bc';
+
+    // Тень-свечение
+    ctx.shadowBlur  = isShadow ? 6 : 14;
+    ctx.shadowColor = color;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+
+    // Граница
+    ctx.strokeStyle = isShadow ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = isShadow ? 1 : 1.5;
+    ctx.stroke();
+
+    // Метка x_k
+    if (!isShadow) {
+      ctx.fillStyle = '#eceff1';
+      ctx.font = 'bold 11px Segoe UI';
+      ctx.fillText(`x${subscript(i + 1)}`, p.x + 11, p.y - 7);
+    }
+  });
+};
+
+/** Преобразовать число в нижний индекс unicode */
+const subscript = n => String(n).split('').map(d => '₀₁₂₃₄₅₆₇₈₉'[d] || d).join('');
+
+/* =====================================================================
+   Canvas — график P(x)
+   ===================================================================== */
+
+const graphCanvas = document.getElementById('graphCanvas');
+const graphCtx    = graphCanvas.getContext('2d');
+
+const drawGraph = () => {
+  resizeCanvas(graphCanvas);
+  const ctx  = graphCtx;
+  const W = graphCanvas.width;
+  const H = graphCanvas.height;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#12151f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Получаем текущий многочлен
+  const poly = buildPoly(roots.map(r => C(r.re, r.im)), an);
+
+  // Диапазон x совпадает с масштабом комплексной плоскости
+  const xMin = -W / (2 * scale);
+  const xMax =  W / (2 * scale);
+  const steps = W;
+  const xs = Array.from({ length: steps + 1 }, (_, i) => xMin + i * (xMax - xMin) / steps);
+
+  // Вычисляем значения (нас интересует Re[P(x)] для x ∈ R)
+  const ys = xs.map(x => evalPoly(poly, x).re);
+
+  // Находим диапазон y для масштабирования
+  const yMax = Math.max(...ys.map(Math.abs));
+  const yScale = yMax < 1e-9 ? 1 : (H / 2 - 24) / yMax;
+
+  /** Перевод y-значения в px */
+  const yPx = y => cy - y * yScale;
+  /** Перевод x-значения в px */
+  const xPx = x => cx + x * scale;
+
+  // Сетка
+  ctx.strokeStyle = '#1e2235';
+  ctx.lineWidth = 1;
+  for (let u = Math.ceil(xMin); u <= Math.floor(xMax); u++) {
+    const px = xPx(u);
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+  }
+
+  // Ось x
+  ctx.strokeStyle = '#37474f';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+
+  // Ось y
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+
+  // Метки Re
+  ctx.fillStyle = '#455a64';
+  ctx.font = '10px monospace';
+  for (let u = Math.ceil(xMin); u <= Math.floor(xMax); u++) {
+    if (u === 0) continue;
+    ctx.fillText(u, xPx(u) - 5, cy + 14);
+  }
+
+  // График P(x) — градиентная линия
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0,   '#42a5f5');
+  grad.addColorStop(0.5, '#7e57c2');
+  grad.addColorStop(1,   '#42a5f5');
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 2.5;
+  ctx.shadowBlur  = 8;
+  ctx.shadowColor = '#3f51b5';
+  ctx.beginPath();
+  let started = false;
+  for (let i = 0; i <= steps; i++) {
+    const px = xPx(xs[i]);
+    const py = yPx(ys[i]);
+    if (!isFinite(py) || Math.abs(py) > H * 3) { started = false; continue; }
+    if (!started) { ctx.moveTo(px, py); started = true; }
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Отмечаем действительные корни на графике
+  const realRoots = roots.filter(r => r.isReal);
+  realRoots.forEach(r => {
+    const px = xPx(r.re);
+    const py = yPx(0);
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ef5350';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ef5350';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Подпись P(x) слева вверху
+  ctx.fillStyle = '#64b5f6';
+  ctx.font = '12px Segoe UI';
+  ctx.fillText('P(x)', 8, 18);
+};
+
+/* =====================================================================
+   Обновление формул и проверки Виета
+   ===================================================================== */
+
+/** Округлить вещественную часть коэффициента */
+const roundCoef = c => {
+  const v = c.re;
+  // Убираем числовой шум в мнимой части (должна быть ≈0)
+  return Math.abs(v) < 1e-9 ? 0 : +v.toFixed(4);
+};
+
+const updateFormulas = () => {
+  const poly = buildPoly(roots.map(r => C(r.re, r.im)), an);
+  const n = poly.length - 1; // степень
+  const coefs = poly.map(roundCoef);
+
+  // Строим строку многочлена
+  let terms = [];
+  for (let k = 0; k <= n; k++) {
+    const deg = n - k;
+    const c   = coefs[k];
+    if (Math.abs(c) < 1e-9) continue;
+
+    let term = '';
+    const sign = c < 0 ? '-' : '+';
+    const absC = Math.abs(c);
+
+    if (deg === 0) {
+      term = absC.toString();
+    } else if (deg === 1) {
+      term = (absC === 1 ? '' : absC) + 'x';
+    } else {
+      term = (absC === 1 ? '' : absC) + `x^{${deg}}`;
+    }
+
+    if (terms.length === 0) {
+      terms.push(c < 0 ? '-' + term : term);
+    } else {
+      terms.push(sign + ' ' + term);
+    }
+  }
+
+  const polyStr = terms.length ? terms.join(' ') : '0';
+  const rootsStr = roots
+    .filter(r => r.paired === null)
+    .map((r, i) => `(x - ${cFmt(C(r.re, r.im), 2)})`)
+    .join('\\cdot ');
+
+  const factored = `${an !== 1 ? an + ' \\cdot ' : ''}${rootsStr || '1'}`;
+
+  document.getElementById('polyFormula').innerHTML =
+    `$$P(x) = ${factored}$$` +
+    `$$P(x) = ${polyStr}$$`;
+
+  // Виет
+  const leadingIdx = coefs.findIndex(c => Math.abs(c) > 1e-9);
+  const a_n = coefs[leadingIdx] ?? 1;
+
+  // Сумма корней (только «ведущие» — не сопряжённые копии)
+  const allRootsC = roots.map(r => C(r.re, r.im));
+  const sumRe = allRootsC.reduce((s, r) => s + r.re, 0);
+  const sumIm = allRootsC.reduce((s, r) => s + r.im, 0);
+
+  const prodC = allRootsC.reduce((p, r) => cMul(p, r), C(1));
+
+  // Из приведённого многочлена: a_{n-1}/a_n
+  const normalizedCoefs = coefs.map(c => c / a_n);
+  const minus_a_n_1 = n >= 1 ? -normalizedCoefs[leadingIdx + 1] : 0;
+  const sign_n_a0   = Math.pow(-1, n) * normalizedCoefs[leadingIdx + n];
+
+  const sumOk  = Math.abs(sumRe - minus_a_n_1) < 0.01 && Math.abs(sumIm) < 0.01;
+  const prodOk = Math.abs(prodC.re - sign_n_a0) < 0.01 && Math.abs(prodC.im) < 0.01;
+
+  document.getElementById('vietaBlock').innerHTML =
+    `<div class="${sumOk ? 'vieta-ok' : 'vieta-err'}">` +
+      `∑ xₖ = ${(+sumRe.toFixed(4))} &nbsp;≈&nbsp; −a<sub>n−1</sub>/aₙ = ${(+minus_a_n_1.toFixed(4))} ` +
+      `<b>${sumOk ? '✓' : '✗'}</b>` +
+    `</div>` +
+    `<div class="${prodOk ? 'vieta-ok' : 'vieta-err'}">` +
+      `∏ xₖ = ${(+prodC.re.toFixed(4))} &nbsp;≈&nbsp; (−1)ⁿ·a₀/aₙ = ${(+sign_n_a0.toFixed(4))} ` +
+      `<b>${prodOk ? '✓' : '✗'}</b>` +
+    `</div>` +
+    `<div style="color:#78909c; margin-top:6px; font-size:0.78rem;">` +
+      `Степень: ${n}, Число корней: ${roots.length}` +
+    `</div>`;
+
+  // Перерисовка MathJax
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([document.getElementById('polyFormula')]).catch(() => {});
+  }
+};
+
+/* =====================================================================
+   Полное обновление (вызывается при каждом изменении)
+   ===================================================================== */
+
+const update = () => {
+  drawComplex();
+  drawGraph();
+  updateFormulas();
+};
+
+/* =====================================================================
+   Drag-and-drop корней на комплексной плоскости
+   ===================================================================== */
+
+let dragging = null;  // индекс перетаскиваемого корня
+
+/** Найти корень под курсором */
+const hitTest = (px, py) => {
+  const hitRadius = 14;
+  for (let i = roots.length - 1; i >= 0; i--) {
+    // Нельзя тащить ведомый сопряжённый корень
+    if (roots[i].paired !== null) continue;
+    const p = toPixel(complexCanvas, roots[i].re, roots[i].im);
+    const dx = px - p.x;
+    const dy = py - p.y;
+    if (dx * dx + dy * dy <= hitRadius * hitRadius) return i;
+  }
+  return null;
+};
+
+/** Позиция мыши/касания на canvas */
+const getPos = (e) => {
+  const rect = complexCanvas.getBoundingClientRect();
+  const src  = e.touches ? e.touches[0] : e;
+  return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+};
+
+complexCanvas.addEventListener('mousedown', e => {
+  const { x, y } = getPos(e);
+  dragging = hitTest(x, y);
+});
+
+complexCanvas.addEventListener('mousemove', e => {
+  if (dragging === null) return;
+  const { x, y } = getPos(e);
+  const world = fromPixel(complexCanvas, x, y);
+  const r = roots[dragging];
+
+  if (r.isReal) {
+    // Действительный корень — ограничен осью Re
+    r.re = world.re;
+    r.im = 0;
+  } else {
+    // Комплексный ведущий: перемещаем вместе с сопряжённым
+    r.re = world.re;
+    r.im = world.im;
+    // Ищем ведомый сопряжённый
+    const sibIdx = roots.findIndex(s => s.paired === dragging);
+    if (sibIdx !== -1) {
+      roots[sibIdx].re =  r.re;
+      roots[sibIdx].im = -r.im;
+    }
+    // Если im ≈ 0 — «прижимаем» к действительной оси
+    if (Math.abs(r.im) < 0.08) {
+      r.im = 0;
+      const sibIdx2 = roots.findIndex(s => s.paired === dragging);
+      if (sibIdx2 !== -1) roots[sibIdx2].im = 0;
+    }
+  }
+  update();
+});
+
+complexCanvas.addEventListener('mouseup',    () => { dragging = null; });
+complexCanvas.addEventListener('mouseleave', () => { dragging = null; });
+
+// Touch events
+complexCanvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const { x, y } = getPos(e);
+  dragging = hitTest(x, y);
+}, { passive: false });
+
+complexCanvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (dragging === null) return;
+  const { x, y } = getPos(e);
+  const world = fromPixel(complexCanvas, x, y);
+  const r = roots[dragging];
+  if (r.isReal) { r.re = world.re; r.im = 0; }
+  else {
+    r.re = world.re; r.im = world.im;
+    const sibIdx = roots.findIndex(s => s.paired === dragging);
+    if (sibIdx !== -1) { roots[sibIdx].re = r.re; roots[sibIdx].im = -r.im; }
+  }
+  update();
+}, { passive: false });
+
+complexCanvas.addEventListener('touchend', () => { dragging = null; });
+
+/* =====================================================================
+   Кнопки управления
+   ===================================================================== */
+
+/** Добавить действительный корень */
+const addRealRoot = () => {
+  // Ставим чуть правее последнего
+  const lastRe = roots.filter(r => r.isReal).reduce((m, r) => Math.max(m, r.re), 0);
+  roots.push({ re: lastRe + 1.2, im: 0, isReal: true, paired: null });
+  update();
+};
+
+/** Удалить последний действительный корень */
+const removeRealRoot = () => {
+  const lastIdx = [...roots].map((r, i) => ({ r, i })).filter(({ r }) => r.isReal).pop()?.i;
+  if (lastIdx !== undefined) { roots.splice(lastIdx, 1); fixPairedIndices(); update(); }
+};
+
+/** Добавить пару сопряжённых корней */
+const addComplexPair = () => {
+  const leadIdx = roots.length;
+  roots.push({ re: 0,  im: 1.2,  isReal: false, paired: null    });
+  roots.push({ re: 0,  im: -1.2, isReal: false, paired: leadIdx });
+  update();
+};
+
+/** Удалить последнюю пару сопряжённых */
+const removeComplexPair = () => {
+  // Ищем последний «ведомый» сопряжённый
+  for (let i = roots.length - 1; i >= 0; i--) {
+    if (roots[i].paired !== null) {
+      const leadIdx = roots[i].paired;
+      // Удаляем с конца, чтобы не сдвигать индексы
+      const [lo, hi] = [Math.min(i, leadIdx), Math.max(i, leadIdx)];
+      roots.splice(hi, 1);
+      roots.splice(lo, 1);
+      fixPairedIndices();
+      update();
+      return;
+    }
+  }
+};
+
+/** Пересчитать индексы paired после сплайсов */
+const fixPairedIndices = () => {
+  // Строим карту: сопряжённость задаётся по re/im (im > 0 — ведущий, im < 0 — ведомый)
+  roots.forEach(r => { r.paired = null; });
+  const leads = roots
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => !r.isReal && r.im > 0);
+  leads.forEach(({ r: lead, i: li }) => {
+    // Ищем ближайший с im < 0 и тем же re
+    const sibIdx = roots.findIndex(
+      (s, si) => si !== li && !s.isReal && s.im < 0 && Math.abs(s.re - lead.re) < 1e-6
+    );
+    if (sibIdx !== -1) roots[sibIdx].paired = li;
+  });
+  // Корни с im === 0 и isReal===false — делаем действительными
+  roots.forEach(r => { if (!r.isReal && Math.abs(r.im) < 1e-9) r.isReal = true; });
+};
+
+/** Сброс к начальному состоянию */
+const resetRoots = () => { initRoots(); an = 1; document.getElementById('anSlider').value = 1; document.getElementById('anVal').textContent = '1'; update(); };
+
+/* =====================================================================
+   Слайдеры
+   ===================================================================== */
+
+document.getElementById('anSlider').addEventListener('input', e => {
+  an = parseFloat(e.target.value) || 1;
+  document.getElementById('anVal').textContent = an;
+  update();
+});
+
+document.getElementById('scaleSlider').addEventListener('input', e => {
+  scale = parseInt(e.target.value, 10);
+  document.getElementById('scaleVal').textContent = scale;
+  update();
+});
+
+/* =====================================================================
+   Адаптивный resize
+   ===================================================================== */
+
+const resizeObserver = new ResizeObserver(() => { update(); });
+resizeObserver.observe(complexCanvas);
+resizeObserver.observe(graphCanvas);
+
+/* =====================================================================
+   Первоначальный рендер
+   ===================================================================== */
+
+update();
+</script>
+</body>
+</html>

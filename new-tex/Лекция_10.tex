@@ -143,7 +143,7 @@
     \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
     \draw[->, gray] (0.6,0.3) -- (-1.8,-1.2) node[below left] {$x$};
     \draw[blue, thick] plot[smooth cycle] coordinates
-      {(1.2,1.6) (2.2,1.9) (2.6,1.1) (2.1,0.4) (1.3,0.5) (0.9,1.0)};
+    {(1.2,1.6) (2.2,1.9) (2.6,1.1) (2.1,0.4) (1.3,0.5) (0.9,1.0)};
     \fill (1.9,1.3) circle (1.3pt) node[above right] {$M(x,y,z)$};
     \node[blue] at (2.4,0.5) {$S$};
   \end{tikzpicture}
@@ -203,7 +203,8 @@
     \fill (M0) circle (1.2pt) node[below] {$M_0$};
     \fill (M) circle (1.2pt) node[right] {$M$};
     \draw[->, thick] (M0) -- (M);
-    \draw[->, red, thick] (M0) -- ($(M0)+(0,1.4)$) node[above] {$\vec{n}(A,B,C)$};
+    \draw[->, red, thick] (M0) -- ($(M0)+(0,1.4)$) node[above]
+    {$\vec{n}(A,B,C)$};
   \end{tikzpicture}
   \caption{Вывод уравнения плоскости: $\vec{n}\perp\overrightarrow{M_0M}$.}
   \label{fig:plane_proof}
@@ -237,7 +238,8 @@
   плоскостей по заданным «следам» на осях.
 \end{remarkIT}
 
-\begin{definition}{Уравнение плоскости, проходящей через три точки}{three_points_def}
+\begin{definition}{Уравнение плоскости, проходящей через три
+  точки}{three_points_def}
   Плоскость, проходящая через три точки $A(x_1,y_1,z_1)$,
   $B(x_2,y_2,z_2)$, $C(x_3,y_3,z_3)$ (не лежащие на одной прямой),
   задаётся условием компланарности векторов
@@ -281,7 +283,7 @@
   нормаль $\vec{n}/|\vec{n}|$:
   \[
     d = \frac{|(\vec{n}, \overrightarrow{M_1M_0})|}{|\vec{n}|}
-      = \frac{|A(x_0-x_1) + B(y_0-y_1) + C(z_0-z_1)|}{\sqrt{A^2+B^2+C^2}}.
+    = \frac{|A(x_0-x_1) + B(y_0-y_1) + C(z_0-z_1)|}{\sqrt{A^2+B^2+C^2}}.
   \]
   Так как $-(Ax_1+By_1+Cz_1) = D$, числитель равен $|Ax_0+By_0+Cz_0+D|$,
   что и даёт \eqref{eq:dist}.
@@ -303,7 +305,7 @@
   нормалями и находится по формуле
   \[
     \cos\alpha = \frac{|A_1A_2 + B_1B_2 + C_1C_2|}
-      {\sqrt{A_1^2+B_1^2+C_1^2}\,\cdot\,\sqrt{A_2^2+B_2^2+C_2^2}}.
+    {\sqrt{A_1^2+B_1^2+C_1^2}\,\cdot\,\sqrt{A_2^2+B_2^2+C_2^2}}.
   \]
   При этом:
   \begin{itemize}
@@ -328,9 +330,15 @@
     \begin{vmatrix}
       \vec{i} & \vec{j} & \vec{k} \\ 1 & -1 & 2 \\ -2 & 1 & 4
     \end{vmatrix}
-    = \vec{i}\begin{vmatrix} -1 & 2 \\ 1 & 4 \end{vmatrix}
-    - \vec{j}\begin{vmatrix} 1 & 2 \\ -2 & 4 \end{vmatrix}
-    + \vec{k}\begin{vmatrix} 1 & -1 \\ -2 & 1 \end{vmatrix}.
+    = \vec{i}
+    \begin{vmatrix} -1 & 2 \\ 1 & 4
+    \end{vmatrix}
+    - \vec{j}
+    \begin{vmatrix} 1 & 2 \\ -2 & 4
+    \end{vmatrix}
+    + \vec{k}
+    \begin{vmatrix} 1 & -1 \\ -2 & 1
+    \end{vmatrix}.
   \]
   Вычислим миноры:
   $\vec{i}(-4 - 2) - \vec{j}(4 + 4) + \vec{k}(1 - 2)
@@ -353,7 +361,7 @@
   \[
     \cos\alpha = \frac{|(\vec{n}_1, \vec{n}_2)|}{|\vec{n}_1|\,|\vec{n}_2|}
     = \frac{|1\cdot 2 + (-1)\cdot 1 + 2\cdot 0|}
-      {\sqrt{1+1+4}\,\cdot\,\sqrt{4+1+0}}
+    {\sqrt{1+1+4}\,\cdot\,\sqrt{4+1+0}}
     = \frac{1}{\sqrt{6}\cdot\sqrt{5}} = \frac{1}{\sqrt{30}}.
   \]
   Следовательно, $\alpha = \arccos\dfrac{1}{\sqrt{30}}$.
@@ -448,7 +456,8 @@
     \draw[blue, thick] (-1,-0.5) -- (2.8,1.4) node[right] {$L$};
     \coordinate (M0) at (0.9,0.45);
     \fill (M0) circle (1.2pt) node[above left] {$M_0(x_0,y_0,z_0)$};
-    \draw[->, red, thick] (M0) -- ($(M0)+(1.2,0.6)$) node[below right] {$\vec{q}(l,m,n)$};
+    \draw[->, red, thick] (M0) -- ($(M0)+(1.2,0.6)$) node[below
+    right] {$\vec{q}(l,m,n)$};
   \end{tikzpicture}
   \caption{Прямая через точку $M_0$ с направляющим вектором $\vec{q}$.}
   \label{fig:line}
@@ -466,11 +475,12 @@
     \item $L_1 \perp L_2 \iff l_1l_2 + m_1m_2 + n_1n_2 = 0$;
     \item угол между прямыми:
       $\cos\alpha = \dfrac{|l_1l_2 + m_1m_2 + n_1n_2|}
-        {\sqrt{l_1^2+m_1^2+n_1^2}\,\cdot\,\sqrt{l_2^2+m_2^2+n_2^2}}$;
+      {\sqrt{l_1^2+m_1^2+n_1^2}\,\cdot\,\sqrt{l_2^2+m_2^2+n_2^2}}$;
     \item прямые \textbf{пересекаются} (лежат в одной плоскости и не
       параллельны) тогда и только тогда, когда
       \[
-        \Delta = \begin{vmatrix}
+        \Delta =
+        \begin{vmatrix}
           x_2 - x_1 & y_2 - y_1 & z_2 - z_1 \\
           l_1 & m_1 & n_1 \\
           l_2 & m_2 & n_2
@@ -495,7 +505,7 @@
       откуда
       \[
         \alpha = \arcsin\frac{|Al + Bm + Cn|}
-          {\sqrt{A^2+B^2+C^2}\,\cdot\,\sqrt{l^2+m^2+n^2}}.
+        {\sqrt{A^2+B^2+C^2}\,\cdot\,\sqrt{l^2+m^2+n^2}}.
       \]
   \end{itemize}
 \end{theorem}
@@ -520,7 +530,8 @@
 
 \subsubsection*{Примеры: прямые, углы, проекции}
 
-\begin{definition}{Каноническое и параметрическое уравнения прямой по двум точкам}{ex_line_AB}
+\begin{definition}{Каноническое и параметрическое уравнения прямой по
+  двум точкам}{ex_line_AB}
   Найти канонические и параметрические уравнения прямой $AB$, если
   $A(3,2,1)$ и $B(1,-1,2)$.
 
@@ -557,7 +568,7 @@
       \vec{i} & \vec{j} & \vec{k} \\ 1 & 2 & -3 \\ 1 & 1 & -2
     \end{vmatrix}
     = \vec{i}(2\cdot(-2) - (-3)\cdot 1) - \vec{j}(1\cdot(-2) - (-3)\cdot 1)
-      + \vec{k}(1\cdot 1 - 2\cdot 1).
+    + \vec{k}(1\cdot 1 - 2\cdot 1).
   \]
   Считаем: $\vec{i}(-4+3) - \vec{j}(-2+3) + \vec{k}(1-2)
   = -\vec{i} - \vec{j} - \vec{k}$, то есть $\vec{q}(1,1,1)$.
@@ -601,7 +612,7 @@
 \begin{remarkIT}{Проекция в графике и зрении}{proj_it}
   Проекция точки на плоскость --- базовая операция: «прибивание»
   объекта к полу в физическом движке, расчёт падающей тени (точка
-  проецируется на плоскость пола вдоль направления на источник
+    проецируется на плоскость пола вдоль направления на источник
   света), привязка точек облака лидара к найденной опорной плоскости в
   алгоритмах сегментации сцены.
 \end{remarkIT}
@@ -615,7 +626,7 @@
   \[
     \sin\alpha = \frac{|(\vec{n}, \vec{q})|}{|\vec{n}|\,|\vec{q}|}
     = \frac{|3\cdot 2 + 1\cdot(-1) + (-2)\cdot 3|}
-      {\sqrt{9+1+4}\,\cdot\,\sqrt{4+1+9}}
+    {\sqrt{9+1+4}\,\cdot\,\sqrt{4+1+9}}
     = \frac{|6 - 1 - 6|}{\sqrt{14}\cdot\sqrt{14}} = \frac{1}{14}.
   \]
   Следовательно, $\alpha = \arcsin\dfrac{1}{14}$.

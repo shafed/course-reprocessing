@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Конструктор кривых 2-го порядка — Лекция 9</title>
+
+  <!-- MathJax для рендеринга формул -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)'], ['$','$']], displayMath: [['\\[','\\]'], ['$$','$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    /* ---- Базовые стили ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2e3244;
+      --accent:   #5b8af5;
+      --accent2:  #f5a623;
+      --text:     #e2e6f0;
+      --muted:    #7a80a0;
+      --curve:    #5bf5c0;
+      --focus:    #f55b5b;
+      --directrix:#f5c05b;
+      --radius:   10px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--accent);
+      letter-spacing: .03em;
+    }
+
+    h1 span { color: var(--muted); font-weight: 400; font-size: 1rem; }
+
+    /* ---- Основной макет ---- */
+    .layout {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* ---- Панель управления ---- */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      flex-shrink: 0;
+    }
+
+    .panel-section { display: flex; flex-direction: column; gap: 10px; }
+
+    .panel-section h2 {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+
+    /* ---- Ползунки ---- */
+    .slider-group { display: flex; flex-direction: column; gap: 4px; }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .9rem;
+    }
+
+    .slider-label span:last-child {
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 40px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { background: var(--curve); }
+
+    /* ---- Переключатель формы ---- */
+    .toggle-row {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .toggle-row button {
+      flex: 1;
+      padding: 8px 4px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: .85rem;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .toggle-row button.active {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ---- Опции отображения ---- */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .9rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+    /* ---- Блок информации о кривой ---- */
+    .curve-info {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .curve-type {
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .curve-type.circle   { color: #a0d8ff; }
+    .curve-type.ellipse  { color: var(--curve); }
+    .curve-type.parabola { color: var(--accent2); }
+    .curve-type.hyperbola { color: var(--focus); }
+
+    .param-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 12px;
+      font-size: .85rem;
+    }
+
+    .param-item { display: flex; justify-content: space-between; gap: 4px; }
+    .param-item span:first-child { color: var(--muted); }
+    .param-item span:last-child  { font-weight: 600; color: var(--text); }
+
+    /* ---- Формулы ---- */
+    .formula-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .9rem;
+      line-height: 1.8;
+    }
+
+    .formula-box .formula-polar { color: var(--accent); font-size: .95rem; }
+    .formula-box .formula-canon { color: var(--curve); font-size: .95rem; }
+
+    /* ---- Canvas ---- */
+    .canvas-wrap {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      flex: 1;
+      min-width: 400px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .canvas-legend {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: .75rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-line {
+      width: 20px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Конструктор кривых 2-го порядка <span>— Лекция 9</span></h1>
+
+<div class="layout">
+
+  <!-- ======== Панель управления ======== -->
+  <div class="panel">
+
+    <!-- Режим отображения -->
+    <div class="panel-section">
+      <h2>Режим уравнения</h2>
+      <div class="toggle-row">
+        <button id="btnPolar"  class="active"  onclick="setMode('polar')">Полярная</button>
+        <button id="btnCanon"  onclick="setMode('canon')">Каноническая</button>
+      </div>
+    </div>
+
+    <!-- Параметры кривой -->
+    <div class="panel-section">
+      <h2>Параметры</h2>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Эксцентриситет <em>e</em></span>
+          <span id="eVal">1.00</span>
+        </div>
+        <input type="range" id="eSlider" min="0" max="2.5" step="0.01" value="1.00"
+               oninput="onSliderChange()" />
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Фокальный параметр <em>p</em></span>
+          <span id="pVal">2.00</span>
+        </div>
+        <input type="range" id="pSlider" min="0.5" max="6" step="0.1" value="2.00"
+               oninput="onSliderChange()" />
+      </div>
+    </div>
+
+    <!-- Опции отображения -->
+    <div class="panel-section">
+      <h2>Отображение</h2>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chkFocus"    checked onchange="draw()" />
+        Фокус (полюс)
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chkDirectrix" checked onchange="draw()" />
+        Директриса
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chkGrid"      checked onchange="draw()" />
+        Координатная сетка
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="chkAxes"      checked onchange="draw()" />
+        Оси координат
+      </label>
+    </div>
+
+    <!-- Информация о кривой -->
+    <div class="panel-section">
+      <h2>Текущая кривая</h2>
+      <div class="curve-info">
+        <div class="curve-type" id="curveType">Парабола</div>
+        <div class="param-grid" id="paramGrid"></div>
+      </div>
+    </div>
+
+    <!-- Формулы -->
+    <div class="panel-section">
+      <h2>Формулы</h2>
+      <div class="formula-box" id="formulaBox">
+        <!-- Заполняется из JS -->
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+
+  <!-- ======== Canvas ======== -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="cvs"></canvas>
+    <div class="canvas-legend">
+      <div class="legend-item">
+        <div class="legend-line" style="background:#5bf5c0"></div>
+        <span>Кривая</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f55b5b"></div>
+        <span>Фокус</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:#f5c05b; height:2px; border-top: 2px dashed #f5c05b; background:none;"></div>
+        <span>Директриса</span>
+      </div>
+    </div>
+  </div><!-- /canvas-wrap -->
+
+</div><!-- /layout -->
+
+<script>
+'use strict';
+
+/* ================================================================
+   Состояние приложения
+================================================================ */
+const state = {
+  e: 1.0,     // эксцентриситет
+  p: 2.0,     // фокальный параметр (полупараметр)
+  mode: 'polar', // 'polar' | 'canon'
+  scale: 80,  // пикселей на единицу (обновляется при resize)
+};
+
+/* ================================================================
+   Элементы DOM
+================================================================ */
+const cvs        = document.getElementById('cvs');
+const ctx        = cvs.getContext('2d');
+const canvasWrap = document.getElementById('canvasWrap');
+const eSlider    = document.getElementById('eSlider');
+const pSlider    = document.getElementById('pSlider');
+const eVal       = document.getElementById('eVal');
+const pVal       = document.getElementById('pVal');
+const curveTypeEl = document.getElementById('curveType');
+const paramGrid  = document.getElementById('paramGrid');
+const formulaBox = document.getElementById('formulaBox');
+
+/* ================================================================
+   Вспомогательные функции
+================================================================ */
+
+/** Определяем тип кривой по эксцентриситету */
+function curveKind(e) {
+  if (e < 1e-6)              return 'circle';
+  if (Math.abs(e - 1) < 1e-6) return 'parabola';
+  if (e < 1)                  return 'ellipse';
+  return 'hyperbola';
+}
+
+/** Вычисление параметров для эллипса/окружности: a, b, c */
+function ellipseParams(e, p) {
+  // p = b²/a = a(1-e²)  =>  a = p/(1-e²)
+  const a = p / (1 - e * e);
+  const c = a * e;
+  const b = Math.sqrt(a * a - c * c);
+  return { a, b, c };
+}
+
+/** Вычисление параметров для гиперболы: a, b, c */
+function hyperbolaParams(e, p) {
+  // p = b²/a = a(e²-1)  =>  a = p/(e²-1)
+  const a = p / (e * e - 1);
+  const c = a * e;
+  const b = Math.sqrt(c * c - a * a);
+  return { a, b, c };
+}
+
+/** Форматирование числа до 3 знаков */
+function fmt(x) { return isFinite(x) ? x.toFixed(3) : '∞'; }
+
+/* ================================================================
+   Обновление UI-элементов (тип кривой, параметры, формулы)
+================================================================ */
+function updateInfo() {
+  const { e, p } = state;
+  const kind = curveKind(e);
+
+  // --- Тип кривой ---
+  const nameMap = {
+    circle: 'Окружность',
+    ellipse: 'Эллипс',
+    parabola: 'Парабола',
+    hyperbola: 'Гипербола',
+  };
+  curveTypeEl.textContent = nameMap[kind];
+  curveTypeEl.className   = 'curve-type ' + kind;
+
+  // --- Числовые параметры ---
+  let params = [];
+  if (kind === 'circle') {
+    const r = p; // e=0, r=p
+    params = [
+      ['e', '0'],
+      ['p', fmt(p)],
+      ['r (радиус)', fmt(r)],
+    ];
+  } else if (kind === 'ellipse') {
+    const { a, b, c } = ellipseParams(e, p);
+    params = [
+      ['e', fmt(e)],
+      ['p', fmt(p)],
+      ['a', fmt(a)],
+      ['b', fmt(b)],
+      ['c', fmt(c)],
+      ['c² = a²−b²', fmt(c*c) + ' ≈ ' + fmt(a*a - b*b)],
+    ];
+  } else if (kind === 'parabola') {
+    params = [
+      ['e', '1'],
+      ['p', fmt(p)],
+      ['фокус', `(${fmt(p/2)}, 0)`],
+      ['директриса', `x = −${fmt(p/2)}`],
+    ];
+  } else {
+    const { a, b, c } = hyperbolaParams(e, p);
+    params = [
+      ['e', fmt(e)],
+      ['p', fmt(p)],
+      ['a', fmt(a)],
+      ['b', fmt(b)],
+      ['c', fmt(c)],
+      ['c² = a²+b²', fmt(c*c) + ' ≈ ' + fmt(a*a + b*b)],
+    ];
+  }
+
+  paramGrid.innerHTML = params.map(([k, v]) =>
+    `<div class="param-item"><span>${k}:</span><span>${v}</span></div>`
+  ).join('');
+
+  // --- Формулы ---
+  updateFormulas(kind);
+}
+
+/** Формирует HTML с MathJax-формулами и вызывает типографику */
+function updateFormulas(kind) {
+  const polarLine = `<div class="formula-polar">$$r = \\dfrac{p}{1 - e\\cos\\varphi}$$</div>`;
+
+  let canonLine = '';
+  if (kind === 'circle') {
+    canonLine = `<div class="formula-canon">$$x^2 + y^2 = r^2$$</div>`;
+  } else if (kind === 'ellipse' || kind === 'circle') {
+    canonLine = `<div class="formula-canon">$$\\dfrac{x^2}{a^2} + \\dfrac{y^2}{b^2} = 1$$</div>`;
+  } else if (kind === 'parabola') {
+    canonLine = `<div class="formula-canon">$$y^2 = 2px$$</div>`;
+  } else {
+    canonLine = `<div class="formula-canon">$$\\dfrac{x^2}{a^2} - \\dfrac{y^2}{b^2} = 1$$</div>`;
+  }
+
+  const ecLine = `<div style="font-size:.8rem;color:#7a80a0;margin-top:4px;">
+    \\(e = c/a,\\quad c^2 = a^2 \\mp b^2\\)
+  </div>`;
+
+  // Показываем в зависимости от режима
+  if (state.mode === 'polar') {
+    formulaBox.innerHTML = polarLine + ecLine;
+  } else {
+    formulaBox.innerHTML = canonLine + ecLine;
+  }
+
+  // Запрашиваем повторную типографику MathJax
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    MathJax.typesetPromise([formulaBox]).catch(() => {});
+  }
+}
+
+/* ================================================================
+   Обработчик ползунков
+================================================================ */
+function onSliderChange() {
+  state.e = parseFloat(eSlider.value);
+  state.p = parseFloat(pSlider.value);
+  eVal.textContent = state.e.toFixed(2);
+  pVal.textContent = state.p.toFixed(2);
+  updateInfo();
+  draw();
+}
+
+/* ================================================================
+   Переключение режима формы
+================================================================ */
+function setMode(mode) {
+  state.mode = mode;
+  document.getElementById('btnPolar').classList.toggle('active', mode === 'polar');
+  document.getElementById('btnCanon').classList.toggle('active', mode === 'canon');
+  updateInfo();
+  draw();
+}
+
+/* ================================================================
+   РИСОВАНИЕ НА CANVAS
+================================================================ */
+
+/** Пересчёт координат: математические → пиксельные (ось Y перевёрнута) */
+function toPixel(mx, my, cx, cy, scale) {
+  return [cx + mx * scale, cy - my * scale];
+}
+
+/** Основная функция рисования */
+function draw() {
+  // --- Размеры ---
+  const W = cvs.width  = canvasWrap.clientWidth;
+  const H = cvs.height = canvasWrap.clientHeight;
+  const cx = W / 2 - 40;  // центр смещён чуть левее для наглядности
+  const cy = H / 2;
+  const scale = state.scale;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // --- Сетка ---
+  if (document.getElementById('chkGrid').checked) {
+    drawGrid(W, H, cx, cy, scale);
+  }
+
+  // --- Оси ---
+  if (document.getElementById('chkAxes').checked) {
+    drawAxes(W, H, cx, cy, scale);
+  }
+
+  const { e, p } = state;
+  const kind = curveKind(e);
+
+  // --- Директриса ---
+  if (document.getElementById('chkDirectrix').checked) {
+    drawDirectrix(kind, e, p, W, H, cx, cy, scale);
+  }
+
+  // --- Кривая ---
+  drawCurve(kind, e, p, W, H, cx, cy, scale);
+
+  // --- Фокус ---
+  if (document.getElementById('chkFocus').checked) {
+    drawFocus(cx, cy);
+  }
+}
+
+/* ---- Координатная сетка ---- */
+function drawGrid(W, H, cx, cy, scale) {
+  ctx.strokeStyle = 'rgba(46,50,68,0.8)';
+  ctx.lineWidth   = 1;
+
+  // Вертикальные линии
+  const xStart = Math.floor((0 - cx) / scale);
+  const xEnd   = Math.ceil((W - cx) / scale);
+  for (let xi = xStart; xi <= xEnd; xi++) {
+    const px = cx + xi * scale;
+    ctx.beginPath();
+    ctx.moveTo(px, 0);
+    ctx.lineTo(px, H);
+    ctx.stroke();
+  }
+
+  // Горизонтальные линии
+  const yStart = Math.floor((cy - H) / scale);
+  const yEnd   = Math.ceil(cy / scale);
+  for (let yi = yStart; yi <= yEnd; yi++) {
+    const py = cy - yi * scale;
+    ctx.beginPath();
+    ctx.moveTo(0, py);
+    ctx.lineTo(W, py);
+    ctx.stroke();
+  }
+}
+
+/* ---- Оси с засечками и подписями ---- */
+function drawAxes(W, H, cx, cy, scale) {
+  ctx.strokeStyle = 'rgba(122,128,160,0.9)';
+  ctx.lineWidth = 1.5;
+  ctx.fillStyle = 'rgba(122,128,160,0.8)';
+  ctx.font = '11px Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+
+  // Ось X
+  ctx.beginPath();
+  ctx.moveTo(0, cy);
+  ctx.lineTo(W, cy);
+  ctx.stroke();
+  // Стрелка X
+  ctx.beginPath();
+  ctx.moveTo(W - 10, cy - 5);
+  ctx.lineTo(W, cy);
+  ctx.lineTo(W - 10, cy + 5);
+  ctx.stroke();
+  ctx.fillText('x', W - 6, cy + 6);
+
+  // Ось Y
+  ctx.beginPath();
+  ctx.moveTo(cx, H);
+  ctx.lineTo(cx, 0);
+  ctx.stroke();
+  // Стрелка Y
+  ctx.beginPath();
+  ctx.moveTo(cx - 5, 10);
+  ctx.lineTo(cx, 0);
+  ctx.lineTo(cx + 5, 10);
+  ctx.stroke();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('y', cx + 6, 8);
+
+  // Засечки и подписи на осях
+  const tickSize = 4;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const xStart = Math.floor((0 - cx) / scale);
+  const xEnd   = Math.ceil((W - cx) / scale);
+  for (let xi = xStart; xi <= xEnd; xi++) {
+    if (xi === 0) continue;
+    const px = cx + xi * scale;
+    ctx.beginPath();
+    ctx.moveTo(px, cy - tickSize);
+    ctx.lineTo(px, cy + tickSize);
+    ctx.stroke();
+    ctx.fillText(xi, px, cy + tickSize + 2);
+  }
+
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  const yStart = Math.floor((cy - H) / scale);
+  const yEnd   = Math.ceil(cy / scale);
+  for (let yi = yStart; yi <= yEnd; yi++) {
+    if (yi === 0) continue;
+    const py = cy - yi * scale;
+    ctx.beginPath();
+    ctx.moveTo(cx - tickSize, py);
+    ctx.lineTo(cx + tickSize, py);
+    ctx.stroke();
+    ctx.fillText(yi, cx - tickSize - 2, py);
+  }
+}
+
+/* ---- Директриса (вертикальная линия) ---- */
+function drawDirectrix(kind, e, p, W, H, cx, cy, scale) {
+  let dx; // x-координата директрисы в математических единицах
+
+  if (kind === 'parabola') {
+    // y² = 2px, директриса: x = -p/2
+    dx = -p / 2;
+  } else if (kind === 'circle') {
+    // У окружности нет директрисы — пропускаем
+    return;
+  } else if (kind === 'ellipse') {
+    const { a } = ellipseParams(e, p);
+    // Директриса: x = -a/e (левая), но в полярных — полюс в правом фокусе,
+    // директриса соответствует левой: x_focus + a/e от центра
+    // Полюс (правый фокус) в пикселях = cx. Центр эллипса смещён влево на c.
+    const c = a * e;
+    // x_d_math относительно полюса (правого фокуса): -(a/e - c) = -(a-ce)/e...
+    // Проще: директриса x = c - a/e  (от центра), от полюса: (c - a/e) - c = -a/e ...
+    // Стандарт: для правого фокуса соответствующая директриса x = a/e (от центра).
+    // В наших координатах полюс в cx. Центр в cx - c*scale.
+    // Директриса (правая): x_центр + a/e
+    // Директриса (левая):  x_центр - a/e
+    // Используем левую (соответствует уравнению r = p/(1-e·cos φ))
+    dx = -(a / e) - c; // от полюса
+  } else {
+    // Гипербола: директриса x = a/e, от центра; от полюса: a/e - c
+    const { a, c } = hyperbolaParams(e, p);
+    dx = (a / e) - c; // от полюса (правый фокус)
+    // Но рисуем обе симметричные — рисуем левую
+    dx = -(a / e) - c;
+  }
+
+  const pxX = cx + dx * scale;
+  if (pxX < 0 || pxX > W) return; // за пределами canvas
+
+  ctx.save();
+  ctx.strokeStyle = '#f5c05b';
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([8, 5]);
+  ctx.beginPath();
+  ctx.moveTo(pxX, 0);
+  ctx.lineTo(pxX, H);
+  ctx.stroke();
+
+  // Подпись директрисы
+  ctx.setLineDash([]);
+  ctx.fillStyle   = '#f5c05b';
+  ctx.font        = '12px Segoe UI, sans-serif';
+  ctx.textAlign   = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText('директриса', pxX + 4, 8);
+  ctx.restore();
+}
+
+/* ---- Фокус (полюс) ---- */
+function drawFocus(cx, cy) {
+  // Полюс = правый фокус = начало нашей системы координат (cx, cy)
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#f55b5b';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.fillStyle   = '#f55b5b';
+  ctx.font        = '12px Segoe UI, sans-serif';
+  ctx.textAlign   = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('F (полюс)', cx + 8, cy - 4);
+  ctx.restore();
+}
+
+/* ---- Кривая по полярному уравнению r = p/(1 - e·cos φ) ---- */
+function drawCurve(kind, e, p, W, H, cx, cy, scale) {
+  ctx.save();
+  ctx.strokeStyle = '#5bf5c0';
+  ctx.lineWidth   = 2.5;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+
+  if (kind === 'parabola' || kind === 'ellipse' || kind === 'circle') {
+    // Замкнутые и параболические кривые рисуем по полярному уравнению
+    drawPolarCurve(e, p, W, H, cx, cy, scale);
+  } else {
+    // Гипербола: рисуем обе ветви
+    drawPolarCurve(e, p, W, H, cx, cy, scale);
+  }
+
+  ctx.restore();
+}
+
+/**
+ * Перебирает угол φ от 0 до 2π и рисует кривую.
+ * Для гиперболы e>1 знаменатель (1 - e·cosφ) может обращаться в 0 —
+ * в этих точках ломаем контур.
+ */
+function drawPolarCurve(e, p, W, H, cx, cy, scale) {
+  const steps  = 3600;         // количество шагов
+  const dPhi   = (2 * Math.PI) / steps;
+  const RMAX   = 20;           // максимальный радиус в единицах
+
+  ctx.beginPath();
+  let penDown = false;
+
+  for (let i = 0; i <= steps; i++) {
+    const phi  = i * dPhi;
+    const denom = 1 - e * Math.cos(phi);
+
+    // Знаменатель близок к нулю (асимптота гиперболы) → разрыв
+    if (Math.abs(denom) < 1e-4) {
+      penDown = false;
+      continue;
+    }
+
+    const r = p / denom;
+
+    // Отрицательный или очень большой радиус — за пределами видимости
+    if (r < 0 || r > RMAX) {
+      penDown = false;
+      continue;
+    }
+
+    // Полярные → декартовы (относительно фокуса-полюса)
+    const mx = r * Math.cos(phi);
+    const my = r * Math.sin(phi);
+
+    // Преобразуем в пиксели
+    const px = cx + mx * scale;
+    const py = cy - my * scale;
+
+    // Обрезаем по видимой области с небольшим запасом
+    const margin = 20;
+    if (px < -margin || px > W + margin || py < -margin || py > H + margin) {
+      penDown = false;
+      continue;
+    }
+
+    if (!penDown) {
+      ctx.moveTo(px, py);
+      penDown = true;
+    } else {
+      ctx.lineTo(px, py);
+    }
+  }
+
+  ctx.stroke();
+
+  // --- Центр координат и центр кривой (для эллипса/гиперболы) ---
+  const kind = curveKind(e);
+  if (kind === 'ellipse') {
+    const { a, c } = ellipseParams(e, p);
+    // Центр эллипса смещён влево от полюса на c
+    const ccx = cx - c * scale;
+    drawCenterMark(ccx, cy);
+  } else if (kind === 'hyperbola') {
+    const { a, c } = hyperbolaParams(e, p);
+    const ccx = cx - c * scale;
+    drawCenterMark(ccx, cy);
+  }
+}
+
+/** Маленький крест — центр кривой */
+function drawCenterMark(px, py) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(91,138,245,0.7)';
+  ctx.lineWidth   = 1;
+  const s = 5;
+  ctx.beginPath();
+  ctx.moveTo(px - s, py); ctx.lineTo(px + s, py);
+  ctx.moveTo(px, py - s); ctx.lineTo(px, py + s);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* ================================================================
+   Масштабирование canvas по размеру контейнера
+================================================================ */
+function resizeCanvas() {
+  const W = canvasWrap.clientWidth;
+  const H = canvasWrap.clientHeight;
+  // Шкала: хотим видеть примерно ±7 единиц по меньшей стороне
+  state.scale = Math.min(W, H) / 14;
+  draw();
+}
+
+/* ================================================================
+   Инициализация
+================================================================ */
+function init() {
+  // Устанавливаем начальный масштаб
+  canvasWrap.style.height = Math.max(420, canvasWrap.clientWidth * 0.65) + 'px';
+
+  onSliderChange();          // заполняем UI сразу
+  resizeCanvas();            // первый рендер
+
+  window.addEventListener('resize', resizeCanvas);
+}
+
+// Запускаем после загрузки DOM
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
