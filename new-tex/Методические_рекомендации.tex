@@ -1,0 +1,138 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, patterns, calc}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}   % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}    % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}    % зеленый для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для доказательств
+
+% Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами
+\newtcbtheorem[no counter]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[no counter]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[no counter]{remarkIT}{Применение на практике}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+\newtcbtheorem[auto counter]{exampleBox}{Пример}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=gray!5, colframe=proofcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=proofcolor}
+}{ex}
+
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+% Нумерованные списки с отступами
+\usepackage{enumitem}
+
+% Удобные команды для векторов
+\newcommand{\va}{\bar{a}}
+\newcommand{\vb}{\bar{b}}
+\newcommand{\vc}{\bar{c}}
+\newcommand{\vi}{\bar{\imath}}
+\newcommand{\vj}{\bar{\jmath}}
+\newcommand{\vk}{\bar{k}}
+\newcommand{\vl}{\bar{l}}
+
+\title{Методические рекомендации преподавателю\\
+по использованию интерактивных демонстраций на лекциях\\
+\large (к лекциям 8--16 курса аналитической геометрии и линейной алгебры)}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\section*{Введение}
+
+Настоящие рекомендации описывают, как встроить семь интерактивных
+HTML-демонстраций из каталога \texttt{new-tex/demos} в ткань лекции.
+Для каждой демонстрации указано, \textbf{какие именно факты лекции она
+иллюстрирует} (или на демонстрацию каких прикладных фактов она направлена),
+и приведён \textbf{примерный сценарий использования на занятии} — с указанием
+момента включения, действий у доски, вопросов аудитории и «момента удивления»,
+ради которого демонстрация и создавалась.
+
+Демонстрации представляют собой автономные файлы \texttt{*.html} (HTML + JavaScript)
+и открываются в любом современном браузере без установки дополнительного ПО;
+их удобно показывать через проектор и перетаскивать объекты прямо во время
+лекции. Зелёные блоки \emph{«Применение на практике»} собирают прикладные
+сюжеты, которые уместно проговорить, опираясь на наглядную картинку.
+
+\medskip
+\noindent\textbf{Сводная таблица соответствия.}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{0.30\textwidth}p{0.45\textwidth}p{0.12\textwidth}@{}}
+\hline
+\textbf{Файл демонстрации} & \textbf{Тема} & \textbf{Лекция}\\
+\hline
+\texttt{01-triple-product.html}   & Смешанное произведение и объём          & 8\\
+\texttt{02-conics.html}           & Кривые 2-го порядка, эксцентриситет     & 9\\
+\texttt{03-plane-distance.html}   & Расстояние до плоскости, угол           & 10\\
+\texttt{04-quadric-sections.html} & Поверхности 2-го порядка, сечения       & 11\\
+\texttt{05-complex-numbers.html}  & Комплексные числа, корни $n$-й степени  & 12\\
+\texttt{06-polynomial-vieta.html} & Корни многочлена, теорема Виета         & 13\\
+\texttt{07-linear-dependence.html}& Линейная зависимость, базис             & 15--16\\
+\hline
+\end{tabular}
+\end{center}
+
+\bigskip
+
+\input{method/section_01}
+\bigskip
+\input{method/section_02}
+\bigskip
+\input{method/section_03}
+\bigskip
+\input{method/section_04}
+\bigskip
+\input{method/section_05}
+\bigskip
+\input{method/section_06}
+\bigskip
+\input{method/section_07}
+
+\end{document}
