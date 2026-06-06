@@ -1,0 +1,125 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{geometry}
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems, skins}
+\usepackage{tikz}
+\usetikzlibrary{calc, arrows.meta, positioning}
+\usepackage{enumitem}
+
+% Определение цветов для разных блоков
+\definecolor{defcolor}{RGB}{70, 130, 180}    % синий для определений
+\definecolor{thmcolor}{RGB}{180, 70, 70}     % красный для теорем
+\definecolor{itcolor}{RGB}{60, 180, 100}     % зелёный для IT-примеров
+\definecolor{proofcolor}{RGB}{100, 100, 100} % серый для примеров
+
+% Настройка колонтитулов
+\setlength{\headheight}{33pt}
+\addtolength{\topmargin}{-18.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1cm]{logo.jpg}}
+\fancyhead[C]{\textbf{РТУ МИРЭА, Кафедра ВМ}}
+\fancyhead[R]{\thepage}
+
+% Окружения с цветами (без автонумерации заголовков)
+\newtcbtheorem[no counter]{definition}{Определение}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=defcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=defcolor}
+}{def}
+
+\newtcbtheorem[no counter]{theorem}{Теорема}{
+  enhanced, sharp corners, boxrule=1pt, colback=white, colframe=thmcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=thmcolor}
+}{thm}
+
+\newtcbtheorem[no counter]{remarkIT}{Применение в IT}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=itcolor!10, colframe=itcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=itcolor}
+}{it}
+
+% Примеры нумеруются автоматически (1, 2, 3, ...)
+\newtcbtheorem[auto counter]{exampleBox}{Пример}{
+  enhanced, sharp corners, boxrule=0.8pt, colback=gray!5, colframe=proofcolor,
+  fonttitle=\bfseries, coltitle=white, attach boxed title to top
+  left={yshift=-2mm},
+  boxed title style={sharp corners, colback=proofcolor}
+}{ex}
+
+% Доказательство заканчивается чёрным квадратом
+\newenvironment{myproof}{\noindent\textbf{Доказательство.}}{\hfill$\blacksquare$}
+
+\title{Лекция N: Название темы}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+% =====================================================================
+% ПРАВИЛА ОФОРМЛЕНИЯ:
+%   * Заголовки разделов НЕ нумеруются  -> \section*{}, \subsection*{}
+%   * Формулы нумеруются вручную: \tag{N.1}, \tag{N.2}, ... (N — номер лекции)
+%   * Определения и теоремы НЕ нумеруются (no counter)
+%   * Примеры нумеруются автоматически (exampleBox, auto counter)
+%   * Конец доказательства — чёрный квадрат (окружение myproof)
+%   * Кафедра обозначается «ВМ» (не «ВМ-3»)
+%   * Рисунки подписываются: \textit{Рисунок N.k} под изображением
+% =====================================================================
+
+\section*{Введение}
+
+% Вводный текст. Для IT-направления — блок с практическими применениями:
+\begin{remarkIT}{Заголовок применения}{intro_it}
+  Текст о применении темы в IT.
+\end{remarkIT}
+
+\section*{Название раздела}
+
+\begin{definition}{Название определения}{def_label}
+  Текст определения.
+\end{definition}
+
+\begin{theorem}{Название теоремы}{thm_label}
+  Формулировка теоремы. Нумерованная формула:
+  \begin{equation}
+    a + b = c. \tag{N.1}
+  \end{equation}
+\end{theorem}
+
+\begin{myproof}
+  Текст доказательства.
+\end{myproof}
+
+\begin{exampleBox}{Название примера}{ex_label}
+  Условие примера.
+
+  \textbf{Решение.} Ход решения.
+
+  \begin{center}
+    \begin{tikzpicture}[scale=1, >=Stealth]
+      \draw[->, gray] (-1,0) -- (3,0) node[right] {$x$};
+      \draw[->, gray] (0,-1) -- (0,3) node[above] {$y$};
+      \node[below left] at (0,0) {$0$};
+    \end{tikzpicture}
+
+    \textit{Рисунок N.1}
+  \end{center}
+\end{exampleBox}
+
+\end{document}

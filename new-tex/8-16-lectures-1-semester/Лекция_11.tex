@@ -4,6 +4,7 @@
 \usepackage[english,russian]{babel}
 \usepackage{amsmath, amssymb, amsfonts, amsthm}
 \usepackage{geometry}
+\usepackage{float}
 \geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
@@ -165,11 +166,11 @@
 
   \textbf{Второй порядок (общий вид).}
   \begin{equation}
-  \begin{aligned}
-    \Phi(x, y, z) = {}& a_{11}x^2 + a_{22}y^2 + a_{33}z^2
-    + 2a_{12}xy + 2a_{13}xz + 2a_{23}yz \\
-    & {}+ 2a_1 x + 2a_2 y + 2a_3 z + a_0 = 0.
-  \end{aligned} \tag{11.2}
+    \begin{aligned}
+      \Phi(x, y, z) = {}& a_{11}x^2 + a_{22}y^2 + a_{33}z^2
+      + 2a_{12}xy + 2a_{13}xz + 2a_{23}yz \\
+      & {}+ 2a_1 x + 2a_2 y + 2a_3 z + a_0 = 0.
+    \end{aligned} \tag{11.2}
   \end{equation}
   Это \textbf{алгебраическая поверхность 2-го порядка}. Старшие члены
   образуют квадратичную форму с матрицей
@@ -228,28 +229,11 @@
   ограничена: $|x| \le a$, $|y| \le b$, $|z| \le c$.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    % оси
-    \draw[->, gray] (0,0) -- (0,2.6) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.4,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.7,-1.3) node[below left] {$x$};
-    % контур эллипсоида
-    \draw[thick] (0,0) ellipse (2.6 and 1.5);
-    % "экватор"
-    \draw[thick, dashed] (-2.6,0) arc (180:360:2.6 and 0.5);
-    \draw[thick] (2.6,0) arc (0:180:2.6 and 0.5);
-    % меридиан
-    \draw[thick, dashed] (0,1.5) arc (90:270:0.5 and 1.5);
-    \draw[thick] (0,1.5) arc (90:-90:0.5 and 1.5);
-    % полуоси
-    \node at (2.7,-0.25) {$b$};
-    \node at (-0.25,1.55) {$c$};
-    \node at (-0.95,-0.55) {$a$};
-  \end{tikzpicture}
-  \caption{Эллипсоид с полуосями $a, b, c$ (Рисунок 11.1).}
-  \label{fig:ellipsoid}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-1.png}
+  \par\smallskip
+  \textit{Рисунок 11.1}
 \end{figure}
 
 \begin{remarkIT}{Эллипсоид доверия и bounding volume}{ell_it}
@@ -279,27 +263,11 @@
   (одна полость) и неограниченно простирается вдоль оси $Oz$.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-2.2) -- (0,2.5) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.2,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.6,-1.2) node[below left] {$x$};
-    % верхний эллипс
-    \draw[thick] (0,2) ellipse (1.5 and 0.4);
-    % нижний эллипс
-    \draw[thick, dashed] (-1.5,-2) arc (180:360:1.5 and 0.4);
-    \draw[thick] (1.5,-2) arc (0:180:1.5 and 0.4);
-    % горловой эллипс
-    \draw[thick, dashed] (-0.8,0) arc (180:360:0.8 and 0.25);
-    \draw[thick] (0.8,0) arc (0:180:0.8 and 0.25);
-    % боковые образующие (вогнутые)
-    \draw[thick] (1.5,2) .. controls (0.8,0.8) and (0.8,-0.8) .. (1.5,-2);
-    \draw[thick] (-1.5,2) .. controls (-0.8,0.8) and (-0.8,-0.8) .. (-1.5,-2);
-    \node at (0.95,-0.25) {$b$};
-  \end{tikzpicture}
-  \caption{Однополостный гиперболоид (Рисунок 11.2).}
-  \label{fig:one_hyperboloid}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-2.png}
+  \par\smallskip
+  \textit{Рисунок 11.2}
 \end{figure}
 
 \subsubsection*{3. Двуполостный гиперболоид}
@@ -320,28 +288,11 @@
   $(0, 0, \pm c)$. В полосе $|z| < c$ точек поверхности нет.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-2.6) -- (0,2.8) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.2,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.6,-1.2) node[below left] {$x$};
-    % верхняя чаша
-    \draw[thick] (-1.4,2.2) arc (180:360:1.4 and 0.4);
-    \draw[thick, dashed] (1.4,2.2) arc (0:180:1.4 and 0.4);
-    \draw[thick] (-1.4,2.2) .. controls (-0.6,1.4) and (0.6,1.4) .. (1.4,2.2);
-    \node[left] at (0,1.1) {$c$};
-    \fill (0,1.1) circle (1pt);
-    % нижняя чаша
-    \draw[thick, dashed] (-1.4,-2.2) arc (180:360:1.4 and 0.4);
-    \draw[thick] (1.4,-2.2) arc (0:180:1.4 and 0.4);
-    \draw[thick] (-1.4,-2.2) .. controls (-0.6,-1.4) and (0.6,-1.4)
-    .. (1.4,-2.2);
-    \node[left] at (0,-1.1) {$-c$};
-    \fill (0,-1.1) circle (1pt);
-  \end{tikzpicture}
-  \caption{Двуполостный гиперболоид (Рисунок 11.3).}
-  \label{fig:two_hyperboloid}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-3.png}
+  \par\smallskip
+  \textit{Рисунок 11.3}
 \end{figure}
 
 \subsubsection*{4. Конус (второго порядка)}
@@ -360,24 +311,11 @@
   образующих, проходящих через вершину.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-2.6) -- (0,2.8) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.2,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.6,-1.2) node[below left] {$x$};
-    % верхний эллипс
-    \draw[thick] (0,2.2) ellipse (1.5 and 0.45);
-    % нижний эллипс
-    \draw[thick, dashed] (-1.5,-2.2) arc (180:360:1.5 and 0.45);
-    \draw[thick] (1.5,-2.2) arc (0:180:1.5 and 0.45);
-    % образующие
-    \draw[thick] (-1.5,2.2) -- (0,0) -- (1.5,2.2);
-    \draw[thick] (-1.5,-2.2) -- (0,0) -- (1.5,-2.2);
-    \fill (0,0) circle (1pt);
-  \end{tikzpicture}
-  \caption{Конус второго порядка (Рисунок 11.4).}
-  \label{fig:cone}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-4.png}
+  \par\smallskip
+  \textit{Рисунок 11.4}
 \end{figure}
 
 \begin{remarkIT}{Конус видимости и трассировка лучей}{cone_it}
@@ -404,22 +342,11 @@
   имеет форму чаши и расположена в полупространстве $z \ge 0$.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-0.5) -- (0,2.8) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.2,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.6,-1.2) node[below left] {$x$};
-    % верхний эллипс
-    \draw[thick] (0,2.2) ellipse (1.6 and 0.45);
-    % параболическая чаша
-    \draw[thick] (-1.6,2.2) .. controls (-0.6,0.1) and (0.6,0.1) .. (1.6,2.2);
-    \draw[thick, dashed] (-1.6,2.2) .. controls (-0.6,2.7) and
-    (0.6,2.7) .. (1.6,2.2);
-    \fill (0,0) circle (1pt);
-  \end{tikzpicture}
-  \caption{Эллиптический параболоид (Рисунок 11.5).}
-  \label{fig:ell_paraboloid}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-5.png}
+  \par\smallskip
+  \textit{Рисунок 11.5}
 \end{figure}
 
 \begin{remarkIT}{Параболоид: антенны и выпуклая оптимизация}{par_it}
@@ -447,21 +374,11 @@
   форму седла с седловой точкой в начале координат.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-1.6) -- (0,2.2) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.2,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.8,-1.4) node[below left] {$x$};
-    % седло: парабола вверх вдоль x, вниз вдоль y
-    \draw[thick] (-1.6,1.4) .. controls (-0.5,-0.3) and (0.5,-0.3) .. (1.6,1.4);
-    \draw[thick] (-2.4,-1.2) .. controls (-0.8,0.3) and (0.8,0.3) .. (2.4,-1.2);
-    \draw[thick, dashed] (-1.6,1.4) .. controls (-0.8,0.6) .. (-2.4,-1.2);
-    \draw[thick, dashed] (1.6,1.4) .. controls (0.8,0.6) .. (2.4,-1.2);
-    \fill (0,0) circle (1pt);
-  \end{tikzpicture}
-  \caption{Гиперболический параболоид (седло) (Рисунок 11.6).}
-  \label{fig:hyp_paraboloid}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-6.png}
+  \par\smallskip
+  \textit{Рисунок 11.6}
 \end{figure}
 
 \begin{remarkIT}{Седловые точки в обучении нейросетей}{saddle_it}
@@ -494,24 +411,11 @@
   При $a = b$ получается круговой цилиндр.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-2.2) -- (0,2.6) node[above] {$z$};
-    \draw[->, gray] (0,0) -- (3.0,0) node[right] {$y$};
-    \draw[->, gray] (0,0) -- (-1.6,-1.2) node[below left] {$x$};
-    % верхний эллипс
-    \draw[thick] (0,1.8) ellipse (1.4 and 0.4);
-    % нижний эллипс
-    \draw[thick, dashed] (-1.4,-1.8) arc (180:360:1.4 and 0.4);
-    \draw[thick] (1.4,-1.8) arc (0:180:1.4 and 0.4);
-    % образующие
-    \draw[thick] (-1.4,1.8) -- (-1.4,-1.8);
-    \draw[thick] (1.4,1.8) -- (1.4,-1.8);
-    \node at (0.9,-0.25) {$b$};
-  \end{tikzpicture}
-  \caption{Эллиптический цилиндр (Рисунок 11.7).}
-  \label{fig:ell_cyl}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-7.png}
+  \par\smallskip
+  \textit{Рисунок 11.7}
 \end{figure}
 
 \subsubsection*{8. Гиперболический цилиндр}
@@ -526,30 +430,11 @@
   $Oz$. Поверхность состоит из двух «желобов».
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=0.95]
-    \draw[->, gray] (0,-2.0) -- (0,2.4) node[above] {$z$};
-    \draw[->, gray] (-3.0,0) -- (3.0,0) node[right] {$x$};
-    \draw[->, gray] (0,0) -- (1.4,-1.1) node[below right] {$y$};
-    % правая ветвь (верх и низ эллипсы дуги)
-    \draw[thick] (1.2,1.6) .. controls (0.7,0.6) and (0.7,-0.6) .. (1.2,-1.6);
-    \draw[thick] (2.4,1.6) .. controls (1.7,0.6) and (1.7,-0.6) .. (2.4,-1.6);
-    \draw[thick] (1.2,1.6) -- (2.4,1.6);
-    \draw[thick, dashed] (1.2,-1.6) -- (2.4,-1.6);
-    % левая ветвь
-    \draw[thick] (-1.2,1.6) .. controls (-0.7,0.6) and (-0.7,-0.6) ..
-    (-1.2,-1.6);
-    \draw[thick] (-2.4,1.6) .. controls (-1.7,0.6) and (-1.7,-0.6) ..
-    (-2.4,-1.6);
-    \draw[thick] (-1.2,1.6) -- (-2.4,1.6);
-    \draw[thick, dashed] (-1.2,-1.6) -- (-2.4,-1.6);
-    % асимптоты
-    \draw[gray, dotted] (-2.6,-1.8) -- (2.6,1.8);
-    \draw[gray, dotted] (-2.6,1.8) -- (2.6,-1.8);
-  \end{tikzpicture}
-  \caption{Гиперболический цилиндр (Рисунок 11.8).}
-  \label{fig:hyp_cyl}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-8.png}
+  \par\smallskip
+  \textit{Рисунок 11.8}
 \end{figure}
 
 \subsubsection*{9. Параболический цилиндр}
@@ -563,22 +448,11 @@
   образующие параллельны оси $Oz$.
 \end{definition}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (0,-1.8) -- (0,2.4) node[above] {$z$};
-    \draw[->, gray] (-3.0,0) -- (0.8,0) node[right] {$x$};
-    \draw[->, gray] (0,0) -- (1.5,-1.2) node[below right] {$y$};
-    % верхняя парабола (раскрыта влево в плоскости xy, тут эскиз)
-    \draw[thick] (-2.4,1.6) .. controls (-0.4,0.8) .. (-2.4,0.0);
-    % нижняя
-    \draw[thick] (-2.4,-0.2) .. controls (-0.4,-1.0) .. (-2.4,-1.6);
-    % образующие
-    \draw[thick] (-2.4,1.6) -- (-2.4,-1.6);
-    \draw[thick, dashed] (-0.4,0.8) -- (-0.4,-1.0);
-  \end{tikzpicture}
-  \caption{Параболический цилиндр (Рисунок 11.9).}
-  \label{fig:par_cyl}
+  \includegraphics[width=0.4\textwidth]{/home/shafed/course-reprocessing/new-tex/assets/11-9.png}
+  \par\smallskip
+  \textit{Рисунок 11.9}
 \end{figure}
 
 \begin{remarkIT}{Цилиндры как развёртываемые поверхности}{cyl_it}

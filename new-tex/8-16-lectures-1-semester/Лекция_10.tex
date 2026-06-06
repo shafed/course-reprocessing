@@ -140,17 +140,20 @@
 
 \begin{figure}[h!]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (-1.2,-0.6) -- (3,1.5) node[right] {$y$};
-    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
-    \draw[->, gray] (0.6,0.3) -- (-1.8,-1.2) node[below left] {$x$};
+  \begin{tikzpicture}[scale=1.0, >=Stealth]
+    % все три оси выходят из начала координат O=(0,0)
+    \draw[->, gray] (0,0) -- (3.4,0.1) node[right] {$y$};
+    \draw[->, gray] (0,0) -- (0,3.4) node[above] {$z$};
+    \draw[->, gray] (0,0) -- (-1.8,-1.2) node[below left] {$x$};
+    \node[below right=1pt] at (0,0) {$O$};
     \draw[blue, thick] plot[smooth cycle] coordinates
-    {(1.2,1.6) (2.2,1.9) (2.6,1.1) (2.1,0.4) (1.3,0.5) (0.9,1.0)};
-    \fill (1.9,1.3) circle (1.3pt) node[above right] {$M(x,y,z)$};
-    \node[blue] at (2.4,0.5) {$S$};
+    {(1.5,2.9) (2.5,3.2) (2.9,2.4) (2.4,1.7) (1.6,1.8) (1.2,2.3)};
+    \fill (2.0,2.85) circle (1.3pt) node[above=12pt] {$M(x,y,z)$};
+    \node[blue] at (2.75,1.85) {$S$};
   \end{tikzpicture}
-  \caption{Поверхность $S$, заданная уравнением $\Phi(x,y,z)=0$.}
-  \label{fig:surface}
+
+  \smallskip
+  \textit{Рисунок 10.1}
 \end{figure}
 
 \begin{theorem}{Общее уравнение плоскости}{plane_general_thm}
@@ -192,24 +195,27 @@
 
 \begin{figure}[h!]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (-1.5,-0.8) -- (3.2,1.6) node[right] {$y$};
-    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
-    \draw[->, gray] (0.7,0.35) -- (-2,-1) node[below left] {$x$};
-    % plane parallelogram
-    \fill[blue!10] (0.2,0.2) -- (2.6,0.7) -- (3.4,1.7) -- (1.0,1.2) -- cycle;
-    \draw[blue] (0.2,0.2) -- (2.6,0.7) -- (3.4,1.7) -- (1.0,1.2) -- cycle;
-    \node[blue] at (0.4,0.0) {$Q$};
-    \coordinate (M0) at (1.4,0.7);
-    \coordinate (M) at (2.4,1.2);
-    \fill (M0) circle (1.2pt) node[below] {$M_0$};
+  \begin{tikzpicture}[scale=1.0, >=Stealth]
+    % все три оси выходят из начала координат O=(0,0)
+    \draw[->, gray] (0,0) -- (3.4,1.5) node[right] {$y$};
+    \draw[->, gray] (0,0) -- (0,3.4) node[above] {$z$};
+    \draw[->, gray] (0,0) -- (-2,-1.3) node[below left] {$x$};
+    \node[below right=1pt] at (0,0) {$O$};
+    % плоскость Q (приподнята над осью y, не пересекается ею)
+    \fill[blue!10] (0.4,1.7) -- (2.8,2.2) -- (3.6,3.2) -- (1.2,2.7) -- cycle;
+    \draw[blue] (0.4,1.7) -- (2.8,2.2) -- (3.6,3.2) -- (1.2,2.7) -- cycle;
+    \node[blue] at (1.25,3) {$Q$};
+    \coordinate (M0) at (1.6,2.2);
+    \coordinate (M) at (2.6,2.7);
+    \fill (M0) circle (1.2pt) node[left] {$M_0$};
     \fill (M) circle (1.2pt) node[right] {$M$};
     \draw[->, thick] (M0) -- (M);
     \draw[->, red, thick] (M0) -- ($(M0)+(0,1.4)$) node[above]
     {$\vec{n}(A,B,C)$};
   \end{tikzpicture}
-  \caption{Вывод уравнения плоскости: $\vec{n}\perp\overrightarrow{M_0M}$.}
-  \label{fig:plane_proof}
+
+  \smallskip
+  \textit{Рисунок 10.2}
 \end{figure}
 
 \noindent Уравнение \eqref{eq:general} называется \textbf{общим
@@ -451,18 +457,24 @@
 
 \begin{figure}[h!]
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    \draw[->, gray] (-1.5,-0.8) -- (3.2,1.6) node[right] {$y$};
-    \draw[->, gray] (0,-1.5) -- (0,3) node[above] {$z$};
-    \draw[->, gray] (0.7,0.35) -- (-2,-1) node[below left] {$x$};
-    \draw[blue, thick] (-1,-0.5) -- (2.8,1.4) node[right] {$L$};
-    \coordinate (M0) at (0.9,0.45);
-    \fill (M0) circle (1.2pt) node[above left] {$M_0(x_0,y_0,z_0)$};
-    \draw[->, red, thick] (M0) -- ($(M0)+(1.2,0.6)$) node[below
-    right] {$\vec{q}(l,m,n)$};
+  \begin{tikzpicture}[scale=1.0, >=Stealth]
+    % все три оси выходят из начала координат O=(0,0)
+    \draw[->, gray] (0,0) -- (3.4,1.5) node[right] {$y$};
+    \draw[->, gray] (0,0) -- (0,3.4) node[above] {$z$};
+    \draw[->, gray] (0,0) -- (-2,-1.3) node[below left] {$x$};
+    \node[below right=1pt] at (0,0) {$O$};
+    % прямая L: наклон отличается от осей, проходит выше начала координат
+    \draw[blue, thick] (0.4,1.0) -- (3.4,3.4);
+    \node[blue] at (3.55,3.5) {$L$};
+    \coordinate (M0) at (1.3,1.72);
+    \fill (M0) circle (1.4pt) node[above=25pt] {$M_0(x_0,y_0,z_0)$};
+    % направляющий вектор вдоль прямой
+    \draw[->, red, very thick] (M0) -- ($(M0)+(1.0,0.8)$);
+    \node[red] at (2.55,1.8) {$\vec{q}(l,m,n)$};
   \end{tikzpicture}
-  \caption{Прямая через точку $M_0$ с направляющим вектором $\vec{q}$.}
-  \label{fig:line}
+
+  \smallskip
+  \textit{Рисунок 10.3}
 \end{figure}
 
 \begin{theorem}{Взаимное расположение двух прямых}{two_lines_thm}
@@ -514,20 +526,36 @@
 
 \begin{figure}[h!]
   \centering
-  \begin{tikzpicture}[scale=1.0]
+  \begin{tikzpicture}[scale=1.2, >=Stealth]
+    % плоскость Q
     \fill[blue!10] (-2,0) -- (2,0) -- (3,0.8) -- (-1,0.8) -- cycle;
     \draw[blue] (-2,0) -- (2,0) -- (3,0.8) -- (-1,0.8) -- cycle;
-    \node[blue] at (-1.7,0.1) {$Q$};
-    \coordinate (P) at (0.5,0.4);
-    \draw[red, thick, ->] (-0.8,-0.9) -- (1.9,1.9) node[right] {$L$};
+    \node[blue] at (-1.6,0.55) {$Q$};
+    % точка пересечения прямой с плоскостью
+    \coordinate (P) at (0.4,0.35);
+    \fill (P) circle (1.2pt);
+    % проекция прямой на плоскость (направление q')
+    \draw[red, dashed, thick] (P) -- (2.1,0.78);
+    \coordinate (Lpr) at (1.7,0.71);
+    % сама прямая L, выходящая из плоскости вверх
+    \draw[red, thick] (P) -- (1.95,2.1);
+    \node[red] at (2.1,2.2) {$L$};
+    % направляющий вектор q: параллелен L, отложен ниже-правее прямой
+    \coordinate (qbeg) at ($(P)+(1.15,0.8)$);
+    \draw[->, blue!70!black, very thick] (qbeg) -- ($(qbeg)+(0.62,0.68)$);
+    \node[blue!70!black] at ($(qbeg)+(0.82,0.35)$) {$\vec{q}$};
+    % нормаль к плоскости в точке P
     \draw[->, thick] (P) -- ($(P)+(0,1.6)$) node[above] {$\vec{n}$};
-    \draw[->, red, thick] (P) -- ($(P)+(0.9,0.92)$) node[right] {$\vec{q}$};
-    \node at (0.85,0.55) {$\varphi$};
-    \node at (1.2,0.3) {$\alpha$};
+    % дуга угла phi между нормалью и прямой
+    \draw[thick] ($(P)+(0,0.55)$) arc (90:45:0.5);
+    \node at ($(P)+(0.28,0.66)$) {$\varphi$};
+    % дуга угла alpha между прямой и её проекцией (плоскостью)
+    \draw[thick] ($(P)+(0.62,0.16)$) arc (14:45:0.69);
+    \node at ($(P)+(0.78,0.35)$) {$\alpha$};
   \end{tikzpicture}
-  \caption{Угол $\alpha=\widehat{(L,Q)}$ дополняет угол
-  $\varphi=\widehat{(\vec{n},\vec{q})}$ до $\pi/2$.}
-  \label{fig:line_plane}
+
+  \smallskip
+  \textit{Рисунок 10.4}
 \end{figure}
 
 \subsubsection*{Примеры: прямые, углы, проекции}

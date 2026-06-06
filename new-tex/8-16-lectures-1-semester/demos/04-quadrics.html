@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Конструктор поверхностей 2-го порядка — Лекция 10</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)'], ['$','$']], displayMath: [['\\[','\\]'], ['$$','$$']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0f1117; --surface:#1a1d27; --border:#2e3244; --accent:#5b8af5;
+      --accent2:#f5a623; --text:#e2e6f0; --muted:#7a80a0; --curve:#5bf5c0;
+      --trace:#f5a623; --radius:10px;
+    }
+    body {
+      font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; flex-direction:column; align-items:center;
+      padding:24px 16px 40px; gap:20px;
+    }
+    h1 { font-size:1.4rem; font-weight:600; text-align:center; color:var(--accent); letter-spacing:.03em; }
+    h1 span { color:var(--muted); font-weight:400; font-size:1rem; }
+
+    .layout { display:flex; gap:20px; width:100%; max-width:1100px; flex-wrap:wrap; justify-content:center; }
+
+    .panel {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:20px; width:300px; display:flex; flex-direction:column; gap:18px; flex-shrink:0;
+    }
+    .panel.morph   .catalog-only { display:none; }
+    .panel.catalog .morph-only   { display:none; }
+
+    .panel-section { display:flex; flex-direction:column; gap:10px; }
+    .panel-section h2 { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+
+    /* Переключатель режима */
+    .mode-toggle { display:flex; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .mode-toggle button { flex:1; padding:9px 4px; background:transparent; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; transition:background .15s,color .15s; }
+    .mode-toggle button.active { background:var(--accent); color:#fff; font-weight:600; }
+
+    /* Селектор поверхности */
+    .surface-list { display:flex; flex-direction:column; gap:6px; }
+    .surface-list button { display:flex; align-items:baseline; gap:8px; text-align:left; padding:9px 11px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:.88rem; cursor:pointer; transition:background .15s,color .15s,border-color .15s; }
+    .surface-list button .num { font-weight:700; color:var(--muted); min-width:16px; }
+    .surface-list button:hover { border-color:var(--accent); }
+    .surface-list button.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+    .surface-list button.active .num { color:#cfe0ff; }
+
+    /* Ползунки */
+    .slider-group { display:flex; flex-direction:column; gap:4px; }
+    .slider-group.disabled { opacity:.35; pointer-events:none; }
+    .slider-label { display:flex; justify-content:space-between; font-size:.9rem; }
+    .slider-label span:last-child { font-weight:700; color:var(--accent); min-width:40px; text-align:right; }
+    input[type="range"] { -webkit-appearance:none; width:100%; height:6px; border-radius:3px; background:var(--border); outline:none; cursor:pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); border:2px solid var(--bg); cursor:pointer; transition:background .15s; }
+    input[type="range"]::-webkit-slider-thumb:hover { background:var(--curve); }
+    #morphSlider::-webkit-slider-thumb { background:var(--accent2); }
+
+    /* Чипы-пресеты */
+    .preset-chips { display:flex; flex-wrap:wrap; gap:5px; }
+    .preset-chips button { padding:5px 9px; font-size:.76rem; background:var(--bg); border:1px solid var(--border); border-radius:20px; color:var(--muted); cursor:pointer; transition:.15s; }
+    .preset-chips button:hover { border-color:var(--accent2); color:var(--text); }
+    .morph-caption { font-size:.76rem; color:var(--muted); line-height:1.5; }
+
+    /* Чекбоксы */
+    .checkbox-row { display:flex; align-items:center; gap:8px; font-size:.9rem; cursor:pointer; user-select:none; }
+    .checkbox-row input[type="checkbox"] { accent-color:var(--accent); width:16px; height:16px; cursor:pointer; }
+
+    /* Инфо */
+    .curve-info { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .curve-type { font-size:1.05rem; font-weight:700; text-align:center; color:var(--curve); line-height:1.3; }
+    .curve-type .tag { display:block; font-size:.72rem; font-weight:600; color:var(--accent2); margin-top:2px; }
+    .param-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; font-size:.85rem; }
+    .param-item { display:flex; justify-content:space-between; gap:4px; }
+    .param-item span:first-child { color:var(--muted); }
+    .param-item span:last-child { font-weight:600; color:var(--text); }
+    .sections-list { font-size:.82rem; line-height:1.6; }
+    .sections-list .row { display:flex; gap:6px; }
+    .sections-list .row .pl { color:var(--muted); min-width:56px; }
+
+    /* Формулы */
+    .formula-box { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:.9rem; line-height:1.8; }
+    .formula-box .formula-canon { color:var(--curve); font-size:.95rem; }
+    .formula-live { font-family:'Cambria Math',Georgia,'Times New Roman',serif; font-size:1.12rem; color:var(--curve); text-align:center; letter-spacing:.01em; }
+    .formula-live sub, .formula-live sup { font-size:.7em; }
+
+    /* Canvas */
+    .canvas-wrap { position:relative; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--surface); flex:1; min-width:400px; cursor:grab; }
+    .canvas-wrap.dragging { cursor:grabbing; }
+    canvas { display:block; width:100%; height:100%; }
+    .canvas-hint { position:absolute; top:10px; right:12px; font-size:.72rem; color:var(--muted); background:rgba(15,17,23,.6); padding:4px 8px; border-radius:6px; pointer-events:none; }
+    .canvas-legend { position:absolute; bottom:12px; left:12px; display:flex; flex-direction:column; gap:5px; font-size:.75rem; }
+    .legend-item { display:flex; align-items:center; gap:6px; }
+    .legend-line { width:20px; height:3px; border-radius:2px; flex-shrink:0; }
+  </style>
+</head>
+<body>
+
+<h1>Конструктор поверхностей 2-го порядка <span>— Лекция 10</span></h1>
+
+<div class="layout">
+
+  <!-- ======== Панель ======== -->
+  <div class="panel catalog" id="panel">
+
+    <!-- Режим -->
+    <div class="panel-section">
+      <div class="mode-toggle">
+        <button id="btnCatalog" class="active" onclick="setMode('catalog')">Каталог</button>
+        <button id="btnMorph" onclick="setMode('morph')">Морфинг</button>
+      </div>
+    </div>
+
+    <!-- КАТАЛОГ: тип поверхности -->
+    <div class="panel-section catalog-only">
+      <h2>Тип поверхности</h2>
+      <div class="surface-list" id="surfaceList"></div>
+    </div>
+
+    <!-- МОРФИНГ: ползунок перехода -->
+    <div class="panel-section morph-only">
+      <h2>Непрерывный переход</h2>
+      <div class="slider-group">
+        <div class="slider-label"><span>Параметр перехода</span><span id="tVal">0.00</span></div>
+        <input type="range" id="morphSlider" min="0" max="2" step="0.005" value="0" oninput="onMorph()" />
+      </div>
+      <div class="preset-chips" id="presetChips"></div>
+      <div class="morph-caption">
+        Единое уравнение <span style="color:var(--text)">x²/a² + y²/b² + s·z²/c² = d</span>.
+        Ползунок ведёт <span style="color:var(--text)">s</span> от +1 к −1, затем <span style="color:var(--text)">d</span> от +1 к −1.
+        Конус и цилиндр — вырожденные «пограничные» случаи.
+      </div>
+    </div>
+
+    <!-- Параметры -->
+    <div class="panel-section">
+      <h2>Полуоси / параметры</h2>
+      <div class="slider-group" id="grpA">
+        <div class="slider-label"><span>Параметр <em>a</em></span><span id="aVal">2.0</span></div>
+        <input type="range" id="aSlider" min="0.5" max="3" step="0.1" value="2.0" oninput="onParam()" />
+      </div>
+      <div class="slider-group" id="grpB">
+        <div class="slider-label"><span>Параметр <em>b</em></span><span id="bVal">1.4</span></div>
+        <input type="range" id="bSlider" min="0.5" max="3" step="0.1" value="1.4" oninput="onParam()" />
+      </div>
+      <div class="slider-group" id="grpC">
+        <div class="slider-label"><span>Параметр <em>c</em></span><span id="cVal">1.6</span></div>
+        <input type="range" id="cSlider" min="0.5" max="3" step="0.1" value="1.6" oninput="onParam()" />
+      </div>
+    </div>
+
+    <!-- Отображение -->
+    <div class="panel-section">
+      <h2>Отображение</h2>
+      <label class="checkbox-row"><input type="checkbox" id="chkMesh" checked onchange="draw()" /> Каркас поверхности</label>
+      <label class="checkbox-row catalog-only" id="rowTraces"><input type="checkbox" id="chkTraces" checked onchange="draw()" /> Сечения плоскостями</label>
+      <label class="checkbox-row"><input type="checkbox" id="chkAxes" checked onchange="draw()" /> Оси координат</label>
+      <label class="checkbox-row"><input type="checkbox" id="chkRotate" onchange="draw()" /> Автовращение</label>
+    </div>
+
+    <!-- Инфо КАТАЛОГ -->
+    <div class="panel-section catalog-only">
+      <h2>Текущая поверхность</h2>
+      <div class="curve-info">
+        <div class="curve-type" id="surfName">Эллипсоид</div>
+        <div class="param-grid" id="paramGrid"></div>
+        <div class="sections-list" id="sectionsList"></div>
+      </div>
+    </div>
+    <div class="panel-section catalog-only">
+      <h2>Каноническое уравнение</h2>
+      <div class="formula-box" id="formulaBox"></div>
+    </div>
+
+    <!-- Инфо МОРФИНГ -->
+    <div class="panel-section morph-only">
+      <h2>Текущее состояние</h2>
+      <div class="curve-info">
+        <div class="curve-type" id="morphName">Эллипсоид</div>
+        <div class="param-grid" id="morphParams"></div>
+      </div>
+    </div>
+    <div class="panel-section morph-only">
+      <h2>Уравнение сейчас</h2>
+      <div class="formula-box"><div class="formula-live" id="morphEq"></div></div>
+    </div>
+
+  </div><!-- /panel -->
+
+  <!-- ======== Canvas ======== -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="cvs"></canvas>
+    <div class="canvas-hint">тяни — вращать · колесо — масштаб</div>
+    <div class="canvas-legend">
+      <div class="legend-item"><div class="legend-line" style="background:#5bf5c0"></div><span>Каркас</span></div>
+      <div class="legend-item" id="legTrace"><div class="legend-line" style="background:#f5a623"></div><span>Сечения координатными плоскостями</span></div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+'use strict';
+
+/* ===== Геометрия (ломаные в 3D) ===== */
+function linEllipse(U,V,n){ n=n||64; const pl=[]; for(let i=0;i<=n;i++){const t=2*Math.PI*i/n,c=Math.cos(t),s=Math.sin(t);pl.push([U[0]*c+V[0]*s,U[1]*c+V[1]*s,U[2]*c+V[2]*s]);} return pl; }
+function linHyperbola(Vr,Vi,wmax){ const mk=sg=>{const pl=[];for(let i=0;i<=48;i++){const w=-wmax+2*wmax*i/48,ch=Math.cosh(w),sh=Math.sinh(w);pl.push([sg*ch*Vr[0]+sh*Vi[0],sg*ch*Vr[1]+sh*Vi[1],sg*ch*Vr[2]+sh*Vi[2]]);}return pl;}; return[mk(1),mk(-1)]; }
+function linParabola(dir,smax,sign){ const pl=[]; for(let i=0;i<=48;i++){const s=-smax+2*smax*i/48;pl.push([s*dir[0],s*dir[1],sign*s*s]);} return pl; }
+function linSegment(dir,smax){ return[[-smax*dir[0],-smax*dir[1],-smax*dir[2]],[smax*dir[0],smax*dir[1],smax*dir[2]]]; }
+
+/* ===== Каталог поверхностей (6 различных, без дубликатов) ===== */
+const SURFACES = {
+  ellipsoid:{ num:1, name:'Эллипсоид', uses:['a','b','c'],
+    tex:'\\dfrac{x^2}{a^2}+\\dfrac{y^2}{b^2}+\\dfrac{z^2}{c^2}=1',
+    sections:[['z=0','эллипс'],['y=0','эллипс'],['x=0','эллипс']],
+    mesh(a,b,c){ const L=[],Nu=48,Nv=24;
+      for(let j=1;j<Nv;j++){const th=Math.PI*j/Nv,st=Math.sin(th),ct=Math.cos(th);const pl=[];for(let i=0;i<=Nu;i++){const ph=2*Math.PI*i/Nu;pl.push([a*st*Math.cos(ph),b*st*Math.sin(ph),c*ct]);}L.push(pl);}
+      for(let i=0;i<Nu;i+=2){const ph=2*Math.PI*i/Nu;const pl=[];for(let j=0;j<=Nv;j++){const th=Math.PI*j/Nv,st=Math.sin(th);pl.push([a*st*Math.cos(ph),b*st*Math.sin(ph),c*Math.cos(th)]);}L.push(pl);} return L; },
+    traces(a,b,c){ return [linEllipse([a,0,0],[0,b,0]),linEllipse([a,0,0],[0,0,c]),linEllipse([0,b,0],[0,0,c])]; } },
+
+  oneSheet:{ num:2, name:'Однополостный гиперболоид', uses:['a','b','c'],
+    tex:'\\dfrac{x^2}{a^2}+\\dfrac{y^2}{b^2}-\\dfrac{z^2}{c^2}=1',
+    sections:[['z=0','эллипс (горловина)'],['y=0','гипербола'],['x=0','гипербола']],
+    mesh(a,b,c){ const L=[],Nu=48,Nv=12,vm=1.3;
+      for(let j=0;j<=Nv;j++){const v=-vm+2*vm*j/Nv,ch=Math.cosh(v),sh=Math.sinh(v);const pl=[];for(let i=0;i<=Nu;i++){const u=2*Math.PI*i/Nu;pl.push([a*ch*Math.cos(u),b*ch*Math.sin(u),c*sh]);}L.push(pl);}
+      for(let i=0;i<Nu;i+=2){const u=2*Math.PI*i/Nu;const pl=[];for(let j=0;j<=Nv;j++){const v=-vm+2*vm*j/Nv;pl.push([a*Math.cosh(v)*Math.cos(u),b*Math.cosh(v)*Math.sin(u),c*Math.sinh(v)]);}L.push(pl);} return L; },
+    traces(a,b,c){ return [linEllipse([a,0,0],[0,b,0]),...linHyperbola([a,0,0],[0,0,c],1.3),...linHyperbola([0,b,0],[0,0,c],1.3)]; } },
+
+  twoSheet:{ num:3, name:'Двуполостный гиперболоид', uses:['a','b','c'],
+    tex:'\\dfrac{x^2}{a^2}+\\dfrac{y^2}{b^2}-\\dfrac{z^2}{c^2}=-1',
+    sections:[['z=0','нет точек'],['y=0','гипербола'],['x=0','гипербола']],
+    mesh(a,b,c){ const L=[],Nu=48,Nv=10,vm=1.25;
+      for(const s of[1,-1]){
+        for(let j=0;j<=Nv;j++){const v=vm*j/Nv,sh=Math.sinh(v),ch=Math.cosh(v);const pl=[];for(let i=0;i<=Nu;i++){const u=2*Math.PI*i/Nu;pl.push([a*sh*Math.cos(u),b*sh*Math.sin(u),s*c*ch]);}L.push(pl);}
+        for(let i=0;i<Nu;i+=2){const u=2*Math.PI*i/Nu;const pl=[];for(let j=0;j<=Nv;j++){const v=vm*j/Nv;pl.push([a*Math.sinh(v)*Math.cos(u),b*Math.sinh(v)*Math.sin(u),s*c*Math.cosh(v)]);}L.push(pl);}
+      } return L; },
+    traces(a,b,c){ return [...linHyperbola([0,0,c],[a,0,0],1.25),...linHyperbola([0,0,c],[0,b,0],1.25)]; } },
+
+  cone:{ num:4, name:'Конус', uses:['a','b','c'],
+    tex:'\\dfrac{x^2}{a^2}+\\dfrac{y^2}{b^2}-\\dfrac{z^2}{c^2}=0',
+    sections:[['z=0','точка (вершина)'],['y=0','пара прямых'],['x=0','пара прямых']],
+    mesh(a,b,c){ const L=[],Nu=48,Nt=8,tm=1.8;
+      for(let j=0;j<=Nt;j++){const t=-tm+2*tm*j/Nt;const pl=[];for(let i=0;i<=Nu;i++){const u=2*Math.PI*i/Nu;pl.push([a*t*Math.cos(u),b*t*Math.sin(u),c*t]);}L.push(pl);}
+      for(let i=0;i<Nu;i+=2){const u=2*Math.PI*i/Nu;const pl=[];for(let j=0;j<=Nt;j++){const t=-tm+2*tm*j/Nt;pl.push([a*t*Math.cos(u),b*t*Math.sin(u),c*t]);}L.push(pl);} return L; },
+    traces(a,b,c){ return [linSegment([a,0,c],1.8),linSegment([a,0,-c],1.8),linSegment([0,b,c],1.8),linSegment([0,b,-c],1.8)]; } },
+
+  ellParaboloid:{ num:5, name:'Эллиптический параболоид', uses:['a','b'],
+    tex:'z=\\dfrac{x^2}{a^2}+\\dfrac{y^2}{b^2}',
+    sections:[['z=h','эллипс'],['y=0','парабола'],['x=0','парабола']],
+    mesh(a,b){ const L=[],Nu=48,Nr=10,rm=2.1;
+      for(let j=1;j<=Nr;j++){const r=rm*j/Nr;const pl=[];for(let i=0;i<=Nu;i++){const u=2*Math.PI*i/Nu;pl.push([a*r*Math.cos(u),b*r*Math.sin(u),r*r]);}L.push(pl);}
+      for(let i=0;i<Nu;i+=2){const u=2*Math.PI*i/Nu;const pl=[];for(let j=0;j<=Nr;j++){const r=rm*j/Nr;pl.push([a*r*Math.cos(u),b*r*Math.sin(u),r*r]);}L.push(pl);} return L; },
+    traces(a,b){ return [linParabola([a,0,0],2.1,1),linParabola([0,b,0],2.1,1),linEllipse([a*2.1,0,4.41],[0,b*2.1,4.41])]; } },
+
+  hypParaboloid:{ num:6, name:'Гиперболический параболоид', uses:['a','b'],
+    tex:'z=\\dfrac{x^2}{a^2}-\\dfrac{y^2}{b^2}',
+    sections:[['z=0','пара прямых'],['y=0','парабола (ветви вверх)'],['x=0','парабола (ветви вниз)']],
+    mesh(a,b){ const L=[],N=16,sm=2;
+      for(let j=0;j<=N;j++){const t=-sm+2*sm*j/N;const pl=[];for(let i=0;i<=N;i++){const s=-sm+2*sm*i/N;pl.push([a*s,b*t,s*s-t*t]);}L.push(pl);}
+      for(let i=0;i<=N;i++){const s=-sm+2*sm*i/N;const pl=[];for(let j=0;j<=N;j++){const t=-sm+2*sm*j/N;pl.push([a*s,b*t,s*s-t*t]);}L.push(pl);} return L; },
+    traces(a,b){ return [linSegment([a,b,0],2),linSegment([a,-b,0],2),linParabola([a,0,0],2,1),linParabola([0,b,0],2,-1)]; } },
+};
+const ORDER = ['ellipsoid','oneSheet','twoSheet','cone','ellParaboloid','hypParaboloid'];
+
+/* ===== Морфинг: единое уравнение x²/a² + y²/b² + s·z²/c² = d ===== */
+// Ползунок t∈[0,2]:  t∈[0,1] → s:+1→−1, d=1 ;  t∈[1,2] → s=−1, d:+1→−1
+function morphSD(t){
+  if(t<=1) return { s: 1 - 2*t, d: 1 };
+  return { s: -1, d: 1 - 2*(t-1) };
+}
+function morphMesh(a,b,c,s,d){
+  const L=[], Nz=64, Nu=48, MAXR=3.0;
+  const Rmax = (MAXR*MAXR)/(Math.max(a,b)*Math.max(a,b)); // ограничение полуоси сечения
+  let zlim;
+  if (Math.abs(s) < 1e-3) zlim = c*1.7;                  // цилиндр
+  else if (s > 0) zlim = (d>0) ? c*Math.sqrt(Math.max(d,0)/s) : 0;   // эллипсоид
+  else { const val=(Rmax-d)*c*c/Math.abs(s); zlim = val>0?Math.sqrt(val):c; } // гиперболоиды/конус
+  zlim = Math.max(0.001, Math.min(zlim, 6));
+
+  const lv=[];
+  for(let k=0;k<=Nz;k++){ const z=-zlim+2*zlim*k/Nz; lv.push([z, d - s*z*z/(c*c)]); }
+
+  // горизонтальные сечения-эллипсы
+  for(const [z,R] of lv){
+    if(R<=1e-4) continue;
+    const sa=a*Math.sqrt(R), sb=b*Math.sqrt(R), pl=[];
+    for(let i=0;i<=Nu;i++){const t=2*Math.PI*i/Nu;pl.push([sa*Math.cos(t),sb*Math.sin(t),z]);}
+    L.push(pl);
+  }
+  // меридианы (рвутся там, где сечения нет — две полости и т.п.)
+  const Mu=24;
+  for(let i=0;i<Mu;i++){
+    const t=2*Math.PI*i/Mu, ct=Math.cos(t), st=Math.sin(t); let cur=[];
+    for(const [z,R] of lv){
+      if(R<=1e-4){ if(cur.length>1)L.push(cur); cur=[]; continue; }
+      const sa=a*Math.sqrt(R), sb=b*Math.sqrt(R); cur.push([sa*ct,sb*st,z]);
+    }
+    if(cur.length>1)L.push(cur);
+  }
+  return L;
+}
+function morphLabel(s,d){
+  const e=0.06;
+  if(Math.abs(s)<e) return ['Эллиптический цилиндр','вырожденный случай'];
+  if(s>0)           return ['Эллипсоид',''];
+  if(Math.abs(d)<e) return ['Конус','вырожденный случай'];
+  if(d>0)           return ['Однополостный гиперболоид',''];
+  return ['Двуполостный гиперболоид',''];
+}
+function liveEquation(s,d){
+  let zt;
+  if(Math.abs(s)<0.04) zt='';
+  else zt = (s>0?' + ':' \u2212 ') + 'z<sup>2</sup>/c<sup>2</sup>';
+  let dr = Math.abs(d)<0.04?0:d;
+  let ds = (Math.abs(dr-1)<0.02)?'1':(Math.abs(dr+1)<0.02)?'\u22121':(dr===0?'0':dr.toFixed(2).replace('-','\u2212'));
+  return `x<sup>2</sup>/a<sup>2</sup> + y<sup>2</sup>/b<sup>2</sup>${zt} = ${ds}`;
+}
+// Пресеты: значение t для ключевых поверхностей
+const PRESETS = [
+  ['Эллипсоид',0],['Цилиндр',0.5],['Однополостный',1],['Конус',1.5],['Двуполостный',2]
+];
+
+/* ===== Состояние ===== */
+const state = { mode:'catalog', key:'ellipsoid', a:2.0, b:1.4, c:1.6, t:0, yaw:-0.7, pitch:-1.15, zoom:1.0 };
+
+/* ===== DOM ===== */
+const cvs=document.getElementById('cvs'), ctx=cvs.getContext('2d'), canvasWrap=document.getElementById('canvasWrap');
+const panel=document.getElementById('panel');
+const aSlider=document.getElementById('aSlider'),bSlider=document.getElementById('bSlider'),cSlider=document.getElementById('cSlider');
+const aVal=document.getElementById('aVal'),bVal=document.getElementById('bVal'),cVal=document.getElementById('cVal');
+const grpC=document.getElementById('grpC');
+const surfaceList=document.getElementById('surfaceList');
+const surfNameEl=document.getElementById('surfName'), paramGrid=document.getElementById('paramGrid');
+const sectionsList=document.getElementById('sectionsList'), formulaBox=document.getElementById('formulaBox');
+const morphSlider=document.getElementById('morphSlider'), tValEl=document.getElementById('tVal');
+const morphNameEl=document.getElementById('morphName'), morphParams=document.getElementById('morphParams'), morphEq=document.getElementById('morphEq');
+const presetChips=document.getElementById('presetChips');
+const legTrace=document.getElementById('legTrace');
+
+/* ===== Построение UI ===== */
+ORDER.forEach(key=>{
+  const s=SURFACES[key], btn=document.createElement('button');
+  btn.dataset.key=key;
+  btn.innerHTML=`<span class="num">${s.num}.</span><span>${s.name}</span>`;
+  btn.onclick=()=>selectSurface(key);
+  surfaceList.appendChild(btn);
+});
+PRESETS.forEach(([label,t])=>{
+  const b=document.createElement('button'); b.textContent=label;
+  b.onclick=()=>{ morphSlider.value=t; onMorph(); }; presetChips.appendChild(b);
+});
+
+/* ===== Режим ===== */
+function setMode(m){
+  state.mode=m;
+  panel.className='panel '+m;
+  document.getElementById('btnCatalog').classList.toggle('active',m==='catalog');
+  document.getElementById('btnMorph').classList.toggle('active',m==='morph');
+  legTrace.style.display = m==='catalog' ? 'flex' : 'none';
+  if(m==='catalog'){ grpC.classList.remove('disabled'); selectSurface(state.key,true); }
+  else { grpC.classList.remove('disabled'); onMorph(); }
+}
+
+function selectSurface(key,keepView){
+  state.key=key;
+  [...surfaceList.children].forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+  const surf=SURFACES[key];
+  grpC.classList.toggle('disabled',!surf.uses.includes('c'));
+  surfNameEl.textContent=surf.name;
+  const items=surf.uses.map(p=>[p,state[p].toFixed(2)]);
+  paramGrid.innerHTML=items.map(([k,v])=>`<div class="param-item"><span>${k}:</span><span>${v}</span></div>`).join('');
+  sectionsList.innerHTML='<div style="color:var(--muted);margin-bottom:4px;">Сечения плоскостями:</div>'+
+    surf.sections.map(([pl,w])=>`<div class="row"><span class="pl">${pl}:</span><span>${w}</span></div>`).join('');
+  formulaBox.innerHTML=`<div class="formula-canon">$$${surf.tex}$$</div>`;
+  if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([formulaBox]).catch(()=>{});
+  draw();
+}
+
+/* ===== Морфинг ===== */
+function onMorph(){
+  state.t=parseFloat(morphSlider.value);
+  tValEl.textContent=state.t.toFixed(2);
+  const {s,d}=morphSD(state.t);
+  const [name,tag]=morphLabel(s,d);
+  morphNameEl.innerHTML=name+(tag?`<span class="tag">${tag}</span>`:'');
+  morphNameEl.style.color = tag ? 'var(--accent2)' : 'var(--curve)';
+  morphParams.innerHTML=[['s',s.toFixed(2)],['d',d.toFixed(2)],['a',state.a.toFixed(2)],['b',state.b.toFixed(2)],['c',state.c.toFixed(2)]]
+    .map(([k,v])=>`<div class="param-item"><span>${k}:</span><span>${v}</span></div>`).join('');
+  morphEq.innerHTML=liveEquation(s,d);
+  draw();
+}
+
+/* ===== Параметры a,b,c ===== */
+function onParam(){
+  state.a=parseFloat(aSlider.value); state.b=parseFloat(bSlider.value); state.c=parseFloat(cSlider.value);
+  aVal.textContent=state.a.toFixed(2); bVal.textContent=state.b.toFixed(2); cVal.textContent=state.c.toFixed(2);
+  if(state.mode==='catalog') selectSurface(state.key,true); else onMorph();
+}
+
+/* ===== Камера / проекция ===== */
+let _cx=0,_cy=0,_scale=60,_cosY=1,_sinY=0,_cosP=1,_sinP=0;
+function setupCamera(W,H){ _cx=W/2;_cy=H/2;_scale=(Math.min(W,H)/11)*state.zoom;
+  _cosY=Math.cos(state.yaw);_sinY=Math.sin(state.yaw);_cosP=Math.cos(state.pitch);_sinP=Math.sin(state.pitch); }
+function project(p){ const x=p[0],y=p[1],z=p[2];
+  const rx=x*_cosY-y*_sinY, ry=x*_sinY+y*_cosY;
+  const ry2=ry*_cosP-z*_sinP, rz2=ry*_sinP+z*_cosP;
+  return [_cx+rx*_scale,_cy-rz2*_scale,ry2]; }
+
+/* ===== Рисование ===== */
+function draw(){
+  const W=cvs.width=canvasWrap.clientWidth, H=cvs.height=canvasWrap.clientHeight;
+  setupCamera(W,H); ctx.clearRect(0,0,W,H);
+  const a=state.a,b=state.b,c=state.c;
+
+  let meshLines=[], traceLines=[];
+  if(state.mode==='morph'){
+    const {s,d}=morphSD(state.t);
+    meshLines=morphMesh(a,b,c,s,d);
+  } else {
+    const surf=SURFACES[state.key];
+    if(document.getElementById('chkMesh').checked) meshLines=surf.mesh(a,b,c);
+    if(document.getElementById('chkTraces').checked) traceLines=surf.traces(a,b,c);
+  }
+  if(state.mode==='morph' && !document.getElementById('chkMesh').checked) meshLines=[];
+
+  const segs=[]; let dmin=Infinity,dmax=-Infinity;
+  function push(pts,kind,w){ let prev=null; for(const p of pts){const q=project(p); if(prev){const dep=(prev[2]+q[2])/2; if(dep<dmin)dmin=dep; if(dep>dmax)dmax=dep; segs.push([prev[0],prev[1],q[0],q[1],dep,kind,w]);} prev=q;} }
+
+  // оси
+  const axisSegs=[];
+  if(document.getElementById('chkAxes').checked){
+    const A=3.6, axes=[[[-A,0,0],[A,0,0],'#e0584e','x'],[[0,-A,0],[0,A,0],'#5bd06b','y'],[[0,0,-A],[0,0,A],'#5b8af5','z']];
+    for(const [p0,p1,col,lab] of axes){ const q0=project(p0),q1=project(p1); axisSegs.push([q0[0],q0[1],q1[0],q1[1],col]); const ql=project(p1); axisSegs.push(['label',ql[0],ql[1],col,lab]); }
+  }
+
+  for(const pl of meshLines) push(pl,'curve',1.1);
+  for(const pl of traceLines) push(pl,'trace',2.4);
+
+  ctx.lineWidth=1.4;
+  for(const s of axisSegs){
+    if(s[0]==='label'){ ctx.fillStyle=s[3]; ctx.font='13px Segoe UI,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(s[4],s[1],s[2]); }
+    else { ctx.strokeStyle=s[4]; ctx.beginPath(); ctx.moveTo(s[0],s[1]); ctx.lineTo(s[2],s[3]); ctx.stroke(); }
+  }
+
+  segs.sort((u,v)=>v[4]-u[4]);
+  const span=(dmax-dmin)||1;
+  for(const s of segs){
+    const t=(s[4]-dmin)/span, alpha=0.95-0.65*t;
+    if(s[5]==='curve'){ const lum=1-0.45*t; ctx.strokeStyle=`rgba(${Math.round(91*lum)},${Math.round(245*lum)},${Math.round(192*lum)},${alpha})`; }
+    else ctx.strokeStyle=`rgba(245,166,35,${Math.min(1,alpha+0.15)})`;
+    ctx.lineWidth=s[6]; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(s[0],s[1]); ctx.lineTo(s[2],s[3]); ctx.stroke();
+  }
+}
+
+/* ===== Взаимодействие ===== */
+let dragging=false,lastX=0,lastY=0;
+canvasWrap.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvasWrap.classList.add('dragging');canvasWrap.setPointerCapture(e.pointerId);});
+canvasWrap.addEventListener('pointermove',e=>{ if(!dragging)return;
+  state.yaw+=(e.clientX-lastX)*0.01; state.pitch+=(e.clientY-lastY)*0.01;
+  state.pitch=Math.max(-Math.PI/2-0.6,Math.min(0.6,state.pitch));
+  lastX=e.clientX;lastY=e.clientY; draw(); });
+function endDrag(){dragging=false;canvasWrap.classList.remove('dragging');}
+canvasWrap.addEventListener('pointerup',endDrag); canvasWrap.addEventListener('pointercancel',endDrag);
+canvasWrap.addEventListener('wheel',e=>{e.preventDefault();state.zoom*=e.deltaY<0?1.1:0.9;state.zoom=Math.max(0.4,Math.min(3.5,state.zoom));draw();},{passive:false});
+
+function tick(){ if(document.getElementById('chkRotate').checked&&!dragging){state.yaw+=0.006;draw();} requestAnimationFrame(tick); }
+
+/* ===== Инициализация ===== */
+function resize(){ canvasWrap.style.height=Math.max(460,canvasWrap.clientWidth*0.72)+'px'; draw(); }
+function init(){
+  selectSurface('ellipsoid',true);
+  aVal.textContent=state.a.toFixed(2); bVal.textContent=state.b.toFixed(2); cVal.textContent=state.c.toFixed(2);
+  setMode('catalog');
+  resize(); window.addEventListener('resize',resize); requestAnimationFrame(tick);
+}
+window.addEventListener('load',init);
+</script>
+</body>
+</html>

@@ -4,12 +4,13 @@
 \usepackage[english,russian]{babel}
 \usepackage{amsmath, amssymb, amsfonts, amsthm}
 \usepackage{geometry}
+\usepackage{float}
 \geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{tcolorbox}
-\tcbuselibrary{theorems, skins}
+\tcbuselibrary{theorems, skins, breakable}
 \usepackage{tikz}
 \usetikzlibrary{calc, arrows.meta, positioning}
 
@@ -254,8 +255,7 @@
   условию. Следовательно, любая подсистема линейно независима.
 \end{myproof}
 
-\begin{theorem}{Критерий линейной независимости через единственность
-  разложения}{li_crit_thm}
+\begin{theorem}{Критерий линейной независимости}{li_crit_thm}
   Система векторов $\Sigma = \{\vec{u}_1, \vec{u}_2, \dots, \vec{u}_m\}$
   линейно независима тогда и только тогда, когда любой вектор, являющийся
   линейной комбинацией этих векторов, имеет \emph{единственное} разложение
@@ -423,7 +423,7 @@
   $\vec{a} \nparallel \vec{b}$ (если $\vec{a} \parallel \vec{b}$, то
     $\vec{a}, \vec{b}$ уже линейно зависимы, и по свойству о зависимости
   подсистемы вся тройка линейно зависима). Приведём векторы $\vec{a},
-  \vec{b}, \vec{c}$ к одному началу $O$ (рис.~\ref{fig:coplanar}).
+  \vec{b}, \vec{c}$ к одному началу $O$ (рис.~15.1).
   Раскладывая $\vec{c} = \overrightarrow{OC}$ по сторонам
   параллелограмма, получаем
   \[
@@ -434,22 +434,30 @@
   потому система $\vec{a}, \vec{b}, \vec{c}$ линейно зависима.
 \end{myproof}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \centering
-  \begin{tikzpicture}[scale=1.6]
+  \begin{tikzpicture}[scale=1.6, >=Stealth]
     \coordinate (O) at (0,0);
     \coordinate (A) at (1,1.4);
     \coordinate (B) at (2,0);
     \coordinate (C) at (3,1.4);
 
+    % Середины OA и OB
+    \coordinate (M) at ($(O)!0.5!(A)$);
+    \coordinate (N) at ($(O)!0.5!(B)$);
+
     % Parallelogram sides (dashed completions)
     \draw[dashed, gray] (A) -- (C);
     \draw[dashed, gray] (B) -- (C);
 
-    % Vectors
-    \draw[->, red, thick] (O) -- (A) node[midway, left] {$\vec{a}$};
+    % Основные векторы
+    \draw[->, red, thick] (O) -- (A) node[midway, above left] {$\vec{a}$};
     \draw[->, blue, thick] (O) -- (B) node[midway, below] {$\vec{b}$};
     \draw[->, purple, thick] (O) -- (C) node[midway, above] {$\vec{c}$};
+
+    % Векторы до половины OA и OB
+    \draw[->, red] (O) -- (M) node[midway, left] {};
+    \draw[->, blue] (O) -- (N) node[midway, below] {};
 
     % Point labels
     \node[above] at (A) {$A$};
@@ -457,10 +465,9 @@
     \node[above right] at (C) {$C$};
     \node[below left] at (O) {$O$};
   \end{tikzpicture}
-  \caption{$\vec{c} = \overrightarrow{OA} + \overrightarrow{OB} =
-    \alpha\vec{a} + \beta\vec{b}$ -- вектор $\vec{c}$ лежит в плоскости
-  векторов $\vec{a}$ и $\vec{b}$.}
-  \label{fig:coplanar}
+
+  \smallskip
+  \textit{Рисунок 15.1}
 \end{figure}
 
 \begin{theorem}{О четырёх векторах в пространстве}{four_vec_thm}
@@ -478,7 +485,7 @@
 2) Если $\Sigma' = \{\vec{a}, \vec{b}, \vec{c}\}$ линейно независима, то
 по критерию компланарности векторы $\vec{a}, \vec{b}, \vec{c}$
 некомпланарны. Приведём все векторы к одному началу $O$
-(рис.~\ref{fig:four}). Достраивая параллелепипед, разложим $\vec{d}$ по
+(рис.~15.2). Достраивая параллелепипед, разложим $\vec{d}$ по
 трём рёбрам:
 \[
 \vec{d} = \overrightarrow{OA} + \overrightarrow{OB} +
@@ -491,17 +498,26 @@
 В обоих случаях четыре вектора линейно зависимы.
 \end{myproof}
 
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=1.3]
+\begin{tikzpicture}[scale=1.3, >=Latex]
 \coordinate (O) at (0,0);
+
+% Базовые векторы куба
 \coordinate (A) at (2,0);          % a
-\coordinate (B) at (1,0.6);        % b
-\coordinate (C) at (0,1.8);        % c
-\coordinate (AB) at (3,0.6);
-\coordinate (AC) at (2,1.8);
-\coordinate (BC) at (1,2.4);
-\coordinate (D) at (3,2.4);        % d
+\coordinate (B) at (0.9,0.55);     % b
+\coordinate (C) at (0.25,1.75);    % c  <-- чуть сдвинут вправо
+
+% Остальные вершины
+\coordinate (AB) at ($(A)+(B)$);
+\coordinate (AC) at ($(A)+(C)$);
+\coordinate (BC) at ($(B)+(C)$);
+\coordinate (D)  at ($(A)+(B)+(C)$);
+
+% Середины OA, OB, OC
+\coordinate (M) at ($(O)!0.5!(A)$);
+\coordinate (N) at ($(O)!0.5!(B)$);
+\coordinate (P) at ($(O)!0.5!(C)$);
 
 % Hidden/back edges dashed
 \draw[dashed, gray] (O) -- (B);
@@ -509,16 +525,20 @@
 \draw[dashed, gray] (B) -- (BC);
 
 % Front edges
-\draw[gray] (A) -- (AB) -- (D) -- (AC) -- cycle;
-\draw[gray] (C) -- (AC);
-\draw[gray] (C) -- (BC) -- (D);
-\draw[gray] (A) -- (AB);
+\draw[dashed, gray] (A) -- (AB) -- (D) -- (AC) -- cycle;
+\draw[dashed, gray] (C) -- (AC);
+\draw[dashed, gray] (C) -- (BC) -- (D);
 
-% Vectors
+% Основные векторы
 \draw[->, red, thick] (O) -- (A) node[midway, below] {$\vec{a}$};
 \draw[->, blue, thick] (O) -- (B) node[midway, above left] {$\vec{b}$};
 \draw[->, green!60!black, thick] (O) -- (C) node[midway, left] {$\vec{c}$};
-\draw[->, purple, thick] (O) -- (D) node[midway, above right] {$\vec{d}$};
+\draw[->, purple, thick] (O) -- (D) node[midway, above left] {$\vec{d}$};
+
+% Векторы до половин OA, OB, OC
+\draw[->, red] (O) -- (M);
+\draw[->, blue] (O) -- (N);
+\draw[->, green!60!black] (O) -- (P);
 
 \node[below left] at (O) {$O$};
 \node[below right] at (A) {$A$};
@@ -526,9 +546,9 @@
 \node[left] at (C) {$C$};
 \node[above right] at (D) {$D$};
 \end{tikzpicture}
-\caption{$\vec{d} = \alpha\vec{a} + \beta\vec{b} + \gamma\vec{c}$ --
-любой четвёртый вектор раскладывается по трём некомпланарным.}
-\label{fig:four}
+
+\smallskip
+\textit{Рисунок 15.2}
 \end{figure}
 
 \begin{remarkIT}{Размерность 3D-пространства}{dim3_it}
